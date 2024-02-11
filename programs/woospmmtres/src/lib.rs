@@ -33,16 +33,64 @@
 
 use anchor_lang::prelude::*;
 
+mod constants;
+
+use crate::{constants::*};
+
 declare_id!("45LgxBpxsu7mRdn3GPLrUZM93LxvP3SpCZ1TufDdNr2u");
 
 #[program]
 pub mod woospmmtres {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+    pub fn create_oracle(ctx: Context<CreateOracle>, _base_address: Pubkey) -> Result<()> {
         Ok(())
     }
 }
 
 #[derive(Accounts)]
-pub struct Initialize {}
+#[instruction(base_address: Pubkey)]
+pub struct CreateOracle<'info> {
+    #[account(
+        init,
+        payer = funder,
+        space = 32 + 1 + 1 + 8,
+        seeds = [
+            CLORACLE_SEED.as_bytes(),
+            base_address.as_ref(),
+            ],
+        bump,
+    )]
+    pub cloracle: Account<'info, CLOracle>,
+
+    #[account(
+        init,
+        payer = funder,
+        space = 16 + 8 + 8 + 8,
+        seeds = [
+            TOKEN_INFO_SEED.as_bytes(),
+            base_address.as_ref(),
+            ],
+        bump,
+    )]
+    pub token_info: Account<'info, TokenInfo>,
+
+    #[account(mut)]
+    pub funder: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[account]
+pub struct CLOracle {
+    oracle: Pubkey,         //32
+    decimal: u8,            //1
+    clo_preferred: bool,    //1
+}
+#[account]
+pub struct TokenInfo {
+    price: u128, // 16 as chainlink oracle (e.g. decimal = 8)
+    coeff: u64,  // 8 k: decimal = 18.    18.4 * 1e18
+    spread: u64, // 8 s: decimal = 18.   spread <= 2e18   18.4 * 1e18
+}
+
