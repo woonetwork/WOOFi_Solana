@@ -1,2 +1,3 @@
 pub const CLORACLE_SEED: &str = "cloracle";
-pub const TOKEN_INFO_SEED: &str = "tokeninfo";
+pub const WOORACLE_SEED: &str = "wooracle";
+pub const CONFIGURATION_SEED: &str = "configuration";
