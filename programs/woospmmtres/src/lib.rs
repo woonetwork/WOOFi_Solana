@@ -30,13 +30,14 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+mod state;
+mod instructions;
+mod constants;
 
 use anchor_lang::prelude::*;
 use chainlink_solana as chainlink;
 
-mod constants;
-
-use crate::{constants::*};
+use crate::{constants::*, state::*, instructions::*, };
 
 declare_id!("45LgxBpxsu7mRdn3GPLrUZM93LxvP3SpCZ1TufDdNr2u");
 
@@ -67,6 +68,26 @@ pub mod woospmmtres {
         ctx.accounts.cloracle.round = round.answer;
 
         Ok(())
+    }
+
+    pub fn set_stale_duration(ctx: Context<SetStaleDuration>, stale_duration: u128) -> Result<()> {
+        return instructions::set_stale_duration::handler(ctx, stale_duration);
+    }
+
+    pub fn set_bound(ctx: Context<SetBound>, bound: u64) -> Result<()> {
+        return instructions::set_bound::handler(ctx, bound);
+    }
+
+    pub fn set_price(ctx: Context<SetPrice>, price: u128) -> Result<()> {
+        return instructions::set_price::handler(ctx, price);
+    }
+
+    pub fn set_coeff(ctx: Context<SetCoeff>, coeff: u64) -> Result<()> {
+        return instructions::set_coeff::handler(ctx, coeff);
+    }
+
+    pub fn set_spread(ctx: Context<SetSpread>, spread: u64) -> Result<()> {
+        return instructions::set_spread::handler(ctx, spread);
     }
 
     pub fn update_cloracle(ctx: Context<UpdateCLOracle>) -> Result<()> {
@@ -164,15 +185,3 @@ pub struct CLOracle {
     round: i128,            // 16
     clo_preferred: bool,    // 1
 }
-
-#[account]
-pub struct WOOracle {
-    authority: Pubkey,      // 32
-    updated_at: i64,        // 8
-    stale_duration: u128,   // 16
-    bound: u64,             // 8
-    price: u128,            // 16 as chainlink oracle (e.g. decimal = 8)
-    coeff: u64,             // 8 k: decimal = 18.    18.4 * 1e18
-    spread: u64,            // 8 s: decimal = 18.   spread <= 2e18   18.4 * 1e18
-}
-
