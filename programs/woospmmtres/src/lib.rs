@@ -67,6 +67,11 @@ pub mod woospmmtres {
         ctx.accounts.cloracle.decimals = decimals;
         ctx.accounts.cloracle.round = round.answer;
 
+        // Default set prefer clo to true
+        ctx.accounts.cloracle.clo_preferred = true;
+
+        // TODO: set bound and stale duration
+
         Ok(())
     }
 
@@ -88,6 +93,38 @@ pub mod woospmmtres {
 
     pub fn set_spread(ctx: Context<SetSpread>, spread: u64) -> Result<()> {
         return instructions::set_spread::handler(ctx, spread);
+    }
+
+    pub fn set_clo_preferred(ctx: Context<SetCloPreferred>, clo_preferred: bool) -> Result<()> {
+        return instructions::set_clo_preferred::handler(ctx, clo_preferred);
+    }
+
+    pub fn set_state(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
+        return instructions::set_woo_state::handler(ctx, price, coeff, spread);
+    }
+
+    pub fn re_initialize_cloracle(ctx: Context<ReInitializeCLOracle>, clo_preferred: bool) -> Result<()> {
+        let timestamp = Clock::get()?.unix_timestamp;
+
+        ctx.accounts.cloracle.chainlink_feed = ctx.accounts.feed_account.key();
+        ctx.accounts.cloracle.updated_at = timestamp;
+
+        // get decimal value from chainlink program
+        let decimals = chainlink::decimals(
+            ctx.accounts.chainlink_program.to_account_info(),
+            ctx.accounts.feed_account.to_account_info(),
+        )?;
+        // get round value from chainlink program
+        let round = chainlink::latest_round_data(
+            ctx.accounts.chainlink_program.to_account_info(),
+            ctx.accounts.feed_account.to_account_info(),
+        )?;
+
+        ctx.accounts.cloracle.decimals = decimals;
+        ctx.accounts.cloracle.round = round.answer;
+        ctx.accounts.cloracle.clo_preferred = clo_preferred;
+
+        Ok(())
     }
 
     pub fn update_cloracle(ctx: Context<UpdateCLOracle>) -> Result<()> {
@@ -117,7 +154,7 @@ pub struct CreateOracle<'info> {
     #[account(
         init,
         payer = admin,
-        space = 8 + 32 + 32 + 8 + 1 + 16 + 1,
+        space = CLOracle::LEN,
         seeds = [
             CLORACLE_SEED.as_bytes(),
             chainlink_program.key().as_ref(),
@@ -130,7 +167,7 @@ pub struct CreateOracle<'info> {
     #[account(
         init,
         payer = admin,
-        space = 8 + 32 + 8 + 16 + 8 + 16 + 8 + 8,
+        space = WOOracle::LEN,
         seeds = [
             WOORACLE_SEED.as_bytes(),
             chainlink_program.key().as_ref(),
@@ -149,15 +186,14 @@ pub struct CreateOracle<'info> {
 }
 
 #[derive(Accounts)]
-pub struct UpdateCLOracle<'info> {
+pub struct ReInitializeCLOracle<'info> {
     #[account(
         mut,
         constraint = chainlink_program.key() == *feed_account.to_account_info().owner,
-        constraint = cloracle.chainlink_feed == *feed_account.key,
+        // constraint = cloracle.chainlink_feed == *feed_account.key,
         has_one = authority,
     )]
     cloracle: Account<'info, CLOracle>,
-    #[account(mut)]
     authority: Signer<'info>,
     /// CHECK: Todo
     feed_account: UncheckedAccount<'info>,
@@ -166,22 +202,30 @@ pub struct UpdateCLOracle<'info> {
 }
 
 #[derive(Accounts)]
-pub struct UpdateWOOracle<'info> {
+pub struct UpdateCLOracle<'info> {
     #[account(
         mut,
+        constraint = chainlink_program.key() == *feed_account.to_account_info().owner,
+        constraint = cloracle.chainlink_feed == *feed_account.key,
+        has_one = authority,
+    )]
+    cloracle: Account<'info, CLOracle>,
+    authority: Signer<'info>,
+    /// CHECK: Todo
+    feed_account: UncheckedAccount<'info>,
+    /// CHECK: This is the Chainlink program library
+    pub chainlink_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct GetPrice<'info> {
+    #[account(
+        has_one = authority,
+    )]
+    cloracle: Account<'info, CLOracle>,
+    #[account(
         has_one = authority,
     )]
     wooracle: Account<'info, WOOracle>,
-    #[account(mut)]
     authority: Signer<'info>,
-}
-
-#[account]
-pub struct CLOracle {
-    authority: Pubkey,      // 32
-    chainlink_feed: Pubkey, // 32
-    updated_at: i64,        // 8
-    decimals: u8,           // 1
-    round: i128,            // 16
-    clo_preferred: bool,    // 1
 }
