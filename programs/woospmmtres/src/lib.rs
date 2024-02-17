@@ -75,7 +75,7 @@ pub mod woospmmtres {
         Ok(())
     }
 
-    pub fn set_stale_duration(ctx: Context<SetStaleDuration>, stale_duration: u128) -> Result<()> {
+    pub fn set_stale_duration(ctx: Context<SetStaleDuration>, stale_duration: i64) -> Result<()> {
         return instructions::set_stale_duration::handler(ctx, stale_duration);
     }
 
@@ -84,15 +84,15 @@ pub mod woospmmtres {
     }
 
     pub fn set_price(ctx: Context<SetPrice>, price: u128) -> Result<()> {
-        return instructions::set_price::handler(ctx, price);
+        return instructions::set_price::handler(ctx, price, true);
     }
 
     pub fn set_coeff(ctx: Context<SetCoeff>, coeff: u64) -> Result<()> {
-        return instructions::set_coeff::handler(ctx, coeff);
+        return instructions::set_coeff::handler(ctx, coeff, true);
     }
 
     pub fn set_spread(ctx: Context<SetSpread>, spread: u64) -> Result<()> {
-        return instructions::set_spread::handler(ctx, spread);
+        return instructions::set_spread::handler(ctx, spread, true);
     }
 
     pub fn set_clo_preferred(ctx: Context<SetCloPreferred>, clo_preferred: bool) -> Result<()> {
@@ -103,49 +103,51 @@ pub mod woospmmtres {
         return instructions::set_woo_state::handler(ctx, price, coeff, spread);
     }
 
-    pub fn re_initialize_cloracle(ctx: Context<ReInitializeCLOracle>, clo_preferred: bool) -> Result<()> {
-        let timestamp = Clock::get()?.unix_timestamp;
-
-        ctx.accounts.cloracle.chainlink_feed = ctx.accounts.feed_account.key();
-        ctx.accounts.cloracle.updated_at = timestamp;
-
-        // get decimal value from chainlink program
-        let decimals = chainlink::decimals(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.feed_account.to_account_info(),
-        )?;
-        // get round value from chainlink program
-        let round = chainlink::latest_round_data(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.feed_account.to_account_info(),
-        )?;
-
-        ctx.accounts.cloracle.decimals = decimals;
-        ctx.accounts.cloracle.round = round.answer;
-        ctx.accounts.cloracle.clo_preferred = clo_preferred;
-
-        Ok(())
-    }
+    // Cannot support change feed account key and program key after create
+    // Due to wooracle and cloracle's seed need to change
+    // If need to change feed account, just create another pair of wooralce and cloracle
+    // pub fn re_initialize_cloracle(ctx: Context<ReInitializeCLOracle>, clo_preferred: bool) -> Result<()> {
+    //     return instructions::re_initialize_cloracle::handler(ctx, clo_preferred);
+    // }
 
     pub fn update_cloracle(ctx: Context<UpdateCLOracle>) -> Result<()> {
-        let timestamp = Clock::get()?.unix_timestamp;
+        return instructions::update_cloracle::handler(ctx);
+    }
 
-        // get decimal value from chainlink program
-        let decimals = chainlink::decimals(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.feed_account.to_account_info(),
-        )?;
-        // get round value from chainlink program
-        let round = chainlink::latest_round_data(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.feed_account.to_account_info(),
-        )?;
+    pub fn get_price(ctx: Context<GetPrice>) -> Result<(GetPriceResult)> {
+        let now = Clock::get()?.unix_timestamp;
 
-        ctx.accounts.cloracle.decimals = decimals;
-        ctx.accounts.cloracle.round = round.answer;
-        ctx.accounts.cloracle.updated_at = timestamp;
+        let cloracle = &ctx.accounts.cloracle;
+        let wooracle = &ctx.accounts.wooracle;
 
-        Ok(())
+        let wo_price = wooracle.price;
+        let wo_timestamp = wooracle.updated_at;
+        let bound = wooracle.bound as u128;
+
+        let clo_price = cloracle.round as u128;
+        let wo_feasible = clo_price != 0 && now <= (wo_timestamp + wooracle.stale_duration);
+        let wo_price_in_bound = clo_price == 0 ||
+        ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price && wo_price <= (clo_price * (TENPOW18U128 + bound)) / TENPOW18U128);
+        // TODO: check upper and low bound
+
+        let mut price_out = 0;
+        let mut feasible_out = false;
+        if wo_feasible {
+            price_out = wo_price;
+            feasible_out = wo_price_in_bound;
+        } else {
+            if cloracle.clo_preferred {
+                price_out = clo_price;
+            } else {
+                price_out = 0;
+            }
+            feasible_out = price_out != 0;
+        }
+
+        Ok(GetPriceResult {
+            price_out: price_out, 
+            feasible_out: feasible_out
+        })
     }
 }
 
@@ -170,7 +172,6 @@ pub struct CreateOracle<'info> {
         space = WOOracle::LEN,
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            chainlink_program.key().as_ref(),
             feed_account.key().as_ref(),
             ],
         bump,
@@ -186,38 +187,6 @@ pub struct CreateOracle<'info> {
 }
 
 #[derive(Accounts)]
-pub struct ReInitializeCLOracle<'info> {
-    #[account(
-        mut,
-        constraint = chainlink_program.key() == *feed_account.to_account_info().owner,
-        // constraint = cloracle.chainlink_feed == *feed_account.key,
-        has_one = authority,
-    )]
-    cloracle: Account<'info, CLOracle>,
-    authority: Signer<'info>,
-    /// CHECK: Todo
-    feed_account: UncheckedAccount<'info>,
-    /// CHECK: This is the Chainlink program library
-    pub chainlink_program: AccountInfo<'info>,
-}
-
-#[derive(Accounts)]
-pub struct UpdateCLOracle<'info> {
-    #[account(
-        mut,
-        constraint = chainlink_program.key() == *feed_account.to_account_info().owner,
-        constraint = cloracle.chainlink_feed == *feed_account.key,
-        has_one = authority,
-    )]
-    cloracle: Account<'info, CLOracle>,
-    authority: Signer<'info>,
-    /// CHECK: Todo
-    feed_account: UncheckedAccount<'info>,
-    /// CHECK: This is the Chainlink program library
-    pub chainlink_program: AccountInfo<'info>,
-}
-
-#[derive(Accounts)]
 pub struct GetPrice<'info> {
     #[account(
         has_one = authority,
@@ -225,7 +194,21 @@ pub struct GetPrice<'info> {
     cloracle: Account<'info, CLOracle>,
     #[account(
         has_one = authority,
+        seeds = [
+            WOORACLE_SEED.as_bytes(),
+            cloracle.chainlink_feed.as_ref()
+        ],
+        bump
     )]
     wooracle: Account<'info, WOOracle>,
     authority: Signer<'info>,
+}
+
+// #[zero_copy(unsafe)]
+// #[repr(packed)]
+//#[derive(Default, Debug, BorshSerialize, BorshDeserialize)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
+pub struct GetPriceResult {
+    pub price_out: u128,
+    pub feasible_out: bool
 }

@@ -10,6 +10,6 @@ pub struct SetStaleDuration<'info> {
     pub authority: Signer<'info>,
 }
 
-pub fn handler(ctx: Context<SetStaleDuration>, stale_duration: u128) -> Result<()> {
+pub fn handler(ctx: Context<SetStaleDuration>, stale_duration: i64) -> Result<()> {
     Ok(ctx.accounts.wooracle.update_stale_duration(stale_duration)?)
 }

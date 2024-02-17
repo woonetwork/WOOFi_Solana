@@ -14,6 +14,7 @@ pub fn handler(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) 
     ctx.accounts.wooracle.update_price(price)?;
     ctx.accounts.wooracle.update_coeff(coeff)?;
     ctx.accounts.wooracle.update_spread(spread)?;
-    
+    ctx.accounts.wooracle.update_now()?;
+
     Ok(())
 }

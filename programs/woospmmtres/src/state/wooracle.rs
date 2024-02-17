@@ -36,16 +36,16 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct WOOracle {
     pub authority: Pubkey,  // 32
-    updated_at: i64,        // 8
-    stale_duration: u128,   // 16
-    bound: u64,             // 8
-    price: u128,            // 16 as chainlink oracle (e.g. decimal = 8)
-    coeff: u64,             // 8 k: decimal = 18.    18.4 * 1e18
-    spread: u64,            // 8 s: decimal = 18.   spread <= 2e18   18.4 * 1e18
+    pub updated_at: i64,        // 8
+    pub stale_duration: i64,    // 8
+    pub bound: u64,             // 8
+    pub price: u128,            // 16 as chainlink oracle (e.g. decimal = 8)
+    pub coeff: u64,             // 8 k: decimal = 18.    18.4 * 1e18
+    pub spread: u64,            // 8 s: decimal = 18.   spread <= 2e18   18.4 * 1e18
 }
 
 impl WOOracle {
-    pub const LEN : usize = 8 + (32 + 8 + 16 + 8 + 16 + 8 + 8);
+    pub const LEN : usize = 8 + (32 + 8 + 8 + 8 + 16 + 8 + 8);
 
     pub fn update_authority(&mut self, authority: Pubkey) -> Result<()> {
         self.authority = authority;
@@ -53,7 +53,14 @@ impl WOOracle {
         Ok(())
     }
 
-    pub fn update_stale_duration(&mut self, stale_duration: u128) -> Result<()> {
+    pub fn update_now(&mut self) -> Result<()> {
+        let timestamp = Clock::get()?.unix_timestamp;
+        self.updated_at = timestamp;
+
+        Ok(())
+    }
+
+    pub fn update_stale_duration(&mut self, stale_duration: i64) -> Result<()> {
         self.stale_duration = stale_duration;
 
         Ok(())
