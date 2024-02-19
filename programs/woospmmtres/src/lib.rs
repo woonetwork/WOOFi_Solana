@@ -70,7 +70,9 @@ pub mod woospmmtres {
         // Default set prefer clo to true
         ctx.accounts.cloracle.clo_preferred = true;
 
-        // TODO: set bound and stale duration
+        ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
+        // set default bound to 1e16 means 1%
+        ctx.accounts.wooracle.bound = DEFAULT_BOUND;
 
         Ok(())
     }
@@ -114,7 +116,7 @@ pub mod woospmmtres {
         return instructions::update_cloracle::handler(ctx);
     }
 
-    pub fn get_price(ctx: Context<GetPrice>) -> Result<(GetPriceResult)> {
+    pub fn get_price(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
         let now = Clock::get()?.unix_timestamp;
 
         let cloracle = &ctx.accounts.cloracle;
@@ -130,8 +132,8 @@ pub mod woospmmtres {
         ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price && wo_price <= (clo_price * (TENPOW18U128 + bound)) / TENPOW18U128);
         // TODO: check upper and low bound
 
-        let mut price_out = 0;
-        let mut feasible_out = false;
+        let price_out : u128;
+        let feasible_out : bool;
         if wo_feasible {
             price_out = wo_price;
             feasible_out = wo_price_in_bound;
@@ -159,8 +161,8 @@ pub struct CreateOracle<'info> {
         space = CLOracle::LEN,
         seeds = [
             CLORACLE_SEED.as_bytes(),
-            chainlink_program.key().as_ref(),
             feed_account.key().as_ref(),
+            chainlink_program.key().as_ref(),
             ],
         bump,
         constraint = chainlink_program.key() == *feed_account.to_account_info().owner

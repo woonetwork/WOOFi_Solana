@@ -6,7 +6,7 @@ This repository contains the Rust smart contract as well as the Typescript SDK (
 ## Requirements
 
 - Anchor 0.29.0
-- Solana 1.17.18
+- Solana 1.17.22
 - Rust 1.72.0
 
 ## Setup
