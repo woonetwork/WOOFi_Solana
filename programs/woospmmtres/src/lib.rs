@@ -39,7 +39,7 @@ use chainlink_solana as chainlink;
 
 use crate::{constants::*, state::*, instructions::*, };
 
-declare_id!("45LgxBpxsu7mRdn3GPLrUZM93LxvP3SpCZ1TufDdNr2u");
+declare_id!("ABCJhqWV65CvuUdMnY4VBnVJ18HybezrpXpBBumcZthb");
 
 #[program]
 pub mod woospmmtres {
@@ -70,6 +70,7 @@ pub mod woospmmtres {
         // Default set prefer clo to true
         ctx.accounts.cloracle.clo_preferred = true;
 
+        ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
         ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
         // set default bound to 1e16 means 1%
         ctx.accounts.wooracle.bound = DEFAULT_BOUND;
