@@ -11,5 +11,6 @@ pub struct SetBound<'info> {
 }
 
 pub fn handler(ctx: Context<SetBound>, bound: u64) -> Result<()> {
+    // TODO: check bound limit
     Ok(ctx.accounts.wooracle.update_bound(bound)?)
 }

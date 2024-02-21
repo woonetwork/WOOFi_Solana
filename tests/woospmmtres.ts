@@ -1,5 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
+import * as borsh from "borsh";
+import { BN, Program } from "@coral-xyz/anchor";
+import { ConfirmOptions } from "@solana/web3.js";
 import { Woospmmtres } from "../target/types/woospmmtres";
 import { assert } from "chai";
 import Decimal from "decimal.js";
@@ -12,17 +14,51 @@ describe("woospmmtres", () => {
 
   const program = anchor.workspace.Woospmmtres as Program<Woospmmtres>;
 
-  // it("Is initialized!", async () => {
-  //   // Add your test here.
-  //   const tx = await program.methods.initialize().rpc();
-  //   console.log("Your transaction signature", tx);
-  // });
-
   let cloracleAccount;
   let wooracleAccount;
+  let cloracle_price: BN;
+  let cloracle_decimal: Number;
+
   const feedAccount = new anchor.web3.PublicKey("HgTtcbcmp5BeThax5AU8vg4VwK79qAvAKKFMs8txMLW6");
   const chainLinkProgramAccount = new anchor.web3.PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny")
+  const tenpow18 = new BN(10).pow(new BN(18));
+  const tenpow16 = new BN(10).pow(new BN(16));
 
+  const getReturnLog = (confirmedTransaction) => {
+    const prefix = "Program return: ";
+    let log = confirmedTransaction.meta.logMessages.find((log) =>
+      log.startsWith(prefix)
+    );
+    log = log.slice(prefix.length);
+    const [key, data] = log.split(" ", 2);
+    const buffer = Buffer.from(data, "base64");
+    return [key, data, buffer];
+  };
+
+  const getPriceResult = async () => {
+    const confirmOptions: ConfirmOptions = { commitment: "confirmed" };
+
+    const tx = await program
+      .methods
+      .getPrice()
+      .accounts({
+        cloracle: cloracleAccount,
+        wooracle: wooracleAccount,
+        authority: provider.wallet.publicKey,
+      })
+      .rpc(confirmOptions);
+
+    let t = await provider.connection.getTransaction(tx, {
+      commitment: "confirmed",
+    })
+
+    const [key, data, buffer] = getReturnLog(t);
+    const reader = new borsh.BinaryReader(buffer);
+    const price = reader.readU128().toNumber();
+    const feasible = reader.readU8();
+
+    return [price, feasible];
+  };
 
   describe("#create_oracle()", async () => {
     it("creates an oracle account", async () => {
@@ -77,6 +113,9 @@ describe("woospmmtres", () => {
         const price = new Decimal(result.round.toNumber()).mul(new Decimal(10).pow(-result.decimals));
         const updatedAt = moment.unix(result.updatedAt.toNumber());
 
+        cloracle_price = result.round;
+        cloracle_decimal = result.decimals;
+
         console.log(
           `price - ${price}`
         );
@@ -92,6 +131,212 @@ describe("woospmmtres", () => {
       });
     });
 
+    describe("#set_woo_state()", async () => {
+      it("set woo oracle state", async () => {
+      
+        const setPrice = new BN(5000000000);
+        const setCoeff = new BN(100);
+        const setSpread = new BN(200);
+
+        await program
+          .methods
+          .setState(setPrice, setCoeff, setSpread)
+          .accounts({
+            wooracle: wooracleAccount,
+            authority: provider.wallet.publicKey,
+          })
+          .rpc();
+    
+        const result = await program.account.woOracle.fetch(wooracleAccount);
+
+        console.log(`price - ${result.price}`);
+        console.log(`coeff - ${result.coeff}`);
+        console.log(`spread - ${result.spread}`);
+
+        assert.ok(
+          result.price.eq(setPrice), "wooracle price should be the same with setted"
+        );
+        assert.ok(
+          result.coeff.eq(setCoeff), "wooracle coeff should be the same with setted"
+        );
+        assert.ok(
+          result.spread.eq(setSpread), "wooracle spread should be the same with setted"
+        );
+      });
+    });
+
+    describe("#get_price()", async () => {
+      it("get oracle price result", async () => {
+      
+        const setPrice = new BN(5000000000);
+        const setCoeff = new BN(100);
+        const setSpread = new BN(200);
+
+        const confirmOptions: ConfirmOptions = { commitment: "confirmed" };
+
+        const tx = await program
+          .methods
+          .getPrice()
+          .accounts({
+            cloracle: cloracleAccount,
+            wooracle: wooracleAccount,
+            authority: provider.wallet.publicKey,
+          })
+          .rpc(confirmOptions);
+
+        let t = await provider.connection.getTransaction(tx, {
+          commitment: "confirmed",
+        })
+
+        const [key, data, buffer] = getReturnLog(t);
+        assert.equal(key, program.programId);
+
+        console.log(`key: ${key}`);
+        console.log(`data: ${data}`);
+        console.log(`buffer: ${buffer}`);
+
+        // Check for matching log on receive side
+        let receiveLog = t.meta.logMessages.find(
+          (log) => log == `Program return: ${key} ${data}`
+        );
+
+        console.log(`t.meta.logMessages: ${t.meta.logMessages}`);
+        console.log(`receiveLog: ${receiveLog}`);
+        assert(receiveLog !== undefined);
+    
+        const reader = new borsh.BinaryReader(buffer);
+        const price = reader.readU128().toNumber();
+        const feasible = reader.readU8();
+
+        console.log(`price - ${price}`);
+        console.log(`feasible - ${feasible}`);
+
+        assert.equal(price, setPrice.toNumber());
+        assert.equal(feasible, 0);
+      });
+    });
+
+    describe("#set_price_upper_bound_get_result()", async () => {
+      it("set oracle price to upper bound and get oracle result", async () => {
+      
+        // upper cloracle 1%
+        const low_bound = cloracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
+        const upper_bound = cloracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+
+        console.log(`low_bound: ${low_bound}`);
+        console.log(`upper_bound: ${upper_bound}`);
+
+        const setPrice = upper_bound;
+
+        await program
+          .methods
+          .setPrice(setPrice)
+          .accounts({
+            wooracle: wooracleAccount,
+            authority: provider.wallet.publicKey,
+          })
+          .rpc();
+
+        const [price, feasible] = await getPriceResult();  
+        console.log(`price - ${price}`);
+        console.log(`feasible - ${feasible}`);
+
+        assert.equal(price, setPrice.toNumber());
+        assert.equal(feasible, 1);
+      });
+    });
+
+    describe("#set_price_beyond_upper_bound_get_result()", async () => {
+      it("set oracle price to beyond upper bound and get oracle result", async () => {
+      
+        // upper cloracle 1%
+        const low_bound = cloracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
+        const upper_bound = cloracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+
+        console.log(`low_bound: ${low_bound}`);
+        console.log(`upper_bound: ${upper_bound}`);
+
+        const setPrice = upper_bound.add(new BN(1));
+
+        await program
+          .methods
+          .setPrice(setPrice)
+          .accounts({
+            wooracle: wooracleAccount,
+            authority: provider.wallet.publicKey,
+          })
+          .rpc();
+
+        const [price, feasible] = await getPriceResult();  
+        console.log(`price - ${price}`);
+        console.log(`feasible - ${feasible}`);
+
+        assert.equal(price, setPrice.toNumber());
+        assert.equal(feasible, 0);
+      });
+    });
+
+    describe("#set_price_low_bound_get_result()", async () => {
+      it("set oracle price to low bound and get oracle result", async () => {
+      
+        // upper cloracle 1%
+        const low_bound = cloracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
+        const upper_bound = cloracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+
+        console.log(`low_bound: ${low_bound}`);
+        console.log(`upper_bound: ${upper_bound}`);
+
+        const setPrice = low_bound;
+
+        await program
+          .methods
+          .setPrice(setPrice)
+          .accounts({
+            wooracle: wooracleAccount,
+            authority: provider.wallet.publicKey,
+          })
+          .rpc();
+
+        const [price, feasible] = await getPriceResult();  
+
+        console.log(`price - ${price}`);
+        console.log(`feasible - ${feasible}`);
+
+        assert.equal(price, setPrice.toNumber());
+        assert.equal(feasible, 1);
+      });
+    });
+
+    describe("#set_price_beyond_low_bound_get_result()", async () => {
+      it("set oracle price to beyond low bound and get oracle result", async () => {
+      
+        // upper cloracle 1%
+        const low_bound = cloracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
+        const upper_bound = cloracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+
+        console.log(`low_bound: ${low_bound}`);
+        console.log(`upper_bound: ${upper_bound}`);
+
+        const setPrice = low_bound.sub(new BN(1));
+
+        await program
+          .methods
+          .setPrice(setPrice)
+          .accounts({
+            wooracle: wooracleAccount,
+            authority: provider.wallet.publicKey,
+          })
+          .rpc();
+
+        const [price, feasible] = await getPriceResult();  
+
+        console.log(`price - ${price}`);
+        console.log(`feasible - ${feasible}`);
+
+        assert.equal(price, setPrice.toNumber());
+        assert.equal(feasible, 0);
+      });
+    });
     
   });
 });
