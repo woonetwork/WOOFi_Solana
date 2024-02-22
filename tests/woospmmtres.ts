@@ -36,7 +36,7 @@ describe("woospmmtres", () => {
   };
 
   const getPriceResult = async () => {
-    const confirmOptions: ConfirmOptions = { commitment: "confirmed" };
+    const confirmOptions: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
 
     const tx = await program
       .methods
@@ -172,7 +172,7 @@ describe("woospmmtres", () => {
         const setCoeff = new BN(100);
         const setSpread = new BN(200);
 
-        const confirmOptions: ConfirmOptions = { commitment: "confirmed" };
+        const confirmOptions: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
 
         const tx = await program
           .methods
