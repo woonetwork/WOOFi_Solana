@@ -6,6 +6,7 @@ import { Woospmmtres } from "../target/types/woospmmtres";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
+import * as global from "./global";
 
 describe("woospmmtres", () => {
   // Configure the client to use the local cluster.
@@ -20,7 +21,8 @@ describe("woospmmtres", () => {
   let cloracle_decimal: Number;
 
   const feedAccount = new anchor.web3.PublicKey("HgTtcbcmp5BeThax5AU8vg4VwK79qAvAKKFMs8txMLW6");
-  const chainLinkProgramAccount = new anchor.web3.PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny")
+  const chainLinkProgramAccount = new anchor.web3.PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny");
+  const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3 };
   const tenpow18 = new BN(10).pow(new BN(18));
   const tenpow16 = new BN(10).pow(new BN(16));
 
@@ -75,20 +77,33 @@ describe("woospmmtres", () => {
 
       cloracleAccount = cloracle;
       wooracleAccount = wooracle;
-  
-      // await program
-      //   .methods
-      //   .createOracle()
-      //   .accounts({
-      //     cloracle,
-      //     wooracle,
-      //     admin: provider.wallet.publicKey,
-      //     feedAccount: feedAccount,
-      //     chainlinkProgram: chainLinkProgramAccount
-      //   })
-      //   .rpc();
-  
-      const oracleItemData = await program.account.woOracle.fetch(wooracleAccount);
+
+      // console.log("process.env:");
+      // console.log(process.env);
+
+      let oracleItemData = null;
+      try {
+        oracleItemData = await program.account.woOracle.fetch(wooracleAccount);
+      } catch (e) {
+        const error = e as Error;
+        if (error.message.indexOf("Account does not exist") >= 0) {
+          await program
+            .methods
+            .createOracle()
+            .accounts({
+              cloracle,
+              wooracle,
+              admin: provider.wallet.publicKey,
+              feedAccount: feedAccount,
+              chainlinkProgram: chainLinkProgramAccount
+            })
+            .rpc(confirmOptionsRetryTres);   
+        }
+      }
+
+      if (oracleItemData == null) {
+        oracleItemData = await program.account.woOracle.fetch(wooracleAccount);
+      }
 
       assert.ok(
         oracleItemData.authority.equals(provider.wallet.publicKey)
@@ -97,6 +112,13 @@ describe("woospmmtres", () => {
 
     describe("#update_cloracle()", async () => {
       it("updates chain link oracle account", async () => {
+
+        if (global.getCluster() == 'localnet') {
+          cloracle_price = new BN(2211263986);
+          cloracle_decimal = 8;
+
+          return;
+        }
       
         await program
           .methods
@@ -107,7 +129,7 @@ describe("woospmmtres", () => {
             feedAccount: feedAccount,
             chainlinkProgram: chainLinkProgramAccount
           })
-          .rpc();
+          .rpc(confirmOptionsRetryTres);
     
         const result = await program.account.clOracle.fetch(cloracleAccount);
         const price = new Decimal(result.round.toNumber()).mul(new Decimal(10).pow(-result.decimals));
@@ -145,7 +167,7 @@ describe("woospmmtres", () => {
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
           })
-          .rpc();
+          .rpc(confirmOptionsRetryTres);
     
         const result = await program.account.woOracle.fetch(wooracleAccount);
 
@@ -235,7 +257,7 @@ describe("woospmmtres", () => {
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
           })
-          .rpc();
+          .rpc(confirmOptionsRetryTres);
 
         const [price, feasible] = await getPriceResult();  
         console.log(`price - ${price}`);
@@ -265,7 +287,7 @@ describe("woospmmtres", () => {
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
           })
-          .rpc();
+          .rpc(confirmOptionsRetryTres);
 
         const [price, feasible] = await getPriceResult();  
         console.log(`price - ${price}`);
@@ -295,7 +317,7 @@ describe("woospmmtres", () => {
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
           })
-          .rpc();
+          .rpc(confirmOptionsRetryTres);
 
         const [price, feasible] = await getPriceResult();  
 
@@ -326,7 +348,7 @@ describe("woospmmtres", () => {
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
           })
-          .rpc();
+          .rpc(confirmOptionsRetryTres);
 
         const [price, feasible] = await getPriceResult();  
 

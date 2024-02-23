@@ -1,0 +1,29 @@
+import 'dotenv/config';
+
+// Global Program Parameters
+export type Cluster = 'localnet' | 'devnet' | 'mainnet';
+
+export function getCluster(_cluster?: string): Cluster {
+  let cluster = _cluster ? _cluster : process.env.ANCHOR_PROVIDER_URL;
+  let result: Cluster = 'localnet' as Cluster;
+  if (cluster == null) {
+    cluster = 'localnet';
+  } else if (cluster.toLowerCase().indexOf("devnet")) {
+      cluster = 'devnet'
+  } else {
+    cluster = 'localnet'
+  }
+  return cluster as Cluster;
+}
+
+export function endpointFromCluster(cluster: Cluster | undefined): string {
+  switch (cluster) {
+    case 'mainnet':
+      return 'https://solana-api.projectserum.com';
+    case 'devnet':
+      return 'https://api.devnet.solana.com';
+    case 'localnet':
+      return 'http://127.0.0.1:8899';
+  }
+  return 'err';
+}
