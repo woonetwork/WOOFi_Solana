@@ -17,4 +17,6 @@ default = []
 
 [dependencies]
 anchor-lang = "0.29.0"
+anchor-spl = "0.29.0"
+spl-token = { version = "4.0.0", features = ["no-entrypoint"]}
 chainlink_solana = "1.0.0"

@@ -33,6 +33,7 @@
 mod state;
 mod instructions;
 mod constants;
+mod errors;
 
 use anchor_lang::prelude::*;
 use chainlink_solana as chainlink;
@@ -152,6 +153,12 @@ pub mod woospmmtres {
             feasible_out: feasible_out
         })
     }
+
+    pub fn create_pool(ctx: Context<CreatePool>, fee_authority: Pubkey) -> Result<()> {
+        return instructions::create_pool::handler(ctx, fee_authority);
+    }
+    
+
 }
 
 #[derive(Accounts)]
