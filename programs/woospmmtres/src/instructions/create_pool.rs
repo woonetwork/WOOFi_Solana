@@ -78,7 +78,6 @@ pub fn handler(
         cloracle,
         wooracle,
         fee_authority,
-        0,
         token_mint,
         token_vault,
     )?)

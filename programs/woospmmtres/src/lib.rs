@@ -79,24 +79,24 @@ pub mod woospmmtres {
         Ok(())
     }
 
-    pub fn set_stale_duration(ctx: Context<SetStaleDuration>, stale_duration: i64) -> Result<()> {
-        return instructions::set_stale_duration::handler(ctx, stale_duration);
+    pub fn set_stale_duration(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {
+        return instructions::set_woo_state::set_stale_duration_handler(ctx, stale_duration);
     }
 
-    pub fn set_bound(ctx: Context<SetBound>, bound: u64) -> Result<()> {
-        return instructions::set_bound::handler(ctx, bound);
+    pub fn set_bound(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
+        return instructions::set_woo_state::set_bound_handler(ctx, bound);
     }
 
-    pub fn set_price(ctx: Context<SetPrice>, price: u128) -> Result<()> {
-        return instructions::set_price::handler(ctx, price, true);
+    pub fn set_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
+        return instructions::set_woo_state::set_price_handler(ctx, price, true);
     }
 
-    pub fn set_coeff(ctx: Context<SetCoeff>, coeff: u64) -> Result<()> {
-        return instructions::set_coeff::handler(ctx, coeff, true);
+    pub fn set_coeff(ctx: Context<SetWooState>, coeff: u64) -> Result<()> {
+        return instructions::set_woo_state::set_coeff_handler(ctx, coeff, true);
     }
 
-    pub fn set_spread(ctx: Context<SetSpread>, spread: u64) -> Result<()> {
-        return instructions::set_spread::handler(ctx, spread, true);
+    pub fn set_spread(ctx: Context<SetWooState>, spread: u64) -> Result<()> {
+        return instructions::set_woo_state::set_spread_handler(ctx, spread, true);
     }
 
     pub fn set_clo_preferred(ctx: Context<SetCloPreferred>, clo_preferred: bool) -> Result<()> {
@@ -104,7 +104,7 @@ pub mod woospmmtres {
     }
 
     pub fn set_state(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
-        return instructions::set_woo_state::handler(ctx, price, coeff, spread);
+        return instructions::set_woo_state::set_state_handler(ctx, price, coeff, spread);
     }
 
     // Cannot support change feed account key and program key after create

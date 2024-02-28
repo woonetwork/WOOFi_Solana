@@ -10,7 +10,7 @@ pub struct SetWooState<'info> {
     pub authority: Signer<'info>,
 }
 
-pub fn handler(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
+pub fn set_state_handler(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
     ctx.accounts.wooracle.update_price(price)?;
     ctx.accounts.wooracle.update_coeff(coeff)?;
     ctx.accounts.wooracle.update_spread(spread)?;
@@ -18,3 +18,38 @@ pub fn handler(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) 
 
     Ok(())
 }
+
+pub fn set_stale_duration_handler(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {
+    Ok(ctx.accounts.wooracle.update_stale_duration(stale_duration)?)
+}
+
+
+pub fn set_bound_handler(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
+    // TODO: check bound limit
+    Ok(ctx.accounts.wooracle.update_bound(bound)?)
+}
+
+pub fn set_coeff_handler(ctx: Context<SetWooState>, coeff: u64, update_time: bool) -> Result<()> {
+    if update_time {
+        ctx.accounts.wooracle.update_now()?
+    }
+
+    Ok(ctx.accounts.wooracle.update_coeff(coeff)?)
+}
+
+pub fn set_price_handler(ctx: Context<SetWooState>, price: u128, update_time: bool) -> Result<()> {
+    if update_time {
+        ctx.accounts.wooracle.update_now()?
+    }
+    
+    Ok(ctx.accounts.wooracle.update_price(price)?)
+}
+
+pub fn set_spread_handler(ctx: Context<SetWooState>, spread: u64, update_time: bool) -> Result<()> {
+    if update_time {
+        ctx.accounts.wooracle.update_now()?
+    }
+
+    Ok(ctx.accounts.wooracle.update_spread(spread)?)
+}
+

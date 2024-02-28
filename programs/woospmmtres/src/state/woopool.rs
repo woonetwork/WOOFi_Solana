@@ -34,7 +34,7 @@
 use anchor_lang::prelude::*;
 use crate::{
     constants::*,
-    errors::ErrorCode, wooracle,
+    errors::ErrorCode,
 };
 
 #[account]
