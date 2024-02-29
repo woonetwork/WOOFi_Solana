@@ -162,7 +162,7 @@ describe("woospmmtres", () => {
 
         await program
           .methods
-          .setState(setPrice, setCoeff, setSpread)
+          .setWooState(setPrice, setCoeff, setSpread)
           .accounts({
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
@@ -252,7 +252,7 @@ describe("woospmmtres", () => {
 
         await program
           .methods
-          .setPrice(setPrice)
+          .setWooPrice(setPrice)
           .accounts({
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
@@ -282,7 +282,7 @@ describe("woospmmtres", () => {
 
         await program
           .methods
-          .setPrice(setPrice)
+          .setWooPrice(setPrice)
           .accounts({
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
@@ -312,7 +312,7 @@ describe("woospmmtres", () => {
 
         await program
           .methods
-          .setPrice(setPrice)
+          .setWooPrice(setPrice)
           .accounts({
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,
@@ -343,7 +343,7 @@ describe("woospmmtres", () => {
 
         await program
           .methods
-          .setPrice(setPrice)
+          .setWooPrice(setPrice)
           .accounts({
             wooracle: wooracleAccount,
             authority: provider.wallet.publicKey,

@@ -40,7 +40,7 @@ use chainlink_solana as chainlink;
 
 use crate::{constants::*, state::*, instructions::*, };
 
-declare_id!("ABCJhqWV65CvuUdMnY4VBnVJ18HybezrpXpBBumcZthb");
+declare_id!("DijYgrdt8WPUpxQz6jyhdvhE6jRKRhW62sp64me4rBVA");
 
 #[program]
 pub mod woospmmtres {
@@ -83,19 +83,19 @@ pub mod woospmmtres {
         return instructions::set_woo_state::set_stale_duration_handler(ctx, stale_duration);
     }
 
-    pub fn set_bound(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
+    pub fn set_woo_bound(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
         return instructions::set_woo_state::set_bound_handler(ctx, bound);
     }
 
-    pub fn set_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
+    pub fn set_woo_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
         return instructions::set_woo_state::set_price_handler(ctx, price, true);
     }
 
-    pub fn set_coeff(ctx: Context<SetWooState>, coeff: u64) -> Result<()> {
+    pub fn set_woo_coeff(ctx: Context<SetWooState>, coeff: u64) -> Result<()> {
         return instructions::set_woo_state::set_coeff_handler(ctx, coeff, true);
     }
 
-    pub fn set_spread(ctx: Context<SetWooState>, spread: u64) -> Result<()> {
+    pub fn set_woo_spread(ctx: Context<SetWooState>, spread: u64) -> Result<()> {
         return instructions::set_woo_state::set_spread_handler(ctx, spread, true);
     }
 
@@ -103,7 +103,7 @@ pub mod woospmmtres {
         return instructions::set_clo_preferred::handler(ctx, clo_preferred);
     }
 
-    pub fn set_state(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
+    pub fn set_woo_state(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
         return instructions::set_woo_state::set_state_handler(ctx, price, coeff, spread);
     }
 
@@ -119,45 +119,12 @@ pub mod woospmmtres {
     }
 
     pub fn get_price(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
-        let now = Clock::get()?.unix_timestamp;
-
-        let cloracle = &ctx.accounts.cloracle;
-        let wooracle = &ctx.accounts.wooracle;
-
-        let wo_price = wooracle.price;
-        let wo_timestamp = wooracle.updated_at;
-        let bound = wooracle.bound as u128;
-
-        let clo_price = cloracle.round as u128;
-        let wo_feasible = clo_price != 0 && now <= (wo_timestamp + wooracle.stale_duration);
-        let wo_price_in_bound = clo_price == 0 ||
-        ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price && wo_price <= (clo_price * (TENPOW18U128 + bound)) / TENPOW18U128);
-        // TODO: check upper and low bound
-
-        let price_out : u128;
-        let feasible_out : bool;
-        if wo_feasible {
-            price_out = wo_price;
-            feasible_out = wo_price_in_bound;
-        } else {
-            if cloracle.clo_preferred {
-                price_out = clo_price;
-            } else {
-                price_out = 0;
-            }
-            feasible_out = price_out != 0;
-        }
-
-        Ok(GetPriceResult {
-            price_out: price_out, 
-            feasible_out: feasible_out
-        })
+        return instructions::get_price::handler(ctx);        
     }
 
     pub fn create_pool(ctx: Context<CreatePool>, fee_authority: Pubkey) -> Result<()> {
         return instructions::create_pool::handler(ctx, fee_authority);
     }
-    
 
 }
 
@@ -194,31 +161,4 @@ pub struct CreateOracle<'info> {
     feed_account: AccountInfo<'info>,
     /// CHECK: This is the Chainlink program library
     pub chainlink_program: AccountInfo<'info>,
-}
-
-#[derive(Accounts)]
-pub struct GetPrice<'info> {
-    #[account(
-        has_one = authority,
-    )]
-    cloracle: Account<'info, CLOracle>,
-    #[account(
-        has_one = authority,
-        seeds = [
-            WOORACLE_SEED.as_bytes(),
-            cloracle.chainlink_feed.as_ref()
-        ],
-        bump
-    )]
-    wooracle: Account<'info, WOOracle>,
-    authority: Signer<'info>,
-}
-
-// #[zero_copy(unsafe)]
-// #[repr(packed)]
-//#[derive(Default, Debug, BorshSerialize, BorshDeserialize)]
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
-pub struct GetPriceResult {
-    pub price_out: u128,
-    pub feasible_out: bool
 }
