@@ -4,7 +4,7 @@ use crate::{
     constants::*,
     state::{
         cloracle::*, wooracle::*
-    }, wooracle
+    }
 };
 
 #[derive(Accounts)]

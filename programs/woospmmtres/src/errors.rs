@@ -22,6 +22,10 @@ pub enum ErrorCode {
     MulDivInvalidInput, //0x1790
     #[msg("Multiplication overflow")]
     MultiplicationOverflow, //0x1791
+
+    #[msg("Woo oracle is not feasible")]
+    WooOracleNotFeasible, //0x1792
+
 }
 
 impl From<TryFromIntError> for ErrorCode {
