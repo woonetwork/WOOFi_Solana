@@ -34,6 +34,7 @@ mod state;
 mod instructions;
 mod constants;
 mod errors;
+mod util;
 
 use anchor_lang::prelude::*;
 use chainlink_solana as chainlink;

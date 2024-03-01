@@ -7,8 +7,8 @@ use crate::{
     errors::ErrorCode,
     state::*,
     instructions::*,
+    util::*
 };
-
 
 #[derive(Accounts)]
 pub struct TryQuery<'info> {
@@ -66,10 +66,15 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     let spread = max(wooracle_from.spread, wooracle_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
 
+    let decimals_from = Decimals::new(
+        DEFAULT_PRICE_DECIMALS, 
+        DEFAULT_QUOTE_DECIMALS,
+        cloracle_from.decimals as u32);
+
     let (usd_amount, _) = calc_usd_amount_sell_base(
         from_amount, 
         woopool_from, 
-        cloracle_from.decimals, 
+        &decimals_from, 
         wooracle_from.coeff, 
         spread, 
         &price_from)?;
@@ -77,10 +82,15 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     let swap_fee = (usd_amount * fee_rate as u128) / 1e5 as u128;
     let remain_amount = usd_amount - swap_fee;
 
+    let decimals_to = Decimals::new(
+        DEFAULT_PRICE_DECIMALS, 
+        DEFAULT_QUOTE_DECIMALS,
+        cloracle_to.decimals as u32);
+
     let (to_amount, _) = calc_base_amount_sell_usd(
         remain_amount, 
         woopool_to, 
-        cloracle_to.decimals, 
+        &decimals_to, 
         wooracle_to.coeff, 
         spread, 
         &price_to)?;
@@ -91,75 +101,79 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     })
 }
 
+// u128 can cover
 pub fn adjust_price<'info>(woopool: &Account<'info, WooPool>, price: u128) -> Result<u128> {
     let Bt = woopool.tgt_balance;
     let Bmax = woopool.cap_balance;
     let B = woopool.reserve;
-    let Smax = woopool.shift_max as u128;
+    let Smax = woopool.shift_max as u128; // decimal = 5
 
-    // TODO Prince: check upper and low bound of u128
     let mut p : u128;
     if B < Bt {
-        p = (price * (TENPOW18U128 + (Smax * (Bt - B)) / Bt)) / TENPOW18U128;
+        p = (price * (TE5U128 + (Smax * (Bt - B)) / Bt)) / TE5U128;
     } else {
         let mut shift = (Smax as u128 * (B - Bt)) / max(Bt, (B * (Bmax - Bt)) / Bmax);
         if shift > Smax {
             shift = Smax;
         }
-        p = (price * (TENPOW18U128 - shift)) / TENPOW18U128;
+        p = (price * (TE5U128 - shift)) / TE5U128;
     }
 
     Ok(p)
 }
 
-pub fn adjustK<'info>(woopool: &Account<'info, WooPool>, price: u128, dec_info: u128, coeff: u64) -> Result<u64> {
+// u128 can cover with 1 assumption
+// decimals.price_dec is 8
+pub fn adjust_k<'info>(woopool: &Account<'info, WooPool>, price: u128, decimals: &Decimals, coeff: u64) -> Result<u128> {
     let Smax = woopool.shift_max as u128;
     let Bt = woopool.tgt_balance;
 
-    let k = max(coeff, ((Smax * dec_info * dec_info) / Bt / price) as u64);
+    let k = max(
+        coeff as u128, 
+        // definitely overflow u128
+        // ((TENPOW18U128 * Smax * decimals.base_dec as u128 * decimals.price_dec as u128) / TE5U128 / Bt / price) as u64);
+        // TODO Prince: below has only 1 assumption: decimals.price_dec is 8
+        // ((18 + 5 + 8) - 8 - 5) + (18 or 8) - (18 or 8)
+        ((TENPOW18U128 * Smax * decimals.price_dec as u128) / price / TE5U128) * decimals.base_dec as u128 / Bt);
     Ok(k)
 }
 
-pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'info, WooPool>, base_decimal: u8, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
+pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
     if !price_result.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
     }
 
-    let base_dec_info = (10 as u128).pow(base_decimal as u32);
-
     let p = adjust_price(woopool, price_result.price_out)?;
-    let k = adjustK(woopool, price_result.price_out, base_dec_info, base_coeff)?;
+    let k = adjust_k(woopool, price_result.price_out, decimals, base_coeff)?;
 
     // 1 - k * B * p - s
     let coeff = TENPOW18U128 -
-    (k as u128 * base_amount * p) / base_dec_info / base_dec_info -
+    (k * base_amount * p) / decimals.base_dec as u128 / decimals.price_dec as u128 -
     base_spread as u128; // spread decimal = 18
     // usd amount = B * p * (1 - k * B * p - s)
     let usd_amount = 
-    (((base_amount * base_dec_info * p) / base_dec_info) * coeff) 
-    / TENPOW18U128 / base_dec_info;
+    (((base_amount * decimals.quote_dec as u128 * p) / decimals.price_dec as u128) * coeff) 
+    / TENPOW18U128 / decimals.base_dec as u128;
 
     Ok((usd_amount, p))
 }
 
-pub fn calc_base_amount_sell_usd<'info>(usd_amount: u128, woopool: &Account<'info, WooPool>, base_decimal: u8, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
+pub fn calc_base_amount_sell_usd<'info>(usd_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
     if !price_result.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
     }
 
-    let base_dec_info = (10 as u128).pow(base_decimal as u32);
-
     let p = adjust_price(woopool, price_result.price_out)?;
-    let k = adjustK(woopool, price_result.price_out, base_dec_info, base_coeff)?;
+    let k = adjust_k(woopool, price_result.price_out, decimals, base_coeff)?;
 
     // 1 - k * B * p - s
     let coeff = TENPOW18U128 -
-    (k as u128 * usd_amount) / base_dec_info -
+    (k * usd_amount) / decimals.quote_dec as u128 -
     base_spread as u128; // spread decimal = 18
     // usd amount = B * p * (1 - k * B * p - s)
     let base_amount = 
-    (((usd_amount * base_dec_info * base_dec_info) / p) * coeff)
-    / TENPOW18U128 / base_dec_info;
+    (((usd_amount * decimals.base_dec as u128 * decimals.price_dec as u128) / p) * coeff)
+    / TENPOW18U128 / decimals.quote_dec as u128;
 
     Ok((base_amount, p))
 }

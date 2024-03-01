@@ -45,8 +45,7 @@ describe("woospmmtres", () => {
       .getPrice()
       .accounts({
         cloracle: cloracleAccount,
-        wooracle: wooracleAccount,
-        authority: provider.wallet.publicKey,
+        wooracle: wooracleAccount
       })
       .rpc(confirmOptions);
 
@@ -201,8 +200,7 @@ describe("woospmmtres", () => {
           .getPrice()
           .accounts({
             cloracle: cloracleAccount,
-            wooracle: wooracleAccount,
-            authority: provider.wallet.publicKey,
+            wooracle: wooracleAccount
           })
           .rpc(confirmOptions);
 

@@ -48,7 +48,7 @@ pub struct WooPool {
     pub wooracle: Pubkey,       // 32
     // Stored as hundredths of a basis point
     // u16::MAX corresponds to ~6.5%
-    // 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
+    // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
     // Max fee rate supported is u16::MAX around 65.5%.
     pub fee_rate: u16,          // 2
 
@@ -58,7 +58,7 @@ pub struct WooPool {
     // maximum balance cap in token amount
     pub cap_balance: u128,              // 16
 
-    // 1 in 100000, 0.1 bps  max = 65535
+    // decimal = 5; 10 = 1bp = 0.01%; max = 65535
     pub shift_max: u16,             // 2
 
     // target balance for swap fee
