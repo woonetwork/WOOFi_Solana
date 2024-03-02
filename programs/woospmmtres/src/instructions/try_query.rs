@@ -138,6 +138,7 @@ pub fn adjust_k<'info>(woopool: &Account<'info, WooPool>, price: u128, decimals:
     Ok(k)
 }
 
+// u128 can cover
 pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
     if !price_result.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
@@ -148,16 +149,18 @@ pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'in
 
     // 1 - k * B * p - s
     let coeff = TENPOW18U128 -
-    (k * base_amount * p) / decimals.base_dec as u128 / decimals.price_dec as u128 -
+    (k * base_amount / decimals.base_dec as u128) * p / decimals.price_dec as u128 -
     base_spread as u128; // spread decimal = 18
     // usd amount = B * p * (1 - k * B * p - s)
     let usd_amount = 
-    (((base_amount * decimals.quote_dec as u128 * p) / decimals.price_dec as u128) * coeff) 
-    / TENPOW18U128 / decimals.base_dec as u128;
+    (((base_amount * p) / decimals.price_dec as u128) * coeff / TENPOW18U128) 
+    * decimals.quote_dec as u128 / decimals.base_dec as u128;
 
     Ok((usd_amount, p))
 }
 
+// u128 can cover with 1 assumption
+// decimals.price_dec is 8
 pub fn calc_base_amount_sell_usd<'info>(usd_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
     if !price_result.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
