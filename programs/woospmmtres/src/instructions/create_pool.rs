@@ -5,6 +5,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount};
 use crate::constants::*;
 
 #[derive(Accounts)]
+#[instruction(fee_authority: Pubkey)]
 pub struct CreatePool<'info> {
     pub token_mint: Account<'info, Mint>,
 
@@ -17,6 +18,7 @@ pub struct CreatePool<'info> {
         space = WooPool::LEN,
         seeds = [
           WOOPOOL_SEED.as_bytes(),
+          fee_authority.as_ref(),
           token_mint.key().as_ref(),
         ],
         bump)]
