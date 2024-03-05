@@ -73,9 +73,16 @@ pub struct QueryResult {
     pub swap_fee: u128,
 }
 
-pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<QueryResult> {
+pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
+    // TODO Prince: check from_amount upper, total amount limit in one swap
+    // TODO Prince: use checked_mul checked_div in math
+
     let token_owner_account_from = &ctx.accounts.token_owner_account_from;
     require!(token_owner_account_from.amount as u128 >= from_amount, ErrorCode::NotEnoughBalance);
+    
+    let token_vault_from = &ctx.accounts.token_vault_from;
+    let token_owner_account_to = &ctx.accounts.token_owner_account_to;
+    let token_vault_to = &ctx.accounts.token_vault_to;
 
     let cloracle_from = &ctx.accounts.cloracle_from;
     let wooracle_from = &ctx.accounts.wooracle_from;
@@ -121,8 +128,23 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<QueryResult> {
         spread, 
         &price_to)?;
 
-    Ok(QueryResult {
-        to_amount,
-        swap_fee
-    })
+    require!(token_vault_to.amount as u128 >= to_amount, ErrorCode::NotEnoughOut);
+
+    transfer_from_owner_to_vault(
+        &ctx.accounts.owner,
+        &token_owner_account_from,
+        &token_vault_from,
+        &ctx.accounts.token_program,
+        from_amount as u64,
+    )?;
+
+    transfer_from_vault_to_owner(
+        &woopool_to,
+        &token_vault_to,
+        &token_owner_account_to,
+        &ctx.accounts.token_program,
+        to_amount as u64,
+    )?;
+
+    Ok(())
 }
