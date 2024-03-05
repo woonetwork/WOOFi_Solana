@@ -1,6 +1,7 @@
 use std::cmp::max;
 
 use anchor_lang::prelude::*;
+use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
 use crate::{
     constants::*,
@@ -11,7 +12,12 @@ use crate::{
 };
 
 #[derive(Accounts)]
-pub struct TryQuery<'info> {
+pub struct Swap<'info> {
+    #[account(address = token::ID)]
+    pub token_program: Program<'info, Token>,
+
+    pub owner: Signer<'info>,
+
     #[account(
         constraint = cloracle_from.key() == woopool_from.cloracle
     )]
@@ -26,6 +32,15 @@ pub struct TryQuery<'info> {
     )]
     wooracle_from: Account<'info, WOOracle>,
     woopool_from: Box<Account<'info, WooPool>>,
+    #[account(mut,
+        has_one = owner,
+        constraint = token_owner_account_from.mint == woopool_from.token_mint
+    )]
+    token_owner_account_from: Box<Account<'info, TokenAccount>>,
+    #[account(mut, 
+        address = woopool_from.token_vault
+    )]
+    token_vault_from: Box<Account<'info, TokenAccount>>,
 
     #[account(
         constraint = cloracle_to.key() == woopool_to.cloracle
@@ -40,7 +55,16 @@ pub struct TryQuery<'info> {
         constraint = wooracle_to.key() == woopool_to.wooracle
     )]
     wooracle_to: Account<'info, WOOracle>,
-    woopool_to: Box<Account<'info, WooPool>>
+    woopool_to: Box<Account<'info, WooPool>>,
+    #[account(mut,
+        has_one = owner,
+        constraint = token_owner_account_to.mint == woopool_to.token_mint
+    )]
+    token_owner_account_to: Box<Account<'info, TokenAccount>>,
+    #[account(mut, 
+        address = woopool_to.token_vault
+    )]
+    token_vault_to: Box<Account<'info, TokenAccount>>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
@@ -49,7 +73,9 @@ pub struct QueryResult {
     pub swap_fee: u128,
 }
 
-pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult> {
+pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<QueryResult> {
+    let token_owner_account_from = &ctx.accounts.token_owner_account_from;
+    require!(token_owner_account_from.amount as u128 >= from_amount, ErrorCode::NotEnoughBalance);
 
     let cloracle_from = &ctx.accounts.cloracle_from;
     let wooracle_from = &ctx.accounts.wooracle_from;

@@ -26,6 +26,14 @@ pub enum ErrorCode {
     #[msg("Woo oracle is not feasible")]
     WooOracleNotFeasible, //0x1792
 
+    #[msg("Src Balance < LP Deposit Amount.")]
+    NotEnoughBalance,
+    #[msg("Pool Mint Amount < 0 on LP Deposit")]
+    NoPoolMintOutput,
+    #[msg("Trying to burn too much")]
+    BurnTooMuch,
+    #[msg("Not enough out")]
+    NotEnoughOut,
 }
 
 impl From<TryFromIntError> for ErrorCode {
