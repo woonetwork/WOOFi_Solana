@@ -80,7 +80,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
 
     let cloracle_from = &ctx.accounts.cloracle_from;
     let wooracle_from = &ctx.accounts.wooracle_from;
-    let woopool_from = &ctx.accounts.woopool_from;
+    let woopool_from = &mut ctx.accounts.woopool_from;
 
     let price_from = get_price::get_price_impl(cloracle_from, wooracle_from)?;
 
@@ -98,16 +98,28 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         DEFAULT_QUOTE_DECIMALS,
         cloracle_from.decimals as u32);
 
-    let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
-        from_amount, 
+    let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
+    let remain_amount = swap_fee_amount.checked_sub(swap_fee_amount).unwrap();
+    
+    let (remain_usd_amount, _) = swap_math::calc_usd_amount_sell_base(
+        remain_amount, 
         woopool_from, 
         &decimals_from, 
         wooracle_from.coeff, 
         spread, 
         &price_from)?;
     
-    let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
-    let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
+    // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
+    // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
+    //     from_amount, 
+    //     woopool_from, 
+    //     &decimals_from, 
+    //     wooracle_from.coeff, 
+    //     spread, 
+    //     &price_from)?;
+    
+    // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
+    // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 
@@ -115,7 +127,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         cloracle_to.decimals as u32);
 
     let (to_amount, _) = swap_math::calc_base_amount_sell_usd(
-        remain_amount, 
+        remain_usd_amount, 
         woopool_to, 
         &decimals_to, 
         wooracle_to.coeff, 
@@ -123,6 +135,9 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         &price_to)?;
 
     require!(token_vault_to.amount as u128 >= to_amount, ErrorCode::NotEnoughOut);
+
+    // record fee into account
+    woopool_from.add_protocol_fee(swap_fee_amount)?;
 
     transfer_from_owner_to_vault(
         &ctx.accounts.owner,

@@ -64,7 +64,7 @@ pub struct WooPool {
     // target balance for swap fee
     pub tgt_balance: u128,              // 16
 
-    pub protocol_fee_owed: u64, // 8
+    pub protocol_fee_owed: u128, // 16
 
     pub token_mint: Pubkey,     // 32
 
@@ -72,7 +72,7 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 2 + 16 + 16 + 2 + 16 + 8 + 32 + 32);
+    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 2 + 16 + 16 + 2 + 16 + 16 + 32 + 32);
     
     pub fn seeds(&self) -> [&[u8]; 4] {
         [
@@ -152,6 +152,26 @@ impl WooPool {
 
     pub fn set_shift_max(&mut self, shift_max: u16) -> Result<()> {
         self.shift_max = shift_max;
+
+        Ok(())
+    }
+
+    pub fn add_protocol_fee(&mut self, fee: u128) -> Result<()> {
+        self.protocol_fee_owed = self.protocol_fee_owed
+            .checked_add(fee)
+            .ok_or(ErrorCode::ProtocolFeeMaxExceeded)?;
+
+        Ok(())
+    }
+
+    pub fn sub_protocol_fee(&mut self, fee: u128) -> Result<()> {
+        if fee > self.protocol_fee_owed {
+            return Err(ErrorCode::ProtocolFeeNotEnough.into())
+        }
+        
+        self.protocol_fee_owed = self.protocol_fee_owed
+            .checked_sub(fee)
+            .ok_or(ErrorCode::ProtocolFeeNotEnough)?;
 
         Ok(())
     }

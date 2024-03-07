@@ -22,6 +22,10 @@ pub enum ErrorCode {
     MulDivInvalidInput, //0x1790
     #[msg("Multiplication overflow")]
     MultiplicationOverflow, //0x1791
+    #[msg("Exceeded max protocol fee")]
+    ProtocolFeeMaxExceeded, // 0x1792
+    #[msg("Protocol fee not enough")]
+    ProtocolFeeNotEnough, // 0x1793
 
     #[msg("Woo oracle is not feasible")]
     WooOracleNotFeasible, //0x1792
