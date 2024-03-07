@@ -10,6 +10,7 @@ use crate::{
     util::*
 };
 
+// TODO Prince: use checked mul div muldiv to do the calc
 
 // u128 can cover
 pub fn adjust_price<'info>(woopool: &Account<'info, WooPool>, price: u128) -> Result<u128> {

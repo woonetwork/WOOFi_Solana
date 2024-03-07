@@ -67,12 +67,6 @@ pub struct Swap<'info> {
     token_vault_to: Box<Account<'info, TokenAccount>>,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
-pub struct QueryResult {
-    pub to_amount: u128,
-    pub swap_fee: u128,
-}
-
 pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     // TODO Prince: check from_amount upper, total amount limit in one swap
     // TODO Prince: use checked_mul checked_div in math
@@ -112,8 +106,8 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         spread, 
         &price_from)?;
     
-    let swap_fee = (usd_amount * fee_rate as u128) / 1e5 as u128;
-    let remain_amount = usd_amount - swap_fee;
+    let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
+    let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 

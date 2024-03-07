@@ -4,7 +4,6 @@ use anchor_lang::prelude::*;
 
 use crate::{
     constants::*,
-    errors::ErrorCode,
     state::*,
     instructions::*,
     util::*
@@ -79,8 +78,8 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
         spread, 
         &price_from)?;
     
-    let swap_fee = (usd_amount * fee_rate as u128) / 1e5 as u128;
-    let remain_amount = usd_amount - swap_fee;
+    let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
+    let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 

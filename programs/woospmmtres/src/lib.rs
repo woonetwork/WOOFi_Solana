@@ -127,6 +127,14 @@ pub mod woospmmtres {
         return instructions::create_pool::handler(ctx, fee_authority);
     }
 
+    pub fn try_query(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult> {
+        return instructions::try_query::handler(ctx, from_amount);
+    }
+
+    pub fn swap(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
+        return instructions::swap::handler(ctx, from_amount);
+    }
+
 }
 
 #[derive(Accounts)]
