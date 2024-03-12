@@ -136,8 +136,12 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
 
     require!(token_vault_to.amount as u128 >= to_amount, ErrorCode::NotEnoughOut);
 
+    // TODO Prince:
+    // we have from_amount, to_amount, swap_fee_amount here
+    // we can do the pool balance check before real swap
+
     // record fee into account
-    woopool_from.add_protocol_fee(swap_fee_amount)?;
+    woopool_from.add_protocol_fee(swap_fee_amount).unwrap();
 
     transfer_from_owner_to_vault(
         &ctx.accounts.owner,

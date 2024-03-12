@@ -1,4 +1,4 @@
-use crate::errors::*;
+use crate::errors::ErrorCode;
 
 pub fn checked_mul_div(n0: u128, n1: u128, d: u128) -> Result<u128, ErrorCode> {
     checked_mul_div_round_up_if(n0, n1, d, false)
