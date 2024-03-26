@@ -3,6 +3,7 @@ import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
 import { ConfirmOptions } from "@solana/web3.js";
+import * as web3 from "@solana/web3.js";
 import { Woospmmtres } from "../target/types/woospmmtres";
 import { assert } from "chai";
 import Decimal from "decimal.js";
@@ -89,41 +90,44 @@ describe("woospmm_swap", () => {
       const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from('woopool'), feedAuthority.toBuffer(), solTokenMint.toBuffer()],
         program.programId
-      )
+      );
 
-      // await program
-      //   .methods
-      //   .createPool
-      //   .accounts( 
-      //   )
+      const [tokenVault] = await anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('woopoolvalut'), woopool.toBuffer()],
+        program.programId,
+      );
 
-      // let oracleItemData = null;
-      // try {
-      //   oracleItemData = await program.account.woOracle.fetch(wooracleAccount);
-      // } catch (e) {
-      //   const error = e as Error;
-      //   if (error.message.indexOf("Account does not exist") >= 0) {
-      //     await program
-      //       .methods
-      //       .createPool
-      //       .accounts({
-      //         cloracle,
-      //         wooracle,
-      //         admin: provider.wallet.publicKey,
-      //         feedAccount: feedAccount,
-      //         chainlinkProgram: chainLinkProgramAccount
-      //       })
-      //       .rpc(confirmOptionsRetryTres);   
-      //   }
-      // }
+      let woopoolData = null;
+      try {
+        woopoolData = await program.account.wooPool.fetch(woopool);
+      } catch (e) {
+        const error = e as Error;
+        if (error.message.indexOf("Account does not exist") >= 0) {
+          await program
+          .methods
+          .createPool(feedAuthority)
+          .accounts({
+            tokenMint: solTokenMint,
+            authority: provider.wallet.publicKey,
+            woopool,
+            tokenVault,
+            cloracle: solCloracleAccount,
+            wooracle: solWooracleAccount,
+            tokenProgram: token.TOKEN_PROGRAM_ID, 
+            systemProgram: web3.SystemProgram.programId,
+            rent: web3.SYSVAR_RENT_PUBKEY
+            })
+            .rpc(confirmOptionsRetryTres);   
+        }
+      }
 
-      // if (oracleItemData == null) {
-      //   oracleItemData = await program.account.woOracle.fetch(wooracleAccount);
-      // }
+      if (woopoolData == null) {
+        woopoolData = await program.account.wooPool.fetch(woopool);
+      }
 
-      // assert.ok(
-      //   oracleItemData.authority.equals(provider.wallet.publicKey)
-      // );
+      assert.ok(
+        woopoolData.authority.equals(provider.wallet.publicKey)
+      );
     });
     
   });
