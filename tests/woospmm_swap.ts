@@ -69,64 +69,78 @@ describe("woospmm_swap", () => {
     return [price, feasible];
   };
 
-  describe("#create_pool()", async () => {
+  const createPool = async (feedAccount: anchor.web3.PublicKey) => {
+    const [cloracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+      program.programId
+    );
+
+    const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooracle'), feedAccount.toBuffer()],
+      program.programId
+    );
+
+    const feedAuthority = provider.wallet.publicKey;
+
+    const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('woopool'), feedAuthority.toBuffer(), solTokenMint.toBuffer()],
+      program.programId
+    );
+
+    const [tokenVault] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('woopoolvalut'), woopool.toBuffer()],
+      program.programId,
+    );
+
+    let woopoolData = null;
+    try {
+      woopoolData = await program.account.wooPool.fetch(woopool);
+    } catch (e) {
+      const error = e as Error;
+      if (error.message.indexOf("Account does not exist") >= 0) {
+        await program
+        .methods
+        .createPool(feedAuthority)
+        .accounts({
+          tokenMint: solTokenMint,
+          authority: provider.wallet.publicKey,
+          woopool,
+          tokenVault,
+          cloracle,
+          wooracle,
+          tokenProgram: token.TOKEN_PROGRAM_ID, 
+          systemProgram: web3.SystemProgram.programId,
+          rent: web3.SYSVAR_RENT_PUBKEY
+          })
+          .rpc(confirmOptionsRetryTres);   
+      }
+    }
+
+    if (woopoolData == null) {
+      woopoolData = await program.account.wooPool.fetch(woopool);
+    }
+
+    return woopoolData;
+  }
+
+  describe("#create_sol_pool()", async () => {
     it("creates an oracle account", async () => {
 
-      const [solcloracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('cloracle'), solFeedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
-        program.programId
-      );
-
-      const [solwooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooracle'), solFeedAccount.toBuffer()],
-        program.programId
-      );
-
-      solCloracleAccount = solcloracle;
-      solWooracleAccount = solwooracle;
-
-      const feedAuthority = provider.wallet.publicKey;
-
-      const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('woopool'), feedAuthority.toBuffer(), solTokenMint.toBuffer()],
-        program.programId
-      );
-
-      const [tokenVault] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('woopoolvalut'), woopool.toBuffer()],
-        program.programId,
-      );
-
-      let woopoolData = null;
-      try {
-        woopoolData = await program.account.wooPool.fetch(woopool);
-      } catch (e) {
-        const error = e as Error;
-        if (error.message.indexOf("Account does not exist") >= 0) {
-          await program
-          .methods
-          .createPool(feedAuthority)
-          .accounts({
-            tokenMint: solTokenMint,
-            authority: provider.wallet.publicKey,
-            woopool,
-            tokenVault,
-            cloracle: solCloracleAccount,
-            wooracle: solWooracleAccount,
-            tokenProgram: token.TOKEN_PROGRAM_ID, 
-            systemProgram: web3.SystemProgram.programId,
-            rent: web3.SYSVAR_RENT_PUBKEY
-            })
-            .rpc(confirmOptionsRetryTres);   
-        }
-      }
-
-      if (woopoolData == null) {
-        woopoolData = await program.account.wooPool.fetch(woopool);
-      }
+      let solPool = await createPool(solFeedAccount);
 
       assert.ok(
-        woopoolData.authority.equals(provider.wallet.publicKey)
+        solPool.authority.equals(provider.wallet.publicKey)
+      );
+    });
+    
+  });
+
+  describe("#create_usdc_pool()", async () => {
+    it("creates an oracle account", async () => {
+      let usdcPool = await createPool(usdcFeedAccount);
+
+      assert.ok(
+        usdcPool.authority.equals(provider.wallet.publicKey)
       );
     });
     
