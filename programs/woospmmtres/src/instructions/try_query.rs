@@ -54,16 +54,19 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     let wooracle_from = &ctx.accounts.wooracle_from;
     let woopool_from = &ctx.accounts.woopool_from;
 
-    let price_from = get_price::get_price_impl(cloracle_from, wooracle_from)?;
+    let mut state_from = get_price::get_state_impl(cloracle_from, wooracle_from)?;
 
     let cloracle_to = &ctx.accounts.cloracle_to;
     let wooracle_to = &ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let price_to = get_price::get_price_impl(cloracle_to, wooracle_to)?;
+    let mut state_to = get_price::get_state_impl(cloracle_to, wooracle_to)?;
 
     let spread = max(wooracle_from.spread, wooracle_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
+
+    state_from.spread = spread;
+    state_to.spread = spread;
 
     let decimals_from = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 
@@ -74,9 +77,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
         from_amount, 
         woopool_from, 
         &decimals_from, 
-        wooracle_from.coeff, 
-        spread, 
-        &price_from)?;
+        &state_from)?;
     
     let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
     let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
@@ -90,9 +91,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
         remain_amount, 
         woopool_to, 
         &decimals_to, 
-        wooracle_to.coeff, 
-        spread, 
-        &price_to)?;
+        &state_to)?;
 
     Ok(QueryResult {
         to_amount,

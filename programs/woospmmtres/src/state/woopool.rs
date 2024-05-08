@@ -55,6 +55,12 @@ pub struct WooPool {
     // balance reserve
     pub reserve: u128,          // 16
 
+    // max range of `balance * k`
+    pub max_gamma: u128,         // 16
+
+    // max volume per swap
+    pub max_notional_swap: u128,  // 16
+
     // maximum balance cap in token amount
     pub cap_balance: u128,              // 16
 
@@ -72,7 +78,7 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 2 + 16 + 16 + 2 + 16 + 16 + 32 + 32);
+    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32);
     
     pub fn seeds(&self) -> [&[u8]; 4] {
         [
@@ -100,6 +106,8 @@ impl WooPool {
 
         self.fee_rate = 0;
         self.reserve = 0;
+        self.max_gamma = 0;
+        self.max_notional_swap = 0;
         self.cap_balance = 0;
         self.tgt_balance = 0;
         self.shift_max = 0;
@@ -128,6 +136,18 @@ impl WooPool {
             return Err(ErrorCode::FeeRateMaxExceeded.into());
         }
         self.fee_rate = fee_rate;
+
+        Ok(())
+    }
+
+    pub fn set_max_gamma(&mut self, max_gamma: u128) -> Result<()> {
+        self.max_gamma = max_gamma;
+
+        Ok(())
+    }
+
+    pub fn set_max_notional_swap(&mut self, max_notional_swap: u128) -> Result<()> {
+        self.max_notional_swap = max_notional_swap;
 
         Ok(())
     }

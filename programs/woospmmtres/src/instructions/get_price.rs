@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::{
     constants::*,
+    errors::ErrorCode,    
     state::{
         cloracle::*, wooracle::*
     }
@@ -29,6 +30,14 @@ pub struct GetPriceResult {
     pub feasible_out: bool
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
+pub struct GetStateResult {
+    pub price_out: u128,
+    pub spread: u64,
+    pub coeff: u64,
+    pub feasible_out: bool
+}
+
 pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
     let cloracle = &ctx.accounts.cloracle;
     let wooracle = &ctx.accounts.wooracle;
@@ -45,7 +54,7 @@ pub fn get_price_impl<'info>(cloracle: &Account<'info, CLOracle>, wooracle: &Acc
 
     let clo_price = cloracle.round as u128;
     let wo_feasible = clo_price != 0 && now <= (wo_timestamp + wooracle.stale_duration);
-    let wo_price_in_bound = clo_price == 0 ||
+    let wo_price_in_bound = clo_price != 0 &&
     ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price && wo_price <= (clo_price * (TENPOW18U128 + bound)) / TENPOW18U128);
     // TODO: check upper and low bound
 
@@ -63,8 +72,27 @@ pub fn get_price_impl<'info>(cloracle: &Account<'info, CLOracle>, wooracle: &Acc
         feasible_out = price_out != 0;
     }
 
+    if feasible_out {
+        if price_out < wooracle.range_min {
+            return Err(ErrorCode::WooOraclePriceRangeMin.into());
+        }
+        if price_out > wooracle.range_max {
+            return Err(ErrorCode::WooOraclePriceRangeMax.into());
+        }
+    }
+
     Ok(GetPriceResult {
-        price_out: price_out, 
-        feasible_out: feasible_out
+        price_out, 
+        feasible_out
+    })
+}
+
+pub fn get_state_impl<'info>(cloracle: &Account<'info, CLOracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetStateResult> {
+    let price_result = get_price_impl(cloracle, wooracle)?;
+    Ok(GetStateResult{
+        price_out: price_result.price_out,
+        spread: wooracle.spread,
+        coeff: wooracle.coeff,
+        feasible_out: price_result.feasible_out
     })
 }

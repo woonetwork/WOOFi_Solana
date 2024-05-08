@@ -13,9 +13,15 @@ pub enum ErrorCode {
     NumberDownCastError, //  0x1778
 
     #[msg("Exceeded max fee rate")]
-    FeeRateMaxExceeded, // 0x178c
+    FeeRateMaxExceeded, // 0x178a
     #[msg("Cap balance smaller than 2 times target balance")]
-    CapBalanceSmallerThanTargetBalance, // 0x178d
+    CapBalanceSmallerThanTargetBalance, // 0x178b
+    #[msg("Integer overflow")]
+    IntegerOverflow, // 0x178c
+    #[msg("Conversion failure")]
+    ConversionFailure, // 0x178d
+    #[msg("Mathematical operation with overflow")]
+    MathOverflow, // 0x178e
     #[msg("Muldiv overflow")]
     MulDivOverflow, // 0x178f
     #[msg("Invalid div_u256 input")]
@@ -28,7 +34,18 @@ pub enum ErrorCode {
     ProtocolFeeNotEnough, // 0x1793
 
     #[msg("Woo oracle is not feasible")]
-    WooOracleNotFeasible, //0x1792
+    WooOracleNotFeasible, //0x1794
+    #[msg("Woo oracle price is not valid")]
+    WooOraclePriceNotValid, //0x1795
+    #[msg("Woo oracle price below range MIN")]
+    WooOraclePriceRangeMin, //0x1796
+    #[msg("Woo oracle price exceed range MAX")]
+    WooOraclePriceRangeMax, //0x1797
+
+    #[msg("Woo pp exceed max notional value")]
+    WooPoolExceedMaxNotionalValue, //0x1798
+    #[msg("Woo pp exceed max gamma")]
+    WooPoolExceedMaxGamma, //0x1799
 
     #[msg("Src Balance < LP Deposit Amount.")]
     NotEnoughBalance,

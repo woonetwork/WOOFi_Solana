@@ -42,10 +42,12 @@ pub struct WOOracle {
     pub price: u128,            // 16 as chainlink oracle (e.g. decimal = 8)
     pub coeff: u64,             // 8 k: decimal = 18.    18.4 * 1e18
     pub spread: u64,            // 8 s: decimal = 18.   spread <= 2e18   18.4 * 1e18
+    pub range_min: u128,        // 16
+    pub range_max: u128,        // 16
 }
 
 impl WOOracle {
-    pub const LEN : usize = 8 + (32 + 8 + 8 + 8 + 16 + 8 + 8);
+    pub const LEN : usize = 8 + (32 + 8 + 8 + 8 + 16 + 8 + 8 + 16 + 16);
 
     pub fn update_authority(&mut self, authority: Pubkey) -> Result<()> {
         self.authority = authority;
@@ -86,6 +88,18 @@ impl WOOracle {
 
     pub fn update_spread(&mut self, spread: u64) -> Result<()> {
         self.spread = spread;
+
+        Ok(())
+    }
+
+    pub fn update_range_min(&mut self, range_min: u128) -> Result<()> {
+        self.range_min = range_min;
+
+        Ok(())
+    }
+
+    pub fn update_range_max(&mut self, range_max: u128) -> Result<()> {
+        self.range_max = range_max;
 
         Ok(())
     }

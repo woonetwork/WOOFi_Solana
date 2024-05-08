@@ -11,9 +11,89 @@ use crate::{
 };
 
 // TODO Prince: use checked mul div muldiv to do the calc
+pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, state: &GetStateResult) -> Result<(u128, u128)> {
+    if !state.feasible_out {
+        return Err(ErrorCode::WooOracleNotFeasible.into());
+    }
+    if state.price_out <= 0 {
+        return Err(ErrorCode::WooOraclePriceNotValid.into());
+    }
+
+    //let notionalSwap : u128 = (base_amount * state.price_out * decimals.quote_dec) / decimals.base_dec / decimals.price_dec;
+    let notion_calc_a: u128 = checked_mul_div(base_amount, state.price_out, decimals.price_dec as u128)?;
+    let notional_swap: u128 = checked_mul_div(notion_calc_a, decimals.quote_dec as u128, decimals.base_dec as u128)?;
+    if notional_swap > woopool.max_notional_swap {
+        return Err(ErrorCode::WooPoolExceedMaxNotionalValue.into());
+    }
+
+    // gamma = k * price * base_amount; and decimal 18
+    let gamma_calc_a: u128 = checked_mul_div(base_amount, state.price_out, decimals.price_dec as u128)?;
+    let gamma: u128 = checked_mul_div(gamma_calc_a, state.coeff as u128, decimals.base_dec as u128)?;
+    if gamma > woopool.max_gamma {
+        return Err(ErrorCode::WooPoolExceedMaxGamma.into());
+    }
+
+    // Formula: quoteAmount = baseAmount * oracle.price * (1 - oracle.k * baseAmount * oracle.price - oracle.spread)
+    // amount = 100000, price = 1
+    // 1e5 * 1e18 * 1e6 = 1e29
+    // amount = 10,000,000, price = 10
+    // 1e7*1e18 * 1e2*1e8 * 1e6 / 1e8 1e33
+
+    // so change the position of priceDec and baseDec
+    
+    // let calcA: u128 = checked_mul_div(base_amount, state.price_out, decimals.price_dec as u128)?
+    //                  .checked_mul(decimals.quote_dec as u128).ok_or(ErrorCode::MulDivOverflow)?;
+    // let calcB: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
+    //                  .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
+    // let usd_amount: u128 = checked_mul_div(calcA, calcB, TENPOW18U128)?
+    //                  .checked_div(decimals.base_dec as u128).ok_or(ErrorCode::MathOverflow)?;
+    let calcA: u128 = checked_mul_div(base_amount, state.price_out, decimals.base_dec as u128)?
+                     .checked_mul(decimals.quote_dec as u128).ok_or(ErrorCode::MulDivOverflow)?;
+    let calcB: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
+                     .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
+    let usd_amount: u128 = checked_mul_div(calcA, calcB, TENPOW18U128)?
+                     .checked_div(decimals.price_dec as u128).ok_or(ErrorCode::MathOverflow)?;
+
+    // newPrice = oracle.price * (1 - k * oracle.price * baseAmount)
+    let new_price: u128 = checked_mul_div(TENPOW18U128.checked_sub(gamma).unwrap(), state.price_out, TENPOW18U128)?;
+
+    Ok((usd_amount, new_price))
+}
+
+pub fn calc_base_amount_sell_usd<'info>(usd_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, state: &GetStateResult) -> Result<(u128, u128)> {
+    if !state.feasible_out {
+        return Err(ErrorCode::WooOracleNotFeasible.into());
+    }
+    if state.price_out <= 0 {
+        return Err(ErrorCode::WooOraclePriceNotValid.into());
+    }
+    
+    if usd_amount > woopool.max_notional_swap {
+        return Err(ErrorCode::WooPoolExceedMaxNotionalValue.into());
+    }
+
+    // gamma = k * quote_amount; and decimal 18
+    let gamma: u128 = checked_mul_div(usd_amount, state.coeff as u128, decimals.quote_dec as u128)?;
+    if gamma > woopool.max_gamma {
+        return Err(ErrorCode::WooPoolExceedMaxGamma.into());
+    }
+    
+    // Formula: baseAmount = quoteAmount / oracle.price * (1 - oracle.k * quoteAmount - oracle.spread)
+    let calcA: u128 = usd_amount.checked_mul(decimals.base_dec as u128).ok_or(ErrorCode::MathOverflow)?;
+    let calcB: u128 = checked_mul_div(calcA, decimals.price_dec as u128, state.price_out)?;
+    let calcC: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
+                      .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
+    let calcD: u128 = checked_mul_div(calcB, calcC, TENPOW18U128)?;
+    let base_amount = calcD / decimals.quote_dec as u128;
+
+    // new_price = oracle.price / (1 - k * quoteAmount)
+    let new_price: u128 = checked_mul_div(TENPOW18U128, state.price_out, TENPOW18U128.checked_sub(gamma).unwrap())?;
+        
+    Ok((base_amount, new_price))
+}
 
 // u128 can cover
-pub fn adjust_price<'info>(woopool: &Account<'info, WooPool>, price: u128) -> Result<u128> {
+pub fn adjust_price_v3<'info>(woopool: &Account<'info, WooPool>, price: u128) -> Result<u128> {
     let Bt = woopool.tgt_balance;
     let Bmax = woopool.cap_balance;
     let B = woopool.reserve;
@@ -35,7 +115,7 @@ pub fn adjust_price<'info>(woopool: &Account<'info, WooPool>, price: u128) -> Re
 
 // u128 can cover with 1 assumption
 // decimals.price_dec is 8
-pub fn adjust_k<'info>(woopool: &Account<'info, WooPool>, price: u128, decimals: &Decimals, coeff: u64) -> Result<u128> {
+pub fn adjust_k_v3<'info>(woopool: &Account<'info, WooPool>, price: u128, decimals: &Decimals, coeff: u64) -> Result<u128> {
     let Smax = woopool.shift_max as u128;
     let Bt = woopool.tgt_balance;
 
@@ -50,13 +130,13 @@ pub fn adjust_k<'info>(woopool: &Account<'info, WooPool>, price: u128, decimals:
 }
 
 // u128 can cover
-pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
+pub fn calc_usd_amount_sell_base_v3<'info>(base_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
     if !price_result.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
     }
 
-    let p = adjust_price(woopool, price_result.price_out)?;
-    let k = adjust_k(woopool, price_result.price_out, decimals, base_coeff)?;
+    let p = adjust_price_v3(woopool, price_result.price_out)?;
+    let k = adjust_k_v3(woopool, price_result.price_out, decimals, base_coeff)?;
 
     // 1 - k * B * p - s
     let coeff = TENPOW18U128 -
@@ -72,13 +152,13 @@ pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'in
 
 // u128 can cover with 1 assumption
 // decimals.price_dec is 8
-pub fn calc_base_amount_sell_usd<'info>(usd_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
+pub fn calc_base_amount_sell_usd_v3<'info>(usd_amount: u128, woopool: &Account<'info, WooPool>, decimals: &Decimals, base_coeff: u64, base_spread: u64, price_result: &GetPriceResult) -> Result<(u128, u128)> {
     if !price_result.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
     }
 
-    let p = adjust_price(woopool, price_result.price_out)?;
-    let k = adjust_k(woopool, price_result.price_out, decimals, base_coeff)?;
+    let p = adjust_price_v3(woopool, price_result.price_out)?;
+    let k = adjust_k_v3(woopool, price_result.price_out, decimals, base_coeff)?;
 
     // 1 - k * B * p - s
     let coeff = TENPOW18U128 -

@@ -82,16 +82,19 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     let wooracle_from = &ctx.accounts.wooracle_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
 
-    let price_from = get_price::get_price_impl(cloracle_from, wooracle_from)?;
+    let mut state_from = get_price::get_state_impl(cloracle_from, wooracle_from)?;
 
     let cloracle_to = &ctx.accounts.cloracle_to;
     let wooracle_to = &ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let price_to = get_price::get_price_impl(cloracle_to, wooracle_to)?;
+    let mut state_to = get_price::get_state_impl(cloracle_to, wooracle_to)?;
 
-    let spread = max(wooracle_from.spread, wooracle_to.spread);
+    let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
+
+    state_from.spread = spread;
+    state_to.spread = spread;
 
     let decimals_from = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 
@@ -105,9 +108,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         remain_amount, 
         woopool_from, 
         &decimals_from, 
-        wooracle_from.coeff, 
-        spread, 
-        &price_from)?;
+        &state_from)?;
     
     // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
     // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
@@ -130,9 +131,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         remain_usd_amount, 
         woopool_to, 
         &decimals_to, 
-        wooracle_to.coeff, 
-        spread, 
-        &price_to)?;
+        &state_to)?;
 
     require!(token_vault_to.amount as u128 >= to_amount, ErrorCode::NotEnoughOut);
 

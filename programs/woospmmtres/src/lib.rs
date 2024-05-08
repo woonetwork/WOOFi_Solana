@@ -88,6 +88,10 @@ pub mod woospmmtres {
         return instructions::set_woo_state::set_bound_handler(ctx, bound);
     }
 
+    pub fn set_woo_range(ctx: Context<SetWooState>, range_min: u128, range_max: u128) -> Result<()> {
+        return instructions::set_woo_state::set_rang_handler(ctx, range_min, range_max);
+    }
+
     pub fn set_woo_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
         return instructions::set_woo_state::set_price_handler(ctx, price, true);
     }

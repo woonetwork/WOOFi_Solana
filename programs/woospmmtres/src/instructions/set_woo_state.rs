@@ -23,10 +23,16 @@ pub fn set_stale_duration_handler(ctx: Context<SetWooState>, stale_duration: i64
     Ok(ctx.accounts.wooracle.update_stale_duration(stale_duration)?)
 }
 
-
 pub fn set_bound_handler(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
     // TODO: check bound limit
     Ok(ctx.accounts.wooracle.update_bound(bound)?)
+}
+
+pub fn set_rang_handler(ctx: Context<SetWooState>, range_min: u128, range_max: u128) -> Result<()> {
+    ctx.accounts.wooracle.update_range_min(range_min);
+    ctx.accounts.wooracle.update_range_max(range_max);
+
+    Ok(())
 }
 
 pub fn set_coeff_handler(ctx: Context<SetWooState>, coeff: u64, update_time: bool) -> Result<()> {
