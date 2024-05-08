@@ -79,13 +79,13 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     let token_vault_to = &ctx.accounts.token_vault_to;
 
     let cloracle_from = &ctx.accounts.cloracle_from;
-    let wooracle_from = &ctx.accounts.wooracle_from;
+    let wooracle_from = &mut ctx.accounts.wooracle_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
 
     let mut state_from = get_price::get_state_impl(cloracle_from, wooracle_from)?;
 
     let cloracle_to = &ctx.accounts.cloracle_to;
-    let wooracle_to = &ctx.accounts.wooracle_to;
+    let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
     let mut state_to = get_price::get_state_impl(cloracle_to, wooracle_to)?;
@@ -104,7 +104,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
     let remain_amount = swap_fee_amount.checked_sub(swap_fee_amount).unwrap();
     
-    let (remain_usd_amount, _) = swap_math::calc_usd_amount_sell_base(
+    let (remain_usd_amount, from_new_price) = swap_math::calc_usd_amount_sell_base(
         remain_amount, 
         woopool_from, 
         &decimals_from, 
@@ -127,7 +127,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         DEFAULT_QUOTE_DECIMALS,
         cloracle_to.decimals as u32);
 
-    let (to_amount, _) = swap_math::calc_base_amount_sell_usd(
+    let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_usd(
         remain_usd_amount, 
         woopool_to, 
         &decimals_to, 
@@ -140,7 +140,11 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     // we can do the pool balance check before real swap
 
     // record fee into account
+    // TODO Prince: check all unwrap, should throw Error out
     woopool_from.add_protocol_fee(swap_fee_amount).unwrap();
+
+    wooracle_from.post_price(from_new_price);
+    wooracle_to.post_price(to_new_price);
 
     transfer_from_owner_to_vault(
         &ctx.accounts.owner,

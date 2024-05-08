@@ -31,7 +31,11 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+use std::cmp::{max, min};
+
 use anchor_lang::prelude::*;
+
+use crate::{util::checked_mul_div, TENPOW18U128, TENPOW18U64};
 
 #[account]
 pub struct WOOracle {
@@ -100,6 +104,35 @@ impl WOOracle {
 
     pub fn update_range_max(&mut self, range_max: u128) -> Result<()> {
         self.range_max = range_max;
+
+        Ok(())
+    }
+
+    pub fn post_price(&mut self, price: u128) -> Result<()> {
+        self.update_spread_for_new_price(price)?;
+        self.update_price(price)?;
+        self.update_now()?;
+
+        Ok(())
+    }
+
+    pub fn update_spread_for_new_price(&mut self, price: u128) -> Result<()> {
+        let preS: u64 = self.spread;
+        let preP: u128 = self.price;
+        if preP == 0 || price == 0 || preS >= TENPOW18U64 {
+            // previous price or current price is 0, no action is needed
+        } else {
+            let maxP: u128 = max(price, preP);
+            let minP: u128 = min(price, preP);
+            let calcA: u128 = checked_mul_div(TENPOW18U128, minP, maxP)?;
+            let antiS: u128 = checked_mul_div(calcA, TENPOW18U128, TENPOW18U128.checked_sub(preS as u128).unwrap())?;
+            if antiS < TENPOW18U128 {
+                let newS: u64 = TENPOW18U128.checked_sub(antiS).unwrap() as u64;
+                if newS > preS {
+                    self.spread = newS;
+                }
+            }
+        }
 
         Ok(())
     }
