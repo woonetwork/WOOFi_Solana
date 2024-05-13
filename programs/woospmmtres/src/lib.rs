@@ -37,7 +37,6 @@ mod errors;
 mod util;
 
 use anchor_lang::prelude::*;
-use chainlink_solana as chainlink;
 
 use crate::{constants::*, state::*, instructions::*, };
 
@@ -47,37 +46,12 @@ declare_id!("DijYgrdt8WPUpxQz6jyhdvhE6jRKRhW62sp64me4rBVA");
 pub mod woospmmtres {
     use super::*;
 
-    pub fn create_oracle(ctx: Context<CreateOracle>) -> Result<()> {
-        let timestamp = Clock::get()?.unix_timestamp;
+    pub fn create_oracle_chainlink(ctx: Context<CreateOracleChainlink>) -> Result<()> {
+        return instructions::create_oracle_chainlink::handler(ctx);
+    }
 
-        ctx.accounts.cloracle.authority = ctx.accounts.admin.key();
-        ctx.accounts.cloracle.chainlink_feed = ctx.accounts.feed_account.key();
-        ctx.accounts.cloracle.updated_at = timestamp;
-
-        // get decimal value from chainlink program
-        let decimals = chainlink::decimals(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.feed_account.to_account_info(),
-        )?;
-
-        // get round value from chainlink program
-        let round = chainlink::latest_round_data(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.feed_account.to_account_info(),
-        )?;
-
-        ctx.accounts.cloracle.decimals = decimals;
-        ctx.accounts.cloracle.round = round.answer;
-
-        // Default set prefer clo to true
-        ctx.accounts.cloracle.clo_preferred = true;
-
-        ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
-        ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
-        // set default bound to 1e16 means 1%
-        ctx.accounts.wooracle.bound = DEFAULT_BOUND;
-
-        Ok(())
+    pub fn create_oracle_pyth(ctx: Context<CreateOraclePyth>) -> Result<()> {
+        return instructions::create_oracle_pyth::handler(ctx);
     }
 
     pub fn set_stale_duration(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {
@@ -104,8 +78,8 @@ pub mod woospmmtres {
         return instructions::set_woo_state::set_spread_handler(ctx, spread, true);
     }
 
-    pub fn set_clo_preferred(ctx: Context<SetCloPreferred>, clo_preferred: bool) -> Result<()> {
-        return instructions::set_clo_preferred::handler(ctx, clo_preferred);
+    pub fn set_clo_preferred(ctx: Context<SetOuterPreferred>, clo_preferred: bool) -> Result<()> {
+        return instructions::set_outer_preferred::handler(ctx, clo_preferred);
     }
 
     pub fn set_woo_state(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
@@ -121,6 +95,10 @@ pub mod woospmmtres {
 
     pub fn update_cloracle(ctx: Context<UpdateCLOracle>) -> Result<()> {
         return instructions::update_cloracle::handler(ctx);
+    }
+
+    pub fn update_pythoracle(ctx: Context<UpdatePythOracle>) -> Result<()> {
+        return instructions::update_pythoracle::handler(ctx);
     }
 
     pub fn get_price(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
@@ -139,39 +117,4 @@ pub mod woospmmtres {
         return instructions::swap::handler(ctx, from_amount);
     }
 
-}
-
-#[derive(Accounts)]
-pub struct CreateOracle<'info> {
-    #[account(
-        init,
-        payer = admin,
-        space = CLOracle::LEN,
-        seeds = [
-            CLORACLE_SEED.as_bytes(),
-            feed_account.key().as_ref(),
-            chainlink_program.key().as_ref(),
-            ],
-        bump,
-        constraint = chainlink_program.key() == *feed_account.to_account_info().owner
-    )]
-    cloracle: Account<'info, CLOracle>,
-    #[account(
-        init,
-        payer = admin,
-        space = WOOracle::LEN,
-        seeds = [
-            WOORACLE_SEED.as_bytes(),
-            feed_account.key().as_ref(),
-            ],
-        bump,
-    )]
-    wooracle: Account<'info, WOOracle>,
-    #[account(mut)]
-    admin: Signer<'info>,
-    system_program: Program<'info, System>,
-    /// CHECK: This is the Chainlink feed account
-    feed_account: AccountInfo<'info>,
-    /// CHECK: This is the Chainlink program library
-    pub chainlink_program: AccountInfo<'info>,
 }

@@ -4,17 +4,17 @@ use crate::{
     constants::*,
     errors::ErrorCode,    
     state::{
-        cloracle::*, wooracle::*
+        oracle::*, wooracle::*
     }
 };
 
 #[derive(Accounts)]
 pub struct GetPrice<'info> {
-    pub cloracle: Account<'info, CLOracle>,
+    pub oracle: Account<'info, Oracle>,
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            cloracle.chainlink_feed.as_ref()
+            oracle.feed_account.as_ref()
         ],
         bump
     )]
@@ -39,20 +39,20 @@ pub struct GetStateResult {
 }
 
 pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
-    let cloracle = &ctx.accounts.cloracle;
+    let oracle = &ctx.accounts.oracle;
     let wooracle = &ctx.accounts.wooracle;
 
-    Ok(get_price_impl(cloracle, wooracle)?)
+    Ok(get_price_impl(oracle, wooracle)?)
 }
 
-pub fn get_price_impl<'info>(cloracle: &Account<'info, CLOracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetPriceResult> {
+pub fn get_price_impl<'info>(oracle: &Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetPriceResult> {
     let now = Clock::get()?.unix_timestamp;
 
     let wo_price = wooracle.price;
     let wo_timestamp = wooracle.updated_at;
     let bound = wooracle.bound as u128;
 
-    let clo_price = cloracle.round as u128;
+    let clo_price = oracle.round as u128;
     let wo_feasible = clo_price != 0 && now <= (wo_timestamp + wooracle.stale_duration);
     let wo_price_in_bound = clo_price != 0 &&
     ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price && wo_price <= (clo_price * (TENPOW18U128 + bound)) / TENPOW18U128);
@@ -64,7 +64,7 @@ pub fn get_price_impl<'info>(cloracle: &Account<'info, CLOracle>, wooracle: &Acc
         price_out = wo_price;
         feasible_out = wo_price_in_bound;
     } else {
-        if cloracle.clo_preferred {
+        if oracle.outer_preferred {
             price_out = clo_price;
         } else {
             price_out = 0;
@@ -87,8 +87,8 @@ pub fn get_price_impl<'info>(cloracle: &Account<'info, CLOracle>, wooracle: &Acc
     })
 }
 
-pub fn get_state_impl<'info>(cloracle: &Account<'info, CLOracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetStateResult> {
-    let price_result = get_price_impl(cloracle, wooracle)?;
+pub fn get_state_impl<'info>(oracle: &Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetStateResult> {
+    let price_result = get_price_impl(oracle, wooracle)?;
     Ok(GetStateResult{
         price_out: price_result.price_out,
         spread: wooracle.spread,

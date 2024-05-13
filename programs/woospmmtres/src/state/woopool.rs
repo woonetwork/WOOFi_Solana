@@ -43,7 +43,7 @@ pub struct WooPool {
 
     pub fee_authority: Pubkey,  // 32
 
-    pub cloracle: Pubkey,       // 32
+    pub oracle: Pubkey,       // 32
 
     pub wooracle: Pubkey,       // 32
     // Stored as hundredths of a basis point
@@ -92,7 +92,7 @@ impl WooPool {
     pub fn initialize(
         &mut self,
         bump: u8,
-        cloracle: Pubkey,
+        oracle: Pubkey,
         wooracle: Pubkey,
         fee_authority: Pubkey,
         token_mint: Pubkey,
@@ -100,7 +100,7 @@ impl WooPool {
     ) -> Result<()> {
         self.woopool_bump = [bump];
 
-        self.cloracle = cloracle;
+        self.oracle = oracle;
         self.wooracle = wooracle;
         self.fee_authority = fee_authority;
 

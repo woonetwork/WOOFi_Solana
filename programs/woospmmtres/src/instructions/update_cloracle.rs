@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::state::cloracle::*;
+use crate::state::oracle::*;
 use chainlink_solana as chainlink;
 
 #[derive(Accounts)]
@@ -8,10 +8,10 @@ pub struct UpdateCLOracle<'info> {
     #[account(
         mut,
         constraint = chainlink_program.key() == *feed_account.to_account_info().owner,
-        constraint = cloracle.chainlink_feed == *feed_account.key,
+        constraint = cloracle.feed_account == *feed_account.key,
         has_one = authority,
     )]
-    cloracle: Account<'info, CLOracle>,
+    cloracle: Account<'info, Oracle>,
     authority: Signer<'info>,
     /// CHECK: Todo
     feed_account: UncheckedAccount<'info>,

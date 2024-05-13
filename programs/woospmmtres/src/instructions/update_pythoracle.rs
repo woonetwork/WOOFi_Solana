@@ -1,16 +1,16 @@
 use anchor_lang::prelude::*;
 use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, PriceUpdateV2};
 
-use crate::state::pythoracle::*;
+use crate::state::oracle::*;
 
 #[derive(Accounts)]
 pub struct UpdatePythOracle<'info> {
     #[account(
         mut,
-        constraint = pythoracle.pyth_feed == *feed_account.key,
+        constraint = pythoracle.feed_account == *feed_account.key,
         has_one = authority,
     )]
-    pythoracle: Account<'info, PythOracle>,
+    pythoracle: Account<'info, Oracle>,
     authority: Signer<'info>,
     /// CHECK: Todo
     feed_account: UncheckedAccount<'info>,
@@ -25,6 +25,7 @@ pub struct UpdatePythOracle<'info> {
 pub fn handler(ctx: Context<UpdatePythOracle>) -> Result<()> {
     let price_update = &mut ctx.accounts.price_update;
     // get_price_no_older_than will fail if the price update is more than 30 seconds old
+    // TODO Prince: move the 30s to config later
     let maximum_age: u64 = 30;
     // get_price_no_older_than will fail if the price update is for a different price feed.
     // This string is the id of the BTC/USD feed. See https://pyth.network/developers/price-feed-ids for all available ids.

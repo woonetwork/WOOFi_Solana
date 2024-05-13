@@ -1,4 +1,5 @@
 pub const CLORACLE_SEED: &str = "cloracle";
+pub const PYTHORACLE_SEED: &str = "pythoracle";
 pub const WOORACLE_SEED: &str = "wooracle";
 pub const CONFIGURATION_SEED: &str = "configuration";
 pub const WOOPOOL_SEED: &str = "woopool"; 

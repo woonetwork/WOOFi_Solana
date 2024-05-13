@@ -19,13 +19,13 @@ pub struct Swap<'info> {
     pub owner: Signer<'info>,
 
     #[account(
-        constraint = cloracle_from.key() == woopool_from.cloracle
+        constraint = oracle_from.key() == woopool_from.oracle
     )]
-    cloracle_from: Account<'info, CLOracle>,
+    oracle_from: Account<'info, Oracle>,
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            cloracle_from.chainlink_feed.as_ref()
+            oracle_from.feed_account.as_ref()
         ],
         bump,
         constraint = wooracle_from.key() == woopool_from.wooracle
@@ -43,13 +43,13 @@ pub struct Swap<'info> {
     token_vault_from: Box<Account<'info, TokenAccount>>,
 
     #[account(
-        constraint = cloracle_to.key() == woopool_to.cloracle
+        constraint = oracle_to.key() == woopool_to.oracle
     )]
-    cloracle_to: Account<'info, CLOracle>,
+    oracle_to: Account<'info, Oracle>,
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            cloracle_to.chainlink_feed.as_ref()
+            oracle_to.feed_account.as_ref()
         ],
         bump,
         constraint = wooracle_to.key() == woopool_to.wooracle
@@ -78,17 +78,17 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     let token_owner_account_to = &ctx.accounts.token_owner_account_to;
     let token_vault_to = &ctx.accounts.token_vault_to;
 
-    let cloracle_from = &ctx.accounts.cloracle_from;
+    let oracle_from = &ctx.accounts.oracle_from;
     let wooracle_from = &mut ctx.accounts.wooracle_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
 
-    let mut state_from = get_price::get_state_impl(cloracle_from, wooracle_from)?;
+    let mut state_from = get_price::get_state_impl(oracle_from, wooracle_from)?;
 
-    let cloracle_to = &ctx.accounts.cloracle_to;
+    let oracle_to = &ctx.accounts.oracle_to;
     let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let mut state_to = get_price::get_state_impl(cloracle_to, wooracle_to)?;
+    let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to)?;
 
     let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
@@ -99,7 +99,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     let decimals_from = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 
         DEFAULT_QUOTE_DECIMALS,
-        cloracle_from.decimals as u32);
+        oracle_from.decimals as u32);
 
     let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
     let remain_amount = swap_fee_amount.checked_sub(swap_fee_amount).unwrap();
@@ -125,7 +125,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     let decimals_to = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 
         DEFAULT_QUOTE_DECIMALS,
-        cloracle_to.decimals as u32);
+        oracle_to.decimals as u32);
 
     let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_usd(
         remain_usd_amount, 

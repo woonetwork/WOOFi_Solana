@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::state::cloracle::*;
+use crate::state::oracle::*;
 use chainlink_solana as chainlink;
 
 #[derive(Accounts)]
@@ -11,7 +11,7 @@ pub struct ReInitializeCLOracle<'info> {
         // constraint = cloracle.chainlink_feed == *feed_account.key,
         has_one = authority,
     )]
-    cloracle: Account<'info, CLOracle>,
+    cloracle: Account<'info, Oracle>,
     authority: Signer<'info>,
     /// CHECK: Todo
     feed_account: UncheckedAccount<'info>,
@@ -20,10 +20,10 @@ pub struct ReInitializeCLOracle<'info> {
 }
 
 
-pub fn handler(ctx: Context<ReInitializeCLOracle>, clo_preferred: bool) -> Result<()> {
+pub fn handler(ctx: Context<ReInitializeCLOracle>, outer_preferred: bool) -> Result<()> {
     let timestamp = Clock::get()?.unix_timestamp;
 
-    ctx.accounts.cloracle.chainlink_feed = ctx.accounts.feed_account.key();
+    ctx.accounts.cloracle.feed_account = ctx.accounts.feed_account.key();
     ctx.accounts.cloracle.updated_at = timestamp;
 
     // get decimal value from chainlink program
@@ -39,7 +39,7 @@ pub fn handler(ctx: Context<ReInitializeCLOracle>, clo_preferred: bool) -> Resul
 
     ctx.accounts.cloracle.decimals = decimals;
     ctx.accounts.cloracle.round = round.answer;
-    ctx.accounts.cloracle.clo_preferred = clo_preferred;
+    ctx.accounts.cloracle.outer_preferred = outer_preferred;
 
     Ok(())
 }

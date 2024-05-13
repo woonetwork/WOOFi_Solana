@@ -1,4 +1,4 @@
-pub mod set_clo_preferred;
+pub mod set_outer_preferred;
 pub mod set_woo_state;
 pub mod re_initialize_cloracle;
 pub mod update_cloracle;
@@ -8,8 +8,10 @@ pub mod set_pool_state;
 pub mod try_query;
 pub mod swap;
 pub mod update_pythoracle;
+pub mod create_oracle_chainlink;
+pub mod create_oracle_pyth;
 
-pub use set_clo_preferred::*;
+pub use set_outer_preferred::*;
 pub use set_woo_state::*;
 pub use re_initialize_cloracle::*;
 pub use update_cloracle::*;
@@ -19,3 +21,5 @@ pub use set_pool_state::*;
 pub use try_query::*;
 pub use swap::*;
 pub use update_pythoracle::*;
+pub use create_oracle_chainlink::*;
+pub use create_oracle_pyth::*;

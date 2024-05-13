@@ -1,9 +1,7 @@
 pub mod wooracle;
-pub mod cloracle;
 pub mod woopool;
-pub mod pythoracle;
+pub mod oracle;
 
 pub use wooracle::*;
-pub use cloracle::*;
 pub use woopool::*;
-pub use pythoracle::*;
+pub use oracle::*;

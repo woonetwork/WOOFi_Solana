@@ -46,12 +46,12 @@ pub struct CreatePool<'info> {
     #[account(
       has_one = authority,
     )]
-    cloracle: Account<'info, CLOracle>,
+    oracle: Account<'info, Oracle>,
     #[account(
         has_one = authority,
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            cloracle.chainlink_feed.as_ref()
+            oracle.feed_account.as_ref()
         ],
         bump
     )]
@@ -72,12 +72,12 @@ pub fn handler(
 
     let woopool = &mut ctx.accounts.woopool;
     let bump = ctx.bumps.woopool;
-    let cloracle = ctx.accounts.cloracle.key();
+    let oracle = ctx.accounts.oracle.key();
     let wooracle = ctx.accounts.wooracle.key();
 
     Ok(woopool.initialize(
         bump,
-        cloracle,
+        oracle,
         wooracle,
         fee_authority,
         token_mint,

@@ -33,18 +33,32 @@
 
 use anchor_lang::prelude::*;
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy)]
+#[repr(u8)]
+pub enum OracleType {
+    Pyth = 0,
+    ChainLink = 1,
+}
+
+impl OracleType {
+    pub fn is_pyth(&self) -> bool {
+        matches!(self, OracleType::Pyth)
+    }
+}
+
 #[account]
-pub struct CLOracle {
-    pub authority: Pubkey,  // 32
-    pub chainlink_feed: Pubkey, // 32
+pub struct Oracle {
+    pub authority: Pubkey,      // 32
+    pub feed_account: Pubkey,  // 32
     pub updated_at: i64,        // 8
     pub decimals: u8,           // 1
     pub round: i128,            // 16
-    pub clo_preferred: bool,    // 1
+    pub outer_preferred: bool,    // 1
+    pub oracle_type: OracleType // 1
 }
 
-impl CLOracle {
-    pub const LEN : usize = 8 + (32 + 32 + 8 + 1 + 16 + 1);
+impl Oracle {
+    pub const LEN : usize = 8 + (32 + 32 + 8 + 1 + 16 + 1 + 1);
 
     pub fn update_authority(&mut self, authority: Pubkey) -> Result<()> {
         self.authority = authority;
@@ -52,10 +66,9 @@ impl CLOracle {
         Ok(())
     }
 
-    pub fn update_clo_preferred(&mut self, clo_preferred: bool) -> Result<()> {
-        self.clo_preferred = clo_preferred;
+    pub fn update_outer_preferred(&mut self, outer_preferred: bool) -> Result<()> {
+        self.outer_preferred = outer_preferred;
 
         Ok(())
     }
-
 }
