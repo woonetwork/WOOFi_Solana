@@ -12,11 +12,13 @@ use crate::{
 pub struct GetPrice<'info> {
     pub oracle: Account<'info, Oracle>,
     #[account(
+        has_one = oracle,
         seeds = [
             WOORACLE_SEED.as_bytes(),
             oracle.feed_account.as_ref()
         ],
-        bump
+        bump,
+        constraint = oracle.authority == wooracle.authority,
     )]
     pub wooracle: Account<'info, WOOracle>,
 }
@@ -47,6 +49,12 @@ pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
 
 pub fn get_price_impl<'info>(oracle: &Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetPriceResult> {
     let now = Clock::get()?.unix_timestamp;
+
+    // TODO Prince: find a better way to include pyth reciever into normal 
+    //logic
+    //if (oracle.oracle_type == OracleType::Pyth) {
+        // get price
+    //}
 
     let wo_price = wooracle.price;
     let wo_timestamp = wooracle.updated_at;

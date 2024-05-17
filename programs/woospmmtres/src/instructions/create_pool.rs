@@ -49,11 +49,12 @@ pub struct CreatePool<'info> {
     oracle: Account<'info, Oracle>,
     #[account(
         has_one = authority,
+        has_one = oracle,
         seeds = [
             WOORACLE_SEED.as_bytes(),
             oracle.feed_account.as_ref()
         ],
-        bump
+        bump,
     )]
     wooracle: Account<'info, WOOracle>,
 

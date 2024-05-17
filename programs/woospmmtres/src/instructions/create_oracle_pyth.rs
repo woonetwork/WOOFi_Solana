@@ -100,6 +100,7 @@ pub fn handler(ctx: Context<CreateOraclePyth>) -> Result<()> {
     ctx.accounts.pythoracle.outer_preferred = true;
 
     ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
+    ctx.accounts.wooracle.oracle = ctx.accounts.pythoracle.key();
     ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
     // set default bound to 1e16 means 1%
     ctx.accounts.wooracle.bound = DEFAULT_BOUND;

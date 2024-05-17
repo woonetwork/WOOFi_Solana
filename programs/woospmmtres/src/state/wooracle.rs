@@ -39,7 +39,8 @@ use crate::{util::checked_mul_div, TENPOW18U128, TENPOW18U64};
 
 #[account]
 pub struct WOOracle {
-    pub authority: Pubkey,  // 32
+    pub authority: Pubkey,      // 32
+    pub oracle: Pubkey,         // 32
     pub updated_at: i64,        // 8
     pub stale_duration: i64,    // 8
     pub bound: u64,             // 8
@@ -51,10 +52,16 @@ pub struct WOOracle {
 }
 
 impl WOOracle {
-    pub const LEN : usize = 8 + (32 + 8 + 8 + 8 + 16 + 8 + 8 + 16 + 16);
+    pub const LEN : usize = 8 + (32 + 32 + 8 + 8 + 8 + 16 + 8 + 8 + 16 + 16);
 
     pub fn update_authority(&mut self, authority: Pubkey) -> Result<()> {
         self.authority = authority;
+
+        Ok(())
+    }
+
+    pub fn update_oracle(&mut self, oracle: Pubkey) -> Result<()> {
+        self.oracle = oracle;
 
         Ok(())
     }
