@@ -44,7 +44,7 @@ describe("woospmmtres", () => {
       .methods
       .getPrice()
       .accounts({
-        cloracle: cloracleAccount,
+        oracle: cloracleAccount,
         wooracle: wooracleAccount
       })
       .rpc(confirmOptions);
@@ -88,7 +88,7 @@ describe("woospmmtres", () => {
         if (error.message.indexOf("Account does not exist") >= 0) {
           await program
             .methods
-            .createOracle()
+            .createOracleChainlink()
             .accounts({
               cloracle,
               wooracle,
@@ -130,7 +130,7 @@ describe("woospmmtres", () => {
           })
           .rpc(confirmOptionsRetryTres);
     
-        const result = await program.account.clOracle.fetch(cloracleAccount);
+        const result = await program.account.oracle.fetch(cloracleAccount);
         const price = new Decimal(result.round.toNumber()).mul(new Decimal(10).pow(-result.decimals));
         const updatedAt = moment.unix(result.updatedAt.toNumber());
 
@@ -199,7 +199,7 @@ describe("woospmmtres", () => {
           .methods
           .getPrice()
           .accounts({
-            cloracle: cloracleAccount,
+            oracle: cloracleAccount,
             wooracle: wooracleAccount
           })
           .rpc(confirmOptions);
