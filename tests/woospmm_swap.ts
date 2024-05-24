@@ -52,7 +52,7 @@ describe("woospmm_swap", () => {
       .methods
       .getPrice()
       .accounts({
-        cloracle: solCloracleAccount,
+        oracle: solCloracleAccount,
         wooracle: solWooracleAccount
       })
       .rpc(confirmOptions);
@@ -106,7 +106,7 @@ describe("woospmm_swap", () => {
           authority: provider.wallet.publicKey,
           woopool,
           tokenVault,
-          cloracle,
+          oracle: cloracle,
           wooracle,
           tokenProgram: token.TOKEN_PROGRAM_ID, 
           systemProgram: web3.SystemProgram.programId,
