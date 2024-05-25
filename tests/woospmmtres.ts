@@ -190,6 +190,114 @@ describe("woospmmtres", () => {
     });
   });
 
+  describe("#set_woo_range_max()", async () => {
+    it("set woo oracle range max too small", async () => {    
+      const setPrice = traderSetPrice;
+      const setRangeMax = setPrice.sub(new BN(100));
+
+      await program
+        .methods
+        .setWooRange(rangeMin, setRangeMax)
+        .accounts({
+          wooracle: wooracleAccount,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+  
+      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      console.log(`rangeMin - ${result.rangeMin}`);
+      console.log(`rangeMax - ${result.rangeMax}`);
+
+      assert.ok(
+        result.rangeMin.eq(rangeMin), "wooracle rangeMin should be the same with setted"
+      );
+      assert.ok(
+        result.rangeMax.eq(setRangeMax), "wooracle rangeMax should be the same with setted"
+      );
+
+      try {
+        await program
+          .methods
+          .getPrice()
+          .accounts({
+            oracle: cloracleAccount,
+            wooracle: wooracleAccount
+          })
+          .rpc(confirmOptionsRetryTres);
+
+        assert.fail(
+          "should fail exceed range max"
+        );
+      } catch (e) {
+        const error = e as Error;
+        console.log("----------------------name----------------------------")
+        console.log(error.name);
+        console.log("----------------------message-------------------------")
+        console.log(error.message);
+        console.log("----------------------stack---------------------------")
+        console.log(error.stack);
+        console.log("----------------------end-----------------------------")
+
+        assert.match(error.message, /WooOraclePriceRangeMax/);
+      }
+    });
+  });
+
+  describe("#set_woo_range_min()", async () => {
+    it("set woo oracle range min too large", async () => {    
+      const setPrice = traderSetPrice;
+      const setRangeMin = setPrice.add(new BN(100));
+
+      await program
+        .methods
+        .setWooRange(setRangeMin, rangeMax)
+        .accounts({
+          wooracle: wooracleAccount,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+  
+      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      console.log(`rangeMin - ${result.rangeMin}`);
+      console.log(`rangeMax - ${result.rangeMax}`);
+
+      assert.ok(
+        result.rangeMin.eq(setRangeMin), "wooracle rangeMin should be the same with setted"
+      );
+      assert.ok(
+        result.rangeMax.eq(rangeMax), "wooracle rangeMax should be the same with setted"
+      );
+
+      try {
+        await program
+          .methods
+          .getPrice()
+          .accounts({
+            oracle: cloracleAccount,
+            wooracle: wooracleAccount
+          })
+          .rpc(confirmOptionsRetryTres);
+
+        assert.fail(
+          "should fail exceed range max"
+        );
+      } catch (e) {
+        const error = e as Error;
+        console.log("----------------------name----------------------------")
+        console.log(error.name);
+        console.log("----------------------message-------------------------")
+        console.log(error.message);
+        console.log("----------------------stack---------------------------")
+        console.log(error.stack);
+        console.log("----------------------end-----------------------------")
+
+        assert.match(error.message, /WooOraclePriceRangeMin/);
+      }
+    });
+  });
+
   describe("#set_woo_range()", async () => {
     it("set woo oracle range", async () => {
     
