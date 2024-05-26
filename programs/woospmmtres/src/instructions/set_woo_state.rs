@@ -29,8 +29,8 @@ pub fn set_bound_handler(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
 }
 
 pub fn set_rang_handler(ctx: Context<SetWooState>, range_min: u128, range_max: u128) -> Result<()> {
-    ctx.accounts.wooracle.update_range_min(range_min);
-    ctx.accounts.wooracle.update_range_max(range_max);
+    let _ = ctx.accounts.wooracle.update_range_min(range_min);
+    let _ = ctx.accounts.wooracle.update_range_max(range_max);
 
     Ok(())
 }

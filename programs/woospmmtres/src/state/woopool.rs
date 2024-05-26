@@ -41,6 +41,8 @@ use crate::{
 pub struct WooPool {
     pub woopool_bump: [u8; 1],  // 1
 
+    pub authority: Pubkey,      // 32
+
     pub fee_authority: Pubkey,  // 32
 
     pub oracle: Pubkey,       // 32
@@ -78,7 +80,7 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32);
+    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32);
     
     pub fn seeds(&self) -> [&[u8]; 4] {
         [
@@ -92,17 +94,19 @@ impl WooPool {
     pub fn initialize(
         &mut self,
         bump: u8,
+        authority: Pubkey,
+        fee_authority: Pubkey,
         oracle: Pubkey,
         wooracle: Pubkey,
-        fee_authority: Pubkey,
         token_mint: Pubkey,
         token_vault: Pubkey,
     ) -> Result<()> {
         self.woopool_bump = [bump];
-
+        self.authority = authority;
+        self.fee_authority = fee_authority;
+        
         self.oracle = oracle;
         self.wooracle = wooracle;
-        self.fee_authority = fee_authority;
 
         self.fee_rate = 0;
         self.reserve = 0;

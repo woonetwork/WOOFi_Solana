@@ -1,7 +1,7 @@
 use std::cmp::max;
 
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token, TokenAccount};
+use anchor_spl::token::{self, Token, TokenAccount};
 
 use crate::{
     constants::*,
@@ -143,8 +143,8 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     // TODO Prince: check all unwrap, should throw Error out
     woopool_from.add_protocol_fee(swap_fee_amount).unwrap();
 
-    wooracle_from.post_price(from_new_price);
-    wooracle_to.post_price(to_new_price);
+    let _ = wooracle_from.post_price(from_new_price);
+    let _ = wooracle_to.post_price(to_new_price);
 
     transfer_from_owner_to_vault(
         &ctx.accounts.owner,

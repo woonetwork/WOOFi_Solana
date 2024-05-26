@@ -69,6 +69,44 @@ describe("woospmm_swap", () => {
     return [price, feasible];
   };
 
+  const createOracle = async (feedAccount: anchor.web3.PublicKey) => {
+    const [cloracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+      program.programId
+    );
+
+    const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooracle'), feedAccount.toBuffer()],
+      program.programId
+    );
+
+    let oracleItemData = null;
+    try {
+      oracleItemData = await program.account.woOracle.fetch(cloracle);
+    } catch (e) {
+      const error = e as Error;
+      if (error.message.indexOf("Account does not exist") >= 0) {
+        await program
+          .methods
+          .createOracleChainlink()
+          .accounts({
+            cloracle,
+            wooracle,
+            admin: provider.wallet.publicKey,
+            feedAccount: feedAccount,
+            chainlinkProgram: chainLinkProgramAccount
+          })
+          .rpc(confirmOptionsRetryTres);   
+      }
+    }
+
+    if (oracleItemData == null) {
+      oracleItemData = await program.account.woOracle.fetch(wooracle);
+    }
+
+    return oracleItemData;
+  }
+
   const createPool = async (feedAccount: anchor.web3.PublicKey) => {
     const [cloracle] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
@@ -80,17 +118,18 @@ describe("woospmm_swap", () => {
       program.programId
     );
 
-    const feedAuthority = provider.wallet.publicKey;
+    const feeAuthority = provider.wallet.publicKey;
 
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), feedAuthority.toBuffer(), solTokenMint.toBuffer()],
+      [Buffer.from('woopool'), feeAuthority.toBuffer(), solTokenMint.toBuffer()],
       program.programId
     );
 
-    const [tokenVault] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopoolvalut'), woopool.toBuffer()],
-      program.programId,
-    );
+    console.log('woopool:' + woopool);
+
+    const tokenVaultKeypair = anchor.web3.Keypair.generate();
+
+    console.log('tokenVault Keypair:' + tokenVaultKeypair);
 
     let woopoolData = null;
     try {
@@ -98,20 +137,22 @@ describe("woospmm_swap", () => {
     } catch (e) {
       const error = e as Error;
       if (error.message.indexOf("Account does not exist") >= 0) {
+        console.log('heresdljflkasjdklfjklsdjflksjdlk');
         await program
         .methods
-        .createPool(feedAuthority)
+        .createPool(feeAuthority)
         .accounts({
           tokenMint: solTokenMint,
           authority: provider.wallet.publicKey,
           woopool,
-          tokenVault,
+          tokenVault: tokenVaultKeypair.publicKey,
           oracle: cloracle,
           wooracle,
           tokenProgram: token.TOKEN_PROGRAM_ID, 
           systemProgram: web3.SystemProgram.programId,
           rent: web3.SYSVAR_RENT_PUBKEY
           })
+          .signers([tokenVaultKeypair])
           .rpc(confirmOptionsRetryTres);   
       }
     }
@@ -120,29 +161,40 @@ describe("woospmm_swap", () => {
       woopoolData = await program.account.wooPool.fetch(woopool);
     }
 
+    console.log('authority:' + woopoolData.authority);
+    console.log('feeAuthority:' + woopoolData.feeAuthority);
+    console.log('tokenMint:' + woopoolData.tokenMint);
+    console.log('tokenVault:' + woopoolData.tokenVault);
+
     return woopoolData;
   }
 
   describe("#create_sol_pool()", async () => {
-    it("creates an oracle account", async () => {
+    it("creates sol pool", async () => {
 
+      let solOracle = await createOracle(solFeedAccount);
+      assert.ok(
+        solOracle.authority.equals(provider.wallet.publicKey)
+      );
+  
       let solPool = await createPool(solFeedAccount);
-
       assert.ok(
         solPool.authority.equals(provider.wallet.publicKey)
       );
     });
-    
   });
 
   describe("#create_usdc_pool()", async () => {
-    it("creates an oracle account", async () => {
-      let usdcPool = await createPool(usdcFeedAccount);
+    it("creates usdc pool", async () => {
+      let usdcOracle = await createOracle(usdcFeedAccount);
+      assert.ok(
+        usdcOracle.authority.equals(provider.wallet.publicKey)
+      );
 
+      let usdcPool = await createPool(usdcFeedAccount);
       assert.ok(
         usdcPool.authority.equals(provider.wallet.publicKey)
       );
     });
-    
   });
 });

@@ -27,11 +27,6 @@ pub struct CreatePool<'info> {
     #[account(
         init,
         payer = authority,
-        seeds = [
-          WOOPOOL_VAULT_SEED.as_bytes(),
-          woopool.key().as_ref()
-        ],
-        bump,
         token::mint = token_mint,
         token::authority = woopool
       )]
@@ -68,6 +63,7 @@ pub fn handler(
     ctx: Context<CreatePool>,
     fee_authority: Pubkey
 ) -> Result<()> {
+    let authority = ctx.accounts.authority.key();
     let token_mint = ctx.accounts.token_mint.key();
     let token_vault = ctx.accounts.token_vault.key();
 
@@ -78,9 +74,10 @@ pub fn handler(
 
     Ok(woopool.initialize(
         bump,
+        authority,
+        fee_authority,
         oracle,
         wooracle,
-        fee_authority,
         token_mint,
         token_vault,
     )?)
