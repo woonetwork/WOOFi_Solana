@@ -124,19 +124,19 @@ impl WOOracle {
     }
 
     pub fn update_spread_for_new_price(&mut self, price: u128) -> Result<()> {
-        let preS: u64 = self.spread;
-        let preP: u128 = self.price;
-        if preP == 0 || price == 0 || preS >= TENPOW18U64 {
+        let pre_s: u64 = self.spread;
+        let pre_p: u128 = self.price;
+        if pre_p == 0 || price == 0 || pre_s >= TENPOW18U64 {
             // previous price or current price is 0, no action is needed
         } else {
-            let maxP: u128 = max(price, preP);
-            let minP: u128 = min(price, preP);
-            let calcA: u128 = checked_mul_div(TENPOW18U128, minP, maxP)?;
-            let antiS: u128 = checked_mul_div(calcA, TENPOW18U128, TENPOW18U128.checked_sub(preS as u128).unwrap())?;
-            if antiS < TENPOW18U128 {
-                let newS: u64 = TENPOW18U128.checked_sub(antiS).unwrap() as u64;
-                if newS > preS {
-                    self.spread = newS;
+            let max_p: u128 = max(price, pre_p);
+            let min_p: u128 = min(price, pre_p);
+            let calc_a: u128 = checked_mul_div(TENPOW18U128, min_p, max_p)?;
+            let anti_s: u128 = checked_mul_div(calc_a, TENPOW18U128, TENPOW18U128.checked_sub(pre_s as u128).unwrap())?;
+            if anti_s < TENPOW18U128 {
+                let new_s: u64 = TENPOW18U128.checked_sub(anti_s).unwrap() as u64;
+                if new_s > pre_s {
+                    self.spread = new_s;
                 }
             }
         }

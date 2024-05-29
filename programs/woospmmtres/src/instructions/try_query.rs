@@ -45,6 +45,7 @@ pub struct TryQuery<'info> {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
 pub struct QueryResult {
     pub to_amount: u128,
+    pub swap_fee_amount: u128,
     pub swap_fee: u128,
 }
 
@@ -62,7 +63,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
 
     let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to)?;
 
-    let spread = max(wooracle_from.spread, wooracle_to.spread);
+    let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
 
     state_from.spread = spread;
@@ -73,28 +74,42 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
         DEFAULT_QUOTE_DECIMALS,
         oracle_from.decimals as u32);
 
-    let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
-        from_amount, 
+    let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
+    let swap_fee = checked_mul_div(swap_fee_amount, state_from.price_out, decimals_from.price_dec as u128)?;
+    let remain_amount = from_amount.checked_sub(swap_fee_amount).unwrap();
+    
+    let (remain_usd_amount, from_new_price) = swap_math::calc_usd_amount_sell_base(
+        remain_amount, 
         woopool_from, 
         &decimals_from, 
         &state_from)?;
     
-    let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
-    let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
+    // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
+    // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
+    //     from_amount, 
+    //     woopool_from, 
+    //     &decimals_from, 
+    //     wooracle_from.coeff, 
+    //     spread, 
+    //     &price_from)?;
+    
+    // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
+    // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
         DEFAULT_PRICE_DECIMALS, 
         DEFAULT_QUOTE_DECIMALS,
         oracle_to.decimals as u32);
 
-    let (to_amount, _) = swap_math::calc_base_amount_sell_usd(
-        remain_amount, 
+    let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_usd(
+        remain_usd_amount, 
         woopool_to, 
         &decimals_to, 
         &state_to)?;
-
+    
     Ok(QueryResult {
         to_amount,
+        swap_fee_amount,
         swap_fee
     })
 }

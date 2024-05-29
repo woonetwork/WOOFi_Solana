@@ -4,10 +4,10 @@ use crate::state::woopool::*;
 
 #[derive(Accounts)]
 pub struct SetPoolState<'info> {
-    #[account(mut, has_one = fee_authority)]
+    #[account(mut, has_one = authority)]
     pub woopool: Account<'info, WooPool>,
 
-    pub fee_authority: Signer<'info>,
+    pub authority: Signer<'info>,
 }
 
 pub fn set_pool_state_handler(ctx: Context<SetPoolState>, fee_rate: u16, cap_balance: u128, tgt_balance: u128, shift_max: u16) -> Result<()> {
@@ -35,4 +35,12 @@ pub fn set_tgt_balance_handler(ctx: Context<SetPoolState>, tgt_balance: u128) ->
 
 pub fn set_shift_max_handler(ctx: Context<SetPoolState>, shift_max: u16) -> Result<()> {
     Ok(ctx.accounts.woopool.set_shift_max(shift_max)?)
+}
+
+pub fn set_max_notional_swap_handler(ctx: Context<SetPoolState>, max_notional_swap: u128) -> Result<()> {
+    Ok(ctx.accounts.woopool.set_max_notional_swap(max_notional_swap)?)
+}
+
+pub fn set_max_gamma_handler(ctx: Context<SetPoolState>, max_gamma: u128) -> Result<()> {
+    Ok(ctx.accounts.woopool.set_max_gamma(max_gamma)?)
 }

@@ -171,6 +171,16 @@ describe("woospmm_swap", () => {
       }
     }
 
+    // init set Pool Max Notional Swap
+    await program
+    .methods
+    .setPoolMaxNotionalSwap(new BN(1000*LAMPORTS_PER_SOL))
+    .accounts({
+      woopool: woopool,
+      authority: provider.wallet.publicKey
+    })
+    .rpc(confirmOptionsRetryTres);
+
     if (woopoolData == null) {
       woopoolData = await program.account.wooPool.fetch(woopool);
     }
@@ -303,6 +313,14 @@ describe("woospmm_swap", () => {
     
       const fromPoolParams = await generatePoolParams(solFeedAccount, feeAuthority, solTokenMint);
       const toPoolParams = await generatePoolParams(usdcFeedAccount, feeAuthority, usdcTokenMint);
+
+      const [fromPrice, fromFeasible] = await getOraclePriceResult(fromPoolParams.oracle, fromPoolParams.wooracle);  
+      console.log(`price - ${fromPrice}`);
+      console.log(`feasible - ${fromFeasible}`);
+
+      const [toPrice, toFeasible] = await getOraclePriceResult(toPoolParams.oracle, toPoolParams.wooracle);  
+      console.log(`price - ${toPrice}`);
+      console.log(`feasible - ${toFeasible}`);
   
       await program
         .methods

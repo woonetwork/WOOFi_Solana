@@ -47,11 +47,11 @@ pub fn calc_usd_amount_sell_base<'info>(base_amount: u128, woopool: &Account<'in
     //                  .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
     // let usd_amount: u128 = checked_mul_div(calcA, calcB, TENPOW18U128)?
     //                  .checked_div(decimals.base_dec as u128).ok_or(ErrorCode::MathOverflow)?;
-    let calcA: u128 = checked_mul_div(base_amount, state.price_out, decimals.base_dec as u128)?
+    let calc_a: u128 = checked_mul_div(base_amount, state.price_out, decimals.base_dec as u128)?
                      .checked_mul(decimals.quote_dec as u128).ok_or(ErrorCode::MulDivOverflow)?;
-    let calcB: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
+    let calc_b: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
                      .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
-    let usd_amount: u128 = checked_mul_div(calcA, calcB, TENPOW18U128)?
+    let usd_amount: u128 = checked_mul_div(calc_a, calc_b, TENPOW18U128)?
                      .checked_div(decimals.price_dec as u128).ok_or(ErrorCode::MathOverflow)?;
 
     // newPrice = oracle.price * (1 - k * oracle.price * baseAmount)
@@ -79,12 +79,12 @@ pub fn calc_base_amount_sell_usd<'info>(usd_amount: u128, woopool: &Account<'inf
     }
     
     // Formula: baseAmount = quoteAmount / oracle.price * (1 - oracle.k * quoteAmount - oracle.spread)
-    let calcA: u128 = usd_amount.checked_mul(decimals.base_dec as u128).ok_or(ErrorCode::MathOverflow)?;
-    let calcB: u128 = checked_mul_div(calcA, decimals.price_dec as u128, state.price_out)?;
-    let calcC: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
+    let calc_a: u128 = usd_amount.checked_mul(decimals.base_dec as u128).ok_or(ErrorCode::MathOverflow)?;
+    let calc_b: u128 = checked_mul_div(calc_a, decimals.price_dec as u128, state.price_out)?;
+    let calc_c: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
                       .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
-    let calcD: u128 = checked_mul_div(calcB, calcC, TENPOW18U128)?;
-    let base_amount = calcD / decimals.quote_dec as u128;
+    let calc_d: u128 = checked_mul_div(calc_b, calc_c, TENPOW18U128)?;
+    let base_amount = calc_d / decimals.quote_dec as u128;
 
     // new_price = oracle.price / (1 - k * quoteAmount)
     let new_price: u128 = checked_mul_div(TENPOW18U128, state.price_out, TENPOW18U128.checked_sub(gamma).unwrap())?;
@@ -94,18 +94,18 @@ pub fn calc_base_amount_sell_usd<'info>(usd_amount: u128, woopool: &Account<'inf
 
 // u128 can cover
 pub fn adjust_price_v3<'info>(woopool: &Account<'info, WooPool>, price: u128) -> Result<u128> {
-    let Bt = woopool.tgt_balance;
-    let Bmax = woopool.cap_balance;
-    let B = woopool.reserve;
-    let Smax = woopool.shift_max as u128; // decimal = 5
+    let bt = woopool.tgt_balance;
+    let bmax = woopool.cap_balance;
+    let b = woopool.reserve;
+    let smax = woopool.shift_max as u128; // decimal = 5
 
-    let mut p : u128;
-    if B < Bt {
-        p = (price * (TE5U128 + (Smax * (Bt - B)) / Bt)) / TE5U128;
+    let p : u128;
+    if b < bt {
+        p = (price * (TE5U128 + (smax * (bt - b)) / bt)) / TE5U128;
     } else {
-        let mut shift = (Smax as u128 * (B - Bt)) / max(Bt, (B * (Bmax - Bt)) / Bmax);
-        if shift > Smax {
-            shift = Smax;
+        let mut shift = (smax as u128 * (b - bt)) / max(bt, (b * (bmax - bt)) / bmax);
+        if shift > smax {
+            shift = smax;
         }
         p = (price * (TE5U128 - shift)) / TE5U128;
     }
@@ -116,8 +116,8 @@ pub fn adjust_price_v3<'info>(woopool: &Account<'info, WooPool>, price: u128) ->
 // u128 can cover with 1 assumption
 // decimals.price_dec is 8
 pub fn adjust_k_v3<'info>(woopool: &Account<'info, WooPool>, price: u128, decimals: &Decimals, coeff: u64) -> Result<u128> {
-    let Smax = woopool.shift_max as u128;
-    let Bt = woopool.tgt_balance;
+    let smax = woopool.shift_max as u128;
+    let bt = woopool.tgt_balance;
 
     let k = max(
         coeff as u128, 
@@ -125,7 +125,7 @@ pub fn adjust_k_v3<'info>(woopool: &Account<'info, WooPool>, price: u128, decima
         // ((TENPOW18U128 * Smax * decimals.base_dec as u128 * decimals.price_dec as u128) / TE5U128 / Bt / price) as u64);
         // TODO Prince: below has only 1 assumption: decimals.price_dec is 8
         // ((18 + 5 + 8) - 8 - 5) + (18 or 8) - (18 or 8)
-        ((TENPOW18U128 * Smax * decimals.price_dec as u128) / price / TE5U128) * decimals.base_dec as u128 / Bt);
+        ((TENPOW18U128 * smax * decimals.price_dec as u128) / price / TE5U128) * decimals.base_dec as u128 / bt);
     Ok(k)
 }
 
