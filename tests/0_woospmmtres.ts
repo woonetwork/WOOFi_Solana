@@ -22,7 +22,7 @@ describe("woospmmtres", () => {
 
   const feedAccount = new anchor.web3.PublicKey("HgTtcbcmp5BeThax5AU8vg4VwK79qAvAKKFMs8txMLW6");
   const chainLinkProgramAccount = new anchor.web3.PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny");
-  const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3 };
+  const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3, commitment: "confirmed" };
   const tenpow18 = new BN(10).pow(new BN(18));
   const tenpow16 = new BN(10).pow(new BN(16));
   const traderSetPrice = new BN(2200000000);

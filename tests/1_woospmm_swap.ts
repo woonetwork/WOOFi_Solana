@@ -2,13 +2,14 @@ import * as anchor from "@coral-xyz/anchor";
 import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
-import { ConfirmOptions } from "@solana/web3.js";
+import { ConfirmOptions, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
 import { Woospmmtres } from "../target/types/woospmmtres";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
 import * as global from "./global";
+import { createAssociatedTokenAccount, transferToken } from "./utils/token";
 
 describe("woospmm_swap", () => {
   // Configure the client to use the local cluster.
@@ -17,8 +18,6 @@ describe("woospmm_swap", () => {
 
   const program = anchor.workspace.Woospmmtres as Program<Woospmmtres>;
 
-  let solCloracleAccount;
-  let solWooracleAccount;
   let cloracle_price: BN;
   let cloracle_decimal: Number;
 
@@ -30,7 +29,7 @@ describe("woospmm_swap", () => {
   // USDC/USD
   const usdcFeedAccount = new anchor.web3.PublicKey("2EmfL3MqL3YHABudGNmajjCpR13NNEn9Y4LWxbDm6SwR");
   const chainLinkProgramAccount = new anchor.web3.PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny");
-  const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3 };
+  const confirmOptionsRetryTres: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
   const tenpow18 = new BN(10).pow(new BN(18));
   const tenpow16 = new BN(10).pow(new BN(16));
 
@@ -45,17 +44,15 @@ describe("woospmm_swap", () => {
     return [key, data, buffer];
   };
 
-  const getSOLPriceResult = async () => {
-    const confirmOptions: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
-
+  const getOraclePriceResult = async (oracle: anchor.web3.PublicKey, wooracle: anchor.web3.PublicKey) => {
     const tx = await program
       .methods
       .getPrice()
       .accounts({
-        oracle: solCloracleAccount,
-        wooracle: solWooracleAccount
+        oracle,
+        wooracle
       })
-      .rpc(confirmOptions);
+      .rpc(confirmOptionsRetryTres);
 
     let t = await provider.connection.getTransaction(tx, {
       commitment: "confirmed",
@@ -82,7 +79,7 @@ describe("woospmm_swap", () => {
 
     let oracleItemData = null;
     try {
-      oracleItemData = await program.account.woOracle.fetch(cloracle);
+      oracleItemData = await program.account.woOracle.fetch(wooracle);
     } catch (e) {
       const error = e as Error;
       if (error.message.indexOf("Account does not exist") >= 0) {
@@ -104,10 +101,26 @@ describe("woospmm_swap", () => {
       oracleItemData = await program.account.woOracle.fetch(wooracle);
     }
 
+    // init set wooracle range min and max
+    const oracleChinlinkData = await program.account.oracle.fetch(cloracle);
+    console.log('oracle chainlink price:' + oracleChinlinkData.round);
+    console.log('wooracle price:' + oracleItemData.price);
+
+    const rangeMin = oracleChinlinkData.round.mul(new BN(0.5));
+    const rangeMax = oracleChinlinkData.round.mul(new BN(1.5));
+    await program
+      .methods
+      .setWooRange(rangeMin, rangeMax)
+      .accounts({
+        wooracle: wooracle,
+        authority: provider.wallet.publicKey,
+      })
+      .rpc(confirmOptionsRetryTres);
+
     return oracleItemData;
   }
 
-  const createPool = async (feedAccount: anchor.web3.PublicKey) => {
+  const createPool = async (feedAccount: anchor.web3.PublicKey, tokenMint: anchor.web3.PublicKey) => {
     const [cloracle] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
       program.programId
@@ -121,7 +134,7 @@ describe("woospmm_swap", () => {
     const feeAuthority = provider.wallet.publicKey;
 
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), feeAuthority.toBuffer(), solTokenMint.toBuffer()],
+      [Buffer.from('woopool'), feeAuthority.toBuffer(), tokenMint.toBuffer()],
       program.programId
     );
 
@@ -129,7 +142,7 @@ describe("woospmm_swap", () => {
 
     const tokenVaultKeypair = anchor.web3.Keypair.generate();
 
-    console.log('tokenVault Keypair:' + tokenVaultKeypair);
+    console.log('tokenVault Keypair:' + tokenVaultKeypair.publicKey);
 
     let woopoolData = null;
     try {
@@ -137,12 +150,12 @@ describe("woospmm_swap", () => {
     } catch (e) {
       const error = e as Error;
       if (error.message.indexOf("Account does not exist") >= 0) {
-        console.log('heresdljflkasjdklfjklsdjflksjdlk');
+        console.log('start create pool:');
         await program
         .methods
         .createPool(feeAuthority)
         .accounts({
-          tokenMint: solTokenMint,
+          tokenMint,
           authority: provider.wallet.publicKey,
           woopool,
           tokenVault: tokenVaultKeypair.publicKey,
@@ -154,6 +167,7 @@ describe("woospmm_swap", () => {
           })
           .signers([tokenVaultKeypair])
           .rpc(confirmOptionsRetryTres);   
+        console.log('end create pool.');
       }
     }
 
@@ -169,6 +183,37 @@ describe("woospmm_swap", () => {
     return woopoolData;
   }
 
+  const generatePoolParams = async(
+    feedAccount: anchor.web3.PublicKey,
+    feeAuthority: anchor.web3.PublicKey,
+    tokenMint: anchor.web3.PublicKey
+  ) => {
+    const [oracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+      program.programId
+    );
+
+    const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooracle'), feedAccount.toBuffer()],
+      program.programId
+    );
+
+    const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('woopool'), feeAuthority.toBuffer(), tokenMint.toBuffer()],
+      program.programId
+    );
+
+    // woopool data should already be created after init
+    const {tokenVault} = await program.account.wooPool.fetch(woopool);
+
+    return {
+      oracle,
+      wooracle,
+      woopool,
+      tokenVault
+    }
+  }
+
   describe("#create_sol_pool()", async () => {
     it("creates sol pool", async () => {
 
@@ -177,7 +222,7 @@ describe("woospmm_swap", () => {
         solOracle.authority.equals(provider.wallet.publicKey)
       );
   
-      let solPool = await createPool(solFeedAccount);
+      let solPool = await createPool(solFeedAccount, solTokenMint);
       assert.ok(
         solPool.authority.equals(provider.wallet.publicKey)
       );
@@ -191,10 +236,97 @@ describe("woospmm_swap", () => {
         usdcOracle.authority.equals(provider.wallet.publicKey)
       );
 
-      let usdcPool = await createPool(usdcFeedAccount);
+      let usdcPool = await createPool(usdcFeedAccount, usdcTokenMint);
       assert.ok(
         usdcPool.authority.equals(provider.wallet.publicKey)
       );
+    });
+  });
+
+  describe("#swap_between_sol_and_usdc", async ()=> {
+    it("swap_from_sol_to_usdc", async ()=> {
+      let fromAmount = 0.1 * LAMPORTS_PER_SOL;
+      let feeAuthority = provider.wallet.publicKey;
+
+      const fromWallet = anchor.web3.Keypair.generate();
+
+      const fromTokenAccount = await createAssociatedTokenAccount(
+        provider,
+        solTokenMint,
+        fromWallet.publicKey,
+        provider.wallet.publicKey
+      );
+      const toTokenAccount = await createAssociatedTokenAccount(
+        provider,
+        usdcTokenMint,
+        fromWallet.publicKey,
+        provider.wallet.publicKey
+      );
+      console.log("fromWallet PublicKey:" + fromWallet.publicKey);
+      console.log('fromWalletTokenAccount:' + fromTokenAccount);
+      console.log('toWalletTokenAccount:' + toTokenAccount);
+
+      const transferTranscation = new Transaction().add(
+        // transfer SOL to from wallet
+        SystemProgram.transfer({
+          fromPubkey: provider.wallet.publicKey,
+          toPubkey: fromWallet.publicKey,
+          lamports: fromAmount,
+        }),
+        // trasnfer SOL to WSOL into ata account
+        SystemProgram.transfer({
+          fromPubkey: fromWallet.publicKey,
+          toPubkey: fromTokenAccount,
+          lamports: fromAmount,
+        }),
+        // sync wrapped SOL balance
+        token.createSyncNativeInstruction(fromTokenAccount)
+      );
+
+      await provider.sendAndConfirm(transferTranscation, [fromWallet], { commitment: "confirmed" });
+
+      // const fromAirdropSignature = await provider.connection.requestAirdrop(
+      //   fromWallet.publicKey,
+      //   LAMPORTS_PER_SOL,
+      // );
+      // // Wait for airdrop confirmation
+      // await provider.connection.confirmTransaction({
+      //   signature: fromAirdropSignature,
+      //   ...(await provider.connection.getLatestBlockhash("confirmed")),
+      // }, "confirmed");
+
+      const initBalance = await provider.connection.getBalance(fromWallet.publicKey);
+      console.log("fromWallet Balance:" + initBalance);
+      const tokenBalance = await provider.connection.getTokenAccountBalance(fromTokenAccount);
+      console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
+      console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
+    
+      const fromPoolParams = await generatePoolParams(solFeedAccount, feeAuthority, solTokenMint);
+      const toPoolParams = await generatePoolParams(usdcFeedAccount, feeAuthority, usdcTokenMint);
+  
+      await program
+        .methods
+        .swap(new BN(fromAmount))
+        .accounts({
+          tokenProgram: token.TOKEN_PROGRAM_ID,
+          owner: fromWallet.publicKey,  // is the user want to do swap
+          oracleFrom: fromPoolParams.oracle,
+          wooracleFrom: fromPoolParams.wooracle,
+          woopoolFrom: fromPoolParams.woopool,
+          tokenOwnerAccountFrom: fromTokenAccount,
+          tokenVaultFrom: fromPoolParams.tokenVault,
+          oracleTo: toPoolParams.oracle,
+          wooracleTo: toPoolParams.wooracle,
+          woopoolTo: toPoolParams.woopool,
+          tokenOwnerAccountTo: toTokenAccount,
+          tokenVaultTo: toPoolParams.tokenVault
+        })
+        .signers([fromWallet])
+        .rpc(confirmOptionsRetryTres);
+
+        const toTokenAccountBalance = await provider.connection.getTokenAccountBalance(toTokenAccount);
+        console.log("toTokenAccount amount:" + toTokenAccountBalance.value.amount);
+        console.log("toTokenAccount decimals:" + toTokenAccountBalance.value.decimals);
     });
   });
 });
