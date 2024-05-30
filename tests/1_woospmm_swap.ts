@@ -255,7 +255,7 @@ describe("woospmm_swap", () => {
 
   describe("#swap_between_sol_and_usdc", async ()=> {
     it("swap_from_sol_to_usdc", async ()=> {
-      let fromAmount = 0.1 * LAMPORTS_PER_SOL;
+      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
       let feeAuthority = provider.wallet.publicKey;
 
       const fromWallet = anchor.web3.Keypair.generate();
@@ -276,6 +276,7 @@ describe("woospmm_swap", () => {
       console.log('fromWalletTokenAccount:' + fromTokenAccount);
       console.log('toWalletTokenAccount:' + toTokenAccount);
 
+      // increase from pool liquidity
       const transferTranscation = new Transaction().add(
         // transfer SOL to from wallet
         SystemProgram.transfer({
@@ -321,6 +322,57 @@ describe("woospmm_swap", () => {
       const [toPrice, toFeasible] = await getOraclePriceResult(toPoolParams.oracle, toPoolParams.wooracle);  
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
+
+      const tx = await program
+        .methods
+        .tryQuery(new BN(fromAmount))
+        .accounts({
+          oracleFrom: fromPoolParams.oracle,
+          wooracleFrom: fromPoolParams.wooracle,
+          woopoolFrom: fromPoolParams.woopool,
+          oracleTo: toPoolParams.oracle,
+          wooracleTo: toPoolParams.wooracle,
+          woopoolTo: toPoolParams.woopool
+        })
+        .rpc(confirmOptionsRetryTres);
+
+      let t = await provider.connection.getTransaction(tx, {
+        commitment: "confirmed",
+      })
+  
+      const [key, data, buffer] = getReturnLog(t);
+      const reader = new borsh.BinaryReader(buffer);
+      const toAmount = reader.readU128().toNumber();
+      const swapFeeAmount = reader.readU128().toNumber();
+      const swapFee = reader.readU128().toNumber();
+      console.log('toAmount:' + toAmount);
+      console.log('swapFeeAmount:' + swapFeeAmount);
+      console.log('swapFee:' + swapFee);
+
+            // increase to pool liquidity
+            const providerToTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+            const beforeProviderToTokenBalance = await provider.connection.getTokenAccountBalance(providerToTokenAccount);
+            console.log("beforeProviderToTokenBalance amount:" + beforeProviderToTokenBalance.value.amount);
+            console.log("beforeProviderToTokenBalance decimals:" + beforeProviderToTokenBalance.value.decimals);
+      
+            const transferToTranscation = new Transaction().add(
+              // trasnfer USDC to to account
+              token.createTransferCheckedInstruction(
+                providerToTokenAccount,
+                usdcTokenMint,
+                toPoolParams.tokenVault,
+                provider.wallet.publicKey,
+                0.2 * Math.pow(10, beforeProviderToTokenBalance.value.decimals),
+                beforeProviderToTokenBalance.value.decimals
+              ),
+            );
+      
+            await provider.sendAndConfirm(transferToTranscation, [], { commitment: "confirmed" });
+      
+            const afterToTokenBalance = await provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
+            console.log("afterProviderToTokenBalance amount:" + afterToTokenBalance.value.amount);
+            console.log("afterProviderToTokenBalance decimals:" + afterToTokenBalance.value.decimals);
+      
   
       await program
         .methods

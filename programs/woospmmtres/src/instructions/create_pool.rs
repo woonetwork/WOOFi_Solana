@@ -66,6 +66,7 @@ pub fn handler(
     let authority = ctx.accounts.authority.key();
     let token_mint = ctx.accounts.token_mint.key();
     let token_vault = ctx.accounts.token_vault.key();
+    let base_decimals = ctx.accounts.token_mint.decimals;
 
     let woopool = &mut ctx.accounts.woopool;
     let bump = ctx.bumps.woopool;
@@ -80,5 +81,6 @@ pub fn handler(
         wooracle,
         token_mint,
         token_vault,
+        base_decimals
     )?)
 }

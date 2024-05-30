@@ -2,9 +2,9 @@
 
 #[derive(Clone, Default, Copy)]
 pub struct Decimals {
-    pub price_dec: u64,  // 8
-    pub quote_dec: u64,  // 6, same as native USDC
-    pub base_dec: u64,   // 18 or 8
+    pub price_dec: u64,  // 10 ** 8
+    pub quote_dec: u64,  // 10 ** 6, same as native USDC
+    pub base_dec: u64,   // 10 ** 18 or 8
 }
 
 impl Decimals {

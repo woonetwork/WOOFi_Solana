@@ -97,9 +97,9 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     state_to.spread = spread;
 
     let decimals_from = Decimals::new(
-        DEFAULT_PRICE_DECIMALS, 
+        oracle_from.decimals as u32, 
         DEFAULT_QUOTE_DECIMALS,
-        oracle_from.decimals as u32);
+        woopool_from.base_decimals as u32);
 
     let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
     let remain_amount = from_amount.checked_sub(swap_fee_amount).unwrap();
@@ -123,9 +123,9 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
-        DEFAULT_PRICE_DECIMALS, 
+        oracle_to.decimals as u32, 
         DEFAULT_QUOTE_DECIMALS,
-        oracle_to.decimals as u32);
+        woopool_to.base_decimals as u32);
 
     let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_usd(
         remain_usd_amount, 
