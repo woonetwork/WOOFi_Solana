@@ -16,9 +16,10 @@ pub struct CreatePool<'info> {
         init,
         payer = authority,
         space = WooPool::LEN,
+        // TODO Prince: double check fee authority is good for seeds param. since the value maybe changed.
         seeds = [
           WOOPOOL_SEED.as_bytes(),
-          fee_authority.as_ref(),
+          // fee_authority.as_ref(),
           token_mint.key().as_ref(),
         ],
         bump)]

@@ -134,7 +134,7 @@ describe("woospmm_swap", () => {
     const feeAuthority = provider.wallet.publicKey;
 
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), feeAuthority.toBuffer(), tokenMint.toBuffer()],
+      [Buffer.from('woopool'), tokenMint.toBuffer()],
       program.programId
     );
 
@@ -195,7 +195,6 @@ describe("woospmm_swap", () => {
 
   const generatePoolParams = async(
     feedAccount: anchor.web3.PublicKey,
-    feeAuthority: anchor.web3.PublicKey,
     tokenMint: anchor.web3.PublicKey
   ) => {
     const [oracle] = await anchor.web3.PublicKey.findProgramAddressSync(
@@ -209,7 +208,7 @@ describe("woospmm_swap", () => {
     );
 
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), feeAuthority.toBuffer(), tokenMint.toBuffer()],
+      [Buffer.from('woopool'), tokenMint.toBuffer()],
       program.programId
     );
 
@@ -312,8 +311,8 @@ describe("woospmm_swap", () => {
       console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
       console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
     
-      const fromPoolParams = await generatePoolParams(solFeedAccount, feeAuthority, solTokenMint);
-      const toPoolParams = await generatePoolParams(usdcFeedAccount, feeAuthority, usdcTokenMint);
+      const fromPoolParams = await generatePoolParams(solFeedAccount, solTokenMint);
+      const toPoolParams = await generatePoolParams(usdcFeedAccount, usdcTokenMint);
 
       const [fromPrice, fromFeasible] = await getOraclePriceResult(fromPoolParams.oracle, fromPoolParams.wooracle);  
       console.log(`price - ${fromPrice}`);

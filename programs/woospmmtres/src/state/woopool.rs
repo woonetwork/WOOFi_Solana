@@ -85,10 +85,10 @@ pub struct WooPool {
 impl WooPool {
     pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
     
-    pub fn seeds(&self) -> [&[u8]; 4] {
+    pub fn seeds(&self) -> [&[u8]; 3] {
         [
             WOOPOOL_SEED.as_bytes(),
-            self.fee_authority.as_ref(),
+            // self.fee_authority.as_ref(),
             self.token_mint.as_ref(),
             self.woopool_bump.as_ref(),
         ]

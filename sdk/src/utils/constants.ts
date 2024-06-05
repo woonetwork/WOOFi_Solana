@@ -6,3 +6,10 @@ export const TOKEN_MINTS = {
   mSOL: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So",
   stSOL: "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
 };
+
+export const CHAINLINK_PROGRAM_ACCOUNT = "HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny";
+
+export const CHAINLINK_FEED_ACCOUNT = {
+  SOL: "99B2bTijsU6f1GCT73HmdR7HCFFjGMBcPZY6jZ96ynrR",
+  USDC: "2EmfL3MqL3YHABudGNmajjCpR13NNEn9Y4LWxbDm6SwR"
+};
