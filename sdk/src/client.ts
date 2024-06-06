@@ -1,10 +1,10 @@
 import { BN, Program } from "@coral-xyz/anchor";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { PublicKey, TransactionInstruction } from "@solana/web3.js";
+import { NATIVE_MINT, createAssociatedTokenAccount, createSyncNativeInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import { SwapParams, swapIx } from "./instructions/swap-ix"
 import { Woospmmtres } from "./artifacts/woospmmtres";
 import { WoospmmtresContext } from "./context";
-import { CHAINLINK_PROGRAM_ACCOUNT, CHAINLINK_FEED_ACCOUNT, TOKEN_MINTS } from "./utils/constants";
+import { CHAINLINK_PROGRAM_ACCOUNT } from "./utils/constants";
 import { TryQuerySwapParams, tryQuerySwapIx } from "./instructions/try-query-swap-ix";
 
 const generatePoolParams = async(
@@ -39,15 +39,16 @@ const generatePoolParams = async(
 }
 
 export class WoospmmtresClient {
-  public async tryQuery(
+  public static async tryQuery(
     ctx: WoospmmtresContext,
     amount: BN,
+    fromTokenMint: PublicKey,
+    fromOracleFeedAccount: PublicKey,
+    toTokenMint: PublicKey,
+    toOracleFeedAccount: PublicKey,
   ): Promise<TransactionInstruction> {
-    const fromTokenMint = new PublicKey(TOKEN_MINTS["SOL"]);
-    const toTokenMint = new PublicKey(TOKEN_MINTS["USDC"]);
-
-    const fromPoolParams = await generatePoolParams(new PublicKey(CHAINLINK_FEED_ACCOUNT.SOL), fromTokenMint, ctx.program);
-    const toPoolParams = await generatePoolParams(new PublicKey(CHAINLINK_FEED_ACCOUNT.USDC), toTokenMint, ctx.program);
+    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, ctx.program);
+    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, ctx.program);
 
     const tryQuerySwapParams: TryQuerySwapParams = {
       amount,
@@ -69,19 +70,35 @@ export class WoospmmtresClient {
    * @param amount - {@link SwapAsyncParams}
    * @returns
    */
-  public async swap(
+  public static async swap(
     ctx: WoospmmtresContext,
     amount: BN,
-  ): Promise<TransactionInstruction> {
-    const fromTokenMint = new PublicKey(TOKEN_MINTS["SOL"]);
-    const toTokenMint = new PublicKey(TOKEN_MINTS["USDC"]);
+    fromTokenMint: PublicKey,
+    fromOracleFeedAccount: PublicKey,
+    toTokenMint: PublicKey,
+    toOracleFeedAccount: PublicKey,
+  ): Promise<TransactionInstruction[]> {
+    const instructions: TransactionInstruction[] = [];
 
-    const fromPoolParams = await generatePoolParams(new PublicKey(CHAINLINK_FEED_ACCOUNT.SOL), fromTokenMint, ctx.program);
-    const toPoolParams = await generatePoolParams(new PublicKey(CHAINLINK_FEED_ACCOUNT.USDC), toTokenMint, ctx.program);
+    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, ctx.program);
+    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, ctx.program);
 
-    // TODO Prince: create ata if not exist for now.
     const tokenOwnerAccountFrom = getAssociatedTokenAddressSync(fromTokenMint, ctx.wallet.publicKey);
     const tokenOwnerAccountTo = getAssociatedTokenAddressSync(toTokenMint, ctx.wallet.publicKey);
+
+    // Woo router logic, handle sol and wsol, do the transfer
+    if (fromTokenMint == NATIVE_MINT) {
+      instructions.push(
+        // trasnfer SOL to WSOL into ata account
+        SystemProgram.transfer({
+          fromPubkey: ctx.wallet.publicKey,
+          toPubkey: tokenOwnerAccountFrom,
+          lamports: amount.toNumber(),
+        }),
+        // sync wrapped SOL balance
+        createSyncNativeInstruction(tokenOwnerAccountFrom)
+      );
+    }
 
     const swapParams : SwapParams = {
       amount,
@@ -98,7 +115,8 @@ export class WoospmmtresClient {
       tokenVaultTo: toPoolParams.tokenVault
     }
 
-    const tx = swapIx(ctx.program, swapParams);
-    return tx;
+    const tx = await swapIx(ctx.program, swapParams);
+    instructions.push(tx);
+    return instructions;
   }
 }
