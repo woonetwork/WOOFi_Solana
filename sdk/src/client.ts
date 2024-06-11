@@ -28,13 +28,14 @@ const generatePoolParams = async(
   );
 
   // woopool data should already be created after init
-  const {tokenVault} = await program.account.wooPool.fetch(woopool);
+  // due to anchor 0.29's js wrapper bug, and consider performance
+  // caller should remember the vault for now.
+  // const {tokenVault} = await program.account.wooPool.fetch(woopool);
 
   return {
     oracle,
     wooracle,
-    woopool,
-    tokenVault
+    woopool
   }
 }
 
@@ -64,6 +65,8 @@ export class WoospmmtresClient {
     return tx;
   }
 
+  // Example usage: swap(ctx, amount, TOKEN_MINTS["SOL"], CHAINLINK_FEED_ACCOUNT["SOL"], WOOPOOL_VAULTS["SOL"],
+  // TOKEN_MINTS["USDC"], CHAINLINK_FEED_ACCOUNT["USDC"], WOOPOOL_VAULTS["USDC"])
   /**
    * Swap instruction builder method with resolveATA & additional checks.
    * @param ctx - WoospmmtresContext object for the current environment.
@@ -75,8 +78,10 @@ export class WoospmmtresClient {
     amount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
+    fromPoolVault: PublicKey,
     toTokenMint: PublicKey,
     toOracleFeedAccount: PublicKey,
+    toPoolVault: PublicKey
   ): Promise<TransactionInstruction[]> {
     const instructions: TransactionInstruction[] = [];
 
@@ -100,6 +105,9 @@ export class WoospmmtresClient {
       );
     }
 
+    // TODO Prince: if (toTokenMint == NATIVE_MINT), need double check the wsol to sol logic
+    // consider have a flag to do the transfer
+
     const swapParams : SwapParams = {
       amount,
       owner: ctx.wallet.publicKey,
@@ -107,12 +115,12 @@ export class WoospmmtresClient {
       wooracleFrom: fromPoolParams.wooracle,
       woopoolFrom: fromPoolParams.woopool,
       tokenOwnerAccountFrom,
-      tokenVaultFrom: fromPoolParams.tokenVault,
+      tokenVaultFrom: fromPoolVault,
       oracleTo: toPoolParams.oracle,
       wooracleTo: toPoolParams.wooracle,
       woopoolTo: toPoolParams.woopool,
       tokenOwnerAccountTo,
-      tokenVaultTo: toPoolParams.tokenVault
+      tokenVaultTo: toPoolVault
     }
 
     const tx = await swapIx(ctx.program, swapParams);
