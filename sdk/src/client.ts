@@ -1,5 +1,5 @@
 import { BN, Program } from "@coral-xyz/anchor";
-import { NATIVE_MINT, createAssociatedTokenAccount, createSyncNativeInstruction, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import { SwapParams, swapIx } from "./instructions/swap-ix"
 import { Woospmmtres } from "./artifacts/woospmmtres";
@@ -90,6 +90,46 @@ export class WoospmmtresClient {
 
     const tokenOwnerAccountFrom = getAssociatedTokenAddressSync(fromTokenMint, ctx.wallet.publicKey);
     const tokenOwnerAccountTo = getAssociatedTokenAddressSync(toTokenMint, ctx.wallet.publicKey);
+
+    // Create an instruction to create the tokenOwnerAccountFrom if it does not exist
+    const createFromAccountInstruction = createAssociatedTokenAccountInstruction(
+      ctx.wallet.publicKey,
+      tokenOwnerAccountFrom,
+      ctx.wallet.publicKey,
+      fromTokenMint
+    )
+
+    // Create an instruction to create the tokenOwnerAccountTo if it does not exist
+    const createToAccountInstruction = createAssociatedTokenAccountInstruction(
+      ctx.wallet.publicKey,
+      tokenOwnerAccountTo,
+      ctx.wallet.publicKey,
+      toTokenMint
+    )
+
+    // Check if the tokenOwnerAccountFrom exists
+    try {
+      let tokenAccount = await getAccount(
+        ctx.connection,
+        tokenOwnerAccountFrom,
+        "confirmed"
+      )
+    } catch (e) {
+      // If the account does not exist, add the create account instruction to the transaction
+      instructions.push(createFromAccountInstruction)
+    }
+
+    // Check if the tokenOwnerAccountTo exists
+    try {
+      let tokenAccount = await getAccount(
+        ctx.connection,
+        tokenOwnerAccountTo,
+        "confirmed"
+      )
+    } catch (e) {
+      // If the account does not exist, add the create account instruction to the transaction
+      instructions.push(createToAccountInstruction)
+    }
 
     // Woo router logic, handle sol and wsol, do the transfer
     if (fromTokenMint == NATIVE_MINT) {
