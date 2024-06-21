@@ -112,7 +112,7 @@ export class WoospmmtresClient {
       let tokenAccount = await getAccount(
         ctx.connection,
         tokenOwnerAccountFrom,
-        "confirmed"
+        'confirmed'
       )
     } catch (e) {
       // If the account does not exist, add the create account instruction to the transaction
@@ -124,7 +124,7 @@ export class WoospmmtresClient {
       let tokenAccount = await getAccount(
         ctx.connection,
         tokenOwnerAccountTo,
-        "confirmed"
+        'confirmed'
       )
     } catch (e) {
       // If the account does not exist, add the create account instruction to the transaction
@@ -132,7 +132,7 @@ export class WoospmmtresClient {
     }
 
     // Woo router logic, handle sol and wsol, do the transfer
-    if (fromTokenMint == NATIVE_MINT) {
+    if (fromTokenMint.equals(NATIVE_MINT)) {
       instructions.push(
         // trasnfer SOL to WSOL into ata account
         SystemProgram.transfer({
