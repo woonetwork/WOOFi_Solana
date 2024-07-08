@@ -44,7 +44,7 @@ export class WoospmmtresContext {
   public static from(
     connection: Connection,
     wallet: Wallet,
-    programId: PublicKey,
+    programId: PublicKey = new PublicKey(WoospmmtresIDL.metadata.address),
     opts: WoospmmtresContextOpts = {}
   ): WoospmmtresContext {
     const anchorProvider = new AnchorProvider(connection, wallet, {

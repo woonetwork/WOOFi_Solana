@@ -14,6 +14,18 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     base_dec: BN   // 10 ** 18 or 8
   }
 
+  export const newDecimals = (
+    price_dec: number,
+    quote_dec: number,
+    base_dec: number,
+  ) : Decimals => {
+    return {
+        price_dec: new BN(10).pow(new BN(price_dec)),
+        quote_dec: new BN(10).pow(new BN(quote_dec)),
+        base_dec: new BN(10).pow(new BN(base_dec))
+    }
+  }
+
   export type GetStateResult = {
     price_out: BN,
     spread: BN,
@@ -32,9 +44,8 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     swap_fee: BN,
   }
 
-  const TENPOW18U128 = new BN(1e18);
-  const TE5U128 = new BN(1e5);
-  const ERR_RESULT = {amount: new BN(0), new_price: new BN(0)};
+  const TENPOW18U128 = new BN(10).pow(new BN(18));
+  const TE5U128 = new BN(10).pow(new BN(5));
 
   export const generatePoolParams = async(
     feedAccount: PublicKey,
@@ -100,14 +111,14 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
   
     if (feasible_out) {
         if (price_out.lt(wooracle.rangeMin)) {
-          // TODO Prince: check how to throw error in front end
           feasible_out = false;
           price_out = new BN(0);
+          throw new Error("Woo oracle price below range MIN");      
         }
         if (price_out.gt(wooracle.rangeMax)) {
-          // TODO Prince: check how to throw error in front end
           feasible_out = false;
           price_out = new BN(0);
+          throw new Error("Woo oracle price exceed range MAX");
         }
     }
   
@@ -131,26 +142,24 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     state: GetStateResult
   ) : CalcResult => {
     if (!state.feasible_out) {
-        // TODO Prince: check how to throw error in front end
-        return ERR_RESULT;
+        throw new Error("Woo oracle is not feasible");
     }
     if (state.price_out.lte(new BN(0))) {
-        // TODO Prince: check how to throw error in front end
-        return ERR_RESULT;
+        throw new Error("Woo oracle price is not valid");
     }
 
     //let notionalSwap : u128 = (base_amount * state.price_out * decimals.quote_dec) / decimals.base_dec / decimals.price_dec;
     let notion_calc_a: BN = checked_mul_div(base_amount, state.price_out, decimals.price_dec);
     let notional_swap: BN = checked_mul_div(notion_calc_a, decimals.quote_dec, decimals.base_dec);
-    if (notional_swap.gt(woopool.max_notional_swap)) {
-        return ERR_RESULT;
+    if (notional_swap.gt(woopool.maxNotionalSwap)) {
+        throw new Error("Woo pp exceed max notional value");
     }
 
     // gamma = k * price * base_amount; and decimal 18
     let gamma_calc_a: BN = checked_mul_div(base_amount, state.price_out, decimals.price_dec);
     let gamma: BN = checked_mul_div(gamma_calc_a, state.coeff, decimals.base_dec);
-    if (gamma.gt(woopool.max_gamma)) {
-        return ERR_RESULT;
+    if (gamma.gt(woopool.maxGamma)) {
+        throw new Error("Woo pp exceed max gamma");
     }
 
     // Formula: quoteAmount = baseAmount * oracle.price * (1 - oracle.k * baseAmount * oracle.price - oracle.spread)
@@ -190,20 +199,20 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     state: GetStateResult
   ): CalcResult => {
     if (!state.feasible_out) {
-        return ERR_RESULT;
+        throw new Error("Woo oracle is not feasible");
     }
     if (state.price_out.lte(new BN(0)) ){
-        return ERR_RESULT;
+        throw new Error("Woo oracle price is not valid");
     }
     
-    if (usd_amount.gt(woopool.max_notional_swap)) {
-        return ERR_RESULT;
+    if (usd_amount.gt(woopool.maxNotionalSwap)) {
+        throw new Error("Woo pp exceed max notional value");
     }
 
     // gamma = k * quote_amount; and decimal 18
     let gamma: BN = checked_mul_div(usd_amount, state.coeff, decimals.quote_dec);
-    if (gamma.gt(woopool.max_gamma)) {
-        return ERR_RESULT;
+    if (gamma.gt(woopool.maxGamma)) {
+        throw new Error("Woo pp exceed max gamma");
     }
     
     // Formula: baseAmount = quoteAmount / oracle.price * (1 - oracle.k * quoteAmount - oracle.spread)
@@ -250,15 +259,19 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     state_from.spread = spread;
     state_to.spread = spread;
 
-    let decimals_from : Decimals = {
-        price_dec: new BN(oracle_from.decimals), 
-        quote_dec: new BN(DEFAULT_QUOTE_DECIMALS),
-        base_dec: new BN(woopool_from.baseDecimals)
-    };
+    let decimals_from = newDecimals(
+        oracle_from.decimals,
+        DEFAULT_QUOTE_DECIMALS, 
+        woopool_from.baseDecimals
+    );
 
     let swap_fee_amount = checked_mul_div(fromAmount, fee_rate, TE5U128);
     let swap_fee = checked_mul_div(swap_fee_amount, state_from.price_out, decimals_from.price_dec);
     let remain_amount = fromAmount.sub(swap_fee_amount);
+
+    // console.log('state_from: ', state_from.price_out, state_from.feasible_out);
+    // console.log('state_to: ', state_to.price_out, state_to.feasible_out);
+    // console.log('woopool_from: ', JSON.stringify(woopool_from));
     
     let from_result = calc_usd_amount_sell_base(
         remain_amount, 
@@ -279,11 +292,11 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
-    let decimals_to : Decimals = {
-        price_dec: new BN(oracle_to.decimals), 
-        quote_dec: new BN(DEFAULT_QUOTE_DECIMALS),
-        base_dec: new BN(woopool_to.baseDecimals)
-    };
+    let decimals_to = newDecimals(
+        oracle_to.decimals,
+        DEFAULT_QUOTE_DECIMALS, 
+        woopool_to.baseDecimals
+    );
 
     let to_result = calc_base_amount_sell_usd(
         remain_usd_amount, 
