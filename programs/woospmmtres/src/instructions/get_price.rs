@@ -55,6 +55,7 @@ pub fn get_price_impl<'info>(oracle: &Account<'info, Oracle>, wooracle: &Account
     //if (oracle.oracle_type == OracleType::Pyth) {
         // get price
     //}
+    // TODO Prince: update pyth oracle or chainlink oracle price in this call.
 
     let wo_price = wooracle.price;
     let wo_timestamp = wooracle.updated_at;

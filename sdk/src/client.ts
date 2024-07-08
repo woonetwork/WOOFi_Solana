@@ -1,46 +1,24 @@
-import { BN, Program } from "@coral-xyz/anchor";
+import { BN } from "@coral-xyz/anchor";
 import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import { SwapParams, swapIx } from "./instructions/swap-ix"
-import { Woospmmtres } from "./artifacts/woospmmtres";
 import { WoospmmtresContext } from "./context";
-import { CHAINLINK_PROGRAM_ACCOUNT } from "./utils/constants";
 import { TryQuerySwapParams, tryQuerySwapIx } from "./instructions/try-query-swap-ix";
-
-const generatePoolParams = async(
-  feedAccount: PublicKey,
-  tokenMint: PublicKey,
-  program: Program<Woospmmtres> 
-) => {
-  const [oracle] = await PublicKey.findProgramAddressSync(
-    [Buffer.from('cloracle'), feedAccount.toBuffer(), new PublicKey(CHAINLINK_PROGRAM_ACCOUNT).toBuffer()],
-    program.programId
-  );
-
-  const [wooracle] = await PublicKey.findProgramAddressSync(
-    [Buffer.from('wooracle'), feedAccount.toBuffer()],
-    program.programId
-  );
-
-  const [woopool] = await PublicKey.findProgramAddressSync(
-    [Buffer.from('woopool'), tokenMint.toBuffer()],
-    program.programId
-  );
-
-  // woopool data should already be created after init
-  // due to anchor 0.29's js wrapper bug, and consider performance
-  // caller should remember the vault for now.
-  // const {tokenVault} = await program.account.wooPool.fetch(woopool);
-
-  return {
-    oracle,
-    wooracle,
-    woopool
-  }
-}
+import { generatePoolParams, QueryResult, tryCalculate } from "./utils/contract";
 
 export class WoospmmtresClient {
   public static async tryQuery(
+    ctx: WoospmmtresContext,
+    fromAmount: BN,
+    fromTokenMint: PublicKey,
+    fromOracleFeedAccount: PublicKey,
+    toTokenMint: PublicKey,
+    toOracleFeedAccount: PublicKey,
+  ): Promise<QueryResult> {
+    return tryCalculate(ctx, fromAmount, fromTokenMint, fromOracleFeedAccount, toTokenMint, toOracleFeedAccount);
+  } 
+
+  public static async tryQueryOnChain(
     ctx: WoospmmtresContext,
     amount: BN,
     fromTokenMint: PublicKey,
