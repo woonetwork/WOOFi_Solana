@@ -8,6 +8,11 @@
 //   stSOL: "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
 // };
 
+export const enum WOOSPMM_TOKENS {
+  SOL = "SOL",
+  USDC = "USDC"
+}
+
 // DEV_NET
 export const TOKEN_MINTS = {
   USDC: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",

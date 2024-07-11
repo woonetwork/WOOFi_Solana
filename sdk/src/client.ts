@@ -4,21 +4,44 @@ import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.j
 import { SwapParams, swapIx } from "./instructions/swap-ix"
 import { WoospmmtresContext } from "./context";
 import { TryQuerySwapParams, tryQuerySwapIx } from "./instructions/try-query-swap-ix";
+import { WOOSPMM_TOKENS, TOKEN_MINTS, CHAINLINK_FEED_ACCOUNT, WOOPOOL_VAULTS } from "./utils/constants";
 import { generatePoolParams, QueryResult, tryCalculate } from "./utils/contract";
 
 export class WoospmmtresClient {
+
   public static async tryQuery(
     ctx: WoospmmtresContext,
     fromAmount: BN,
-    fromTokenMint: PublicKey,
-    fromOracleFeedAccount: PublicKey,
-    toTokenMint: PublicKey,
-    toOracleFeedAccount: PublicKey,
+    fromToken: WOOSPMM_TOKENS,
+    toToken: WOOSPMM_TOKENS
   ): Promise<QueryResult> {
-    return tryCalculate(ctx, fromAmount, fromTokenMint, fromOracleFeedAccount, toTokenMint, toOracleFeedAccount);
-  } 
+    return tryCalculate(
+      ctx, 
+      fromAmount,
+      new PublicKey(TOKEN_MINTS[fromToken]),
+      new PublicKey(CHAINLINK_FEED_ACCOUNT[fromToken]),
+      new PublicKey(TOKEN_MINTS[toToken]),
+      new PublicKey(CHAINLINK_FEED_ACCOUNT[toToken])
+    )
+  }
 
   public static async tryQueryOnChain(
+    ctx: WoospmmtresContext,
+    fromAmount: BN,
+    fromToken: WOOSPMM_TOKENS,
+    toToken: WOOSPMM_TOKENS
+  ): Promise<TransactionInstruction> {
+    return WoospmmtresClient.tryQueryOnChainInner(
+      ctx, 
+      fromAmount,
+      new PublicKey(TOKEN_MINTS[fromToken]),
+      new PublicKey(CHAINLINK_FEED_ACCOUNT[fromToken]),
+      new PublicKey(TOKEN_MINTS[toToken]),
+      new PublicKey(CHAINLINK_FEED_ACCOUNT[toToken])
+    )
+  }
+
+  private static async tryQueryOnChainInner(
     ctx: WoospmmtresContext,
     amount: BN,
     fromTokenMint: PublicKey,
@@ -43,6 +66,24 @@ export class WoospmmtresClient {
     return tx;
   }
 
+  public static async swap(
+    ctx: WoospmmtresContext,
+    fromAmount: BN,
+    fromToken: WOOSPMM_TOKENS,
+    toToken: WOOSPMM_TOKENS
+  ): Promise<TransactionInstruction[]> {
+    return WoospmmtresClient.swapInner(
+      ctx,
+      fromAmount,
+      new PublicKey(TOKEN_MINTS[fromToken]),
+      new PublicKey(CHAINLINK_FEED_ACCOUNT[fromToken]),
+      new PublicKey(WOOPOOL_VAULTS[fromToken]),
+      new PublicKey(TOKEN_MINTS[toToken]),
+      new PublicKey(CHAINLINK_FEED_ACCOUNT[toToken]),
+      new PublicKey(WOOPOOL_VAULTS[toToken])
+    )
+  }
+
   // Example usage: swap(ctx, amount, TOKEN_MINTS["SOL"], CHAINLINK_FEED_ACCOUNT["SOL"], WOOPOOL_VAULTS["SOL"],
   // TOKEN_MINTS["USDC"], CHAINLINK_FEED_ACCOUNT["USDC"], WOOPOOL_VAULTS["USDC"])
   /**
@@ -51,7 +92,7 @@ export class WoospmmtresClient {
    * @param amount - {@link SwapAsyncParams}
    * @returns
    */
-  public static async swap(
+  private static async swapInner(
     ctx: WoospmmtresContext,
     amount: BN,
     fromTokenMint: PublicKey,

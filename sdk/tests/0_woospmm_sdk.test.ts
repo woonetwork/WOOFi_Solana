@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
 import { WoospmmtresClient } from "../src/client";
 import { WoospmmtresContext } from "../src";
-import { TOKEN_MINTS, CHAINLINK_FEED_ACCOUNT, WOOPOOL_VAULTS } from '../src/utils/constants'
+import { WOOSPMM_TOKENS } from '../src/utils/constants'
 
 describe("woospmm_sdk", async () => {
   // Configure the client to use the local cluster.
@@ -15,10 +15,8 @@ describe("woospmm_sdk", async () => {
     const result = await WoospmmtresClient.tryQuery(
       context,
       new BN(100000),
-      new anchor.web3.PublicKey(TOKEN_MINTS.SOL),
-      new anchor.web3.PublicKey(CHAINLINK_FEED_ACCOUNT.SOL),
-      new anchor.web3.PublicKey(TOKEN_MINTS.USDC),
-      new anchor.web3.PublicKey(CHAINLINK_FEED_ACCOUNT.USDC),
+      WOOSPMM_TOKENS['SOL'],
+      WOOSPMM_TOKENS['USDC']
     )
 
     console.log('TryQuery to_amount:'+ result.to_amount);
