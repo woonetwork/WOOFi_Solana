@@ -50,6 +50,8 @@ impl OracleType {
 pub struct Oracle {
     pub authority: Pubkey,      // 32
     pub feed_account: Pubkey,  // 32
+    // store pyth price update account
+    pub price_update_account: Pubkey, //32
     pub updated_at: i64,        // 8
     pub decimals: u8,           // 1
     pub round: i128,            // 16
@@ -58,7 +60,7 @@ pub struct Oracle {
 }
 
 impl Oracle {
-    pub const LEN : usize = 8 + (32 + 32 + 8 + 1 + 16 + 1 + 1);
+    pub const LEN : usize = 8 + (32 + 32 + 32 + 8 + 1 + 16 + 1 + 1);
 
     pub fn update_authority(&mut self, authority: Pubkey) -> Result<()> {
         self.authority = authority;

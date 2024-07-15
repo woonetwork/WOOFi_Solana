@@ -46,7 +46,8 @@ pub struct CreateOraclePyth<'info> {
         space = Oracle::LEN,
         seeds = [
             PYTHORACLE_SEED.as_bytes(),
-            feed_account.key().as_ref()
+            feed_account.key().as_ref(),
+            price_update.key().as_ref()
             ],
         bump,
     )]
@@ -58,6 +59,7 @@ pub struct CreateOraclePyth<'info> {
         seeds = [
             WOORACLE_SEED.as_bytes(),
             feed_account.key().as_ref(),
+            price_update.key().as_ref()
             ],
         bump,
     )]
@@ -79,6 +81,7 @@ pub fn handler(ctx: Context<CreateOraclePyth>) -> Result<()> {
     ctx.accounts.pythoracle.oracle_type = OracleType::Pyth;
     ctx.accounts.pythoracle.authority = ctx.accounts.admin.key();
     ctx.accounts.pythoracle.feed_account = ctx.accounts.feed_account.key();
+    ctx.accounts.pythoracle.price_update_account = ctx.accounts.price_update.key();
 
     let price_update = &mut ctx.accounts.price_update;
     // get_price_no_older_than will fail if the price update is more than 30 seconds old
@@ -86,8 +89,8 @@ pub fn handler(ctx: Context<CreateOraclePyth>) -> Result<()> {
     let maximum_age: u64 = 30;
     // get_price_no_older_than will fail if the price update is for a different price feed.
     // This string is the id of the BTC/USD feed. See https://pyth.network/developers/price-feed-ids for all available ids.
-    let feed_id = get_feed_id_from_hex(ctx.accounts.feed_account.key().to_string().as_str())?;
-    let price = price_update.get_price_no_older_than(&Clock::get()?, maximum_age, &feed_id)?;
+    // let feed_id = get_feed_id_from_hex(ctx.accounts.feed_account.key().to_string().as_str())?;
+    let price = price_update.get_price_no_older_than(&Clock::get()?, maximum_age, &ctx.accounts.feed_account.key().to_bytes())?;
     // Sample output:
     // The price is (7160106530699 ± 5129162301) * 10^-8
     // msg!("The price is ({} ± {}) * 10^{}", price.price, price.conf, price.exponent);
