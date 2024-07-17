@@ -15,7 +15,8 @@ pub struct GetPrice<'info> {
         has_one = oracle,
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            oracle.feed_account.as_ref()
+            oracle.feed_account.as_ref(),
+            oracle.price_update_account.as_ref()
         ],
         bump,
         constraint = oracle.authority == wooracle.authority,

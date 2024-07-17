@@ -5,6 +5,7 @@
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.29.0",
+        "@solana-developers/helpers": "^2.3.0",
         "@solana/spl-token": "^0.4.1",
         "decimal.js": "^10.4.3",
         "dotenv": "^16.4.5",

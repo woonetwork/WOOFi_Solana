@@ -48,7 +48,8 @@ pub struct CreatePool<'info> {
         has_one = oracle,
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            oracle.feed_account.as_ref()
+            oracle.feed_account.as_ref(),
+            oracle.price_update_account.as_ref()
         ],
         bump,
     )]

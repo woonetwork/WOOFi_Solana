@@ -18,7 +18,8 @@ pub struct TryQuery<'info> {
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            oracle_from.feed_account.as_ref()
+            oracle_from.feed_account.as_ref(),
+            oracle_from.price_update_account.as_ref()
         ],
         bump,
         constraint = wooracle_from.key() == woopool_from.wooracle
@@ -33,7 +34,8 @@ pub struct TryQuery<'info> {
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
-            oracle_to.feed_account.as_ref()
+            oracle_to.feed_account.as_ref(),
+            oracle_to.price_update_account.as_ref()
         ],
         bump,
         constraint = wooracle_to.key() == woopool_to.wooracle
