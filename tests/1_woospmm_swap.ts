@@ -4,7 +4,7 @@ import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
 import { ConfirmOptions, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
-import { Woospmmtres } from "../target/types/woospmmtres";
+import { Woospmm } from "../target/types/woospmm";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
@@ -16,7 +16,7 @@ describe("woospmm_swap", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.Woospmmtres as Program<Woospmmtres>;
+  const program = anchor.workspace.Woospmm as Program<Woospmm>;
 
   let cloracle_price: BN;
   let cloracle_decimal: Number;

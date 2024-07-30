@@ -2,15 +2,15 @@ import { BN } from "@coral-xyz/anchor";
 import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import { SwapParams, swapIx } from "./instructions/swap-ix"
-import { WoospmmtresContext } from "./context";
+import { WoospmmContext } from "./context";
 import { TryQuerySwapParams, tryQuerySwapIx } from "./instructions/try-query-swap-ix";
 import { WOOSPMM_TOKENS, TOKEN_MINTS, CHAINLINK_FEED_ACCOUNT, WOOPOOL_VAULTS } from "./utils/constants";
 import { generatePoolParams, QueryResult, tryCalculate } from "./utils/contract";
 
-export class WoospmmtresClient {
+export class WoospmmClient {
 
   public static async tryQuery(
-    ctx: WoospmmtresContext,
+    ctx: WoospmmContext,
     fromAmount: BN,
     fromToken: WOOSPMM_TOKENS,
     toToken: WOOSPMM_TOKENS
@@ -26,12 +26,12 @@ export class WoospmmtresClient {
   }
 
   public static async tryQueryOnChain(
-    ctx: WoospmmtresContext,
+    ctx: WoospmmContext,
     fromAmount: BN,
     fromToken: WOOSPMM_TOKENS,
     toToken: WOOSPMM_TOKENS
   ): Promise<TransactionInstruction> {
-    return WoospmmtresClient.tryQueryOnChainInner(
+    return WoospmmClient.tryQueryOnChainInner(
       ctx, 
       fromAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
@@ -42,7 +42,7 @@ export class WoospmmtresClient {
   }
 
   private static async tryQueryOnChainInner(
-    ctx: WoospmmtresContext,
+    ctx: WoospmmContext,
     amount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
@@ -67,12 +67,12 @@ export class WoospmmtresClient {
   }
 
   public static async swap(
-    ctx: WoospmmtresContext,
+    ctx: WoospmmContext,
     fromAmount: BN,
     fromToken: WOOSPMM_TOKENS,
     toToken: WOOSPMM_TOKENS
   ): Promise<TransactionInstruction[]> {
-    return WoospmmtresClient.swapInner(
+    return WoospmmClient.swapInner(
       ctx,
       fromAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
@@ -88,12 +88,12 @@ export class WoospmmtresClient {
   // TOKEN_MINTS["USDC"], CHAINLINK_FEED_ACCOUNT["USDC"], WOOPOOL_VAULTS["USDC"])
   /**
    * Swap instruction builder method with resolveATA & additional checks.
-   * @param ctx - WoospmmtresContext object for the current environment.
+   * @param ctx - WoospmmContext object for the current environment.
    * @param amount - {@link SwapAsyncParams}
    * @returns
    */
   private static async swapInner(
-    ctx: WoospmmtresContext,
+    ctx: WoospmmContext,
     amount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,

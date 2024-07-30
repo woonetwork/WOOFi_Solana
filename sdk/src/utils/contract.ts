@@ -1,8 +1,8 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
-import { Woospmmtres } from "../artifacts/woospmmtres";
-import { WoospmmtresContext } from "../context";
+import { Woospmm } from "../artifacts/woospmm";
+import { WoospmmContext } from "../context";
 import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
 
   export const DEFAULT_PRICE_DECIMALS = 8;
@@ -50,7 +50,7 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
   export const generatePoolParams = async(
     feedAccount: PublicKey,
     tokenMint: PublicKey,
-    program: Program<Woospmmtres> 
+    program: Program<Woospmm> 
   ) => {
     const [oracle] = await PublicKey.findProgramAddressSync(
       [Buffer.from('cloracle'), feedAccount.toBuffer(), new PublicKey(CHAINLINK_PROGRAM_ACCOUNT).toBuffer()],
@@ -233,7 +233,7 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
   }
 
   export const tryCalculate = async(
-    ctx: WoospmmtresContext,
+    ctx: WoospmmContext,
     fromAmount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,

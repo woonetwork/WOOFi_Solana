@@ -1,6 +1,6 @@
-export type Woospmmtres = {
+export type Woospmm = {
   "version": "0.1.0",
-  "name": "woospmmtres",
+  "name": "woospmm",
   "instructions": [
     {
       "name": "createOracleChainlink",
@@ -1019,9 +1019,9 @@ export type Woospmmtres = {
   ]
 };
 
-export const IDL: Woospmmtres = {
+export const IDL: Woospmm = {
   "version": "0.1.0",
-  "name": "woospmmtres",
+  "name": "woospmm",
   "instructions": [
     {
       "name": "createOracleChainlink",

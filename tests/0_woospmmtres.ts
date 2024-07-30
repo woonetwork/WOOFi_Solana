@@ -2,18 +2,18 @@ import * as anchor from "@coral-xyz/anchor";
 import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import { ConfirmOptions } from "@solana/web3.js";
-import { Woospmmtres } from "../target/types/woospmmtres";
+import { Woospmm } from "../target/types/woospmm";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
 import * as global from "./global";
 
-describe("woospmmtres", () => {
+describe("woospmm", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.Woospmmtres as Program<Woospmmtres>;
+  const program = anchor.workspace.Woospmm as Program<Woospmm>;
 
   let cloracleAccount;
   let wooracleAccount;

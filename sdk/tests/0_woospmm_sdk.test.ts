@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
-import { WoospmmtresClient } from "../src/client";
-import { WoospmmtresContext } from "../src";
+import { WoospmmClient } from "../src/client";
+import { WoospmmContext } from "../src";
 import { WOOSPMM_TOKENS } from '../src/utils/constants'
 
 describe("woospmm_sdk", async () => {
@@ -9,10 +9,10 @@ describe("woospmm_sdk", async () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const context = WoospmmtresContext.from(provider.connection, provider.wallet);
+  const context = WoospmmContext.from(provider.connection, provider.wallet);
 
   it("try_query", async ()=> {
-    const result = await WoospmmtresClient.tryQuery(
+    const result = await WoospmmClient.tryQuery(
       context,
       new BN(100000),
       WOOSPMM_TOKENS['SOL'],
@@ -25,7 +25,7 @@ describe("woospmm_sdk", async () => {
   })
 
   // it("try_query_on_chain", async ()=> {
-  //   const result = await WoospmmtresClient.tryQueryOnChain(
+  //   const result = await WoospmmClient.tryQueryOnChain(
   //     context,
   //     new BN(100),
   //     new anchor.web3.PublicKey(TOKEN_MINTS.SOL),

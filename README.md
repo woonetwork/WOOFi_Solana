@@ -1,7 +1,7 @@
-# WooSPMM_V3_Solana
+# WOOFi Solana
 
-WooSPMMTres is a liquidity AMM contract on the Solana blockchain. Tres means V3
-This repository contains the Rust smart contract as well as the Typescript SDK (`@woonetwork/woospmmtres-sdk`) to interact with a deployed program.
+WOOFi Solana is a liquidity AMM contract on the Solana blockchain.
+This repository contains the Rust smart contract as well as the Typescript SDK (`@woonetwork/woofi-solana-sdk`) to interact with a deployed program.
 
 ## Requirements
 

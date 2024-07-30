@@ -43,7 +43,7 @@ use crate::{constants::*, state::*, instructions::*, };
 declare_id!("7KTS4GH4BPsN7KVqD7UahJnRPNGU2xCEGWFfRjzZSSnt");
 
 #[program]
-pub mod woospmmtres {
+pub mod woospmm {
     use super::*;
 
     pub fn create_oracle_chainlink(ctx: Context<CreateOracleChainlink>) -> Result<()> {

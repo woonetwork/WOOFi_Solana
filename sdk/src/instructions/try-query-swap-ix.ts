@@ -1,10 +1,10 @@
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import BN from "bn.js";
-import { Woospmmtres } from "../artifacts/woospmmtres";
+import { Woospmm } from "../artifacts/woospmm";
 
 /**
- * Raw parameters and accounts to swap on a Woospmmtres
+ * Raw parameters and accounts to swap on a Woospmm
  *
  * @category Instruction Types
  * @param amount - The amount of input token to swap from.
@@ -43,7 +43,7 @@ export type TryQuerySwapParams = {
  * @param params - {@link TryQuerySwapParams}
  * @returns - Instruction to perform the action.
  */
-export function tryQuerySwapIx(program: Program<Woospmmtres>, params: TryQuerySwapParams): Promise<TransactionInstruction> {
+export function tryQuerySwapIx(program: Program<Woospmm>, params: TryQuerySwapParams): Promise<TransactionInstruction> {
   const {
     amount,
     oracleFrom,
