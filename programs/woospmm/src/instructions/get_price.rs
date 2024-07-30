@@ -8,6 +8,9 @@ use crate::{
     }
 };
 
+use super::update_pythoracle;
+use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
+
 #[derive(Accounts)]
 pub struct GetPrice<'info> {
     pub oracle: Account<'info, Oracle>,
@@ -22,6 +25,7 @@ pub struct GetPrice<'info> {
         constraint = oracle.authority == wooracle.authority,
     )]
     pub wooracle: Account<'info, WOOracle>,
+    pub price_update: Account<'info, PriceUpdateV2>
 }
 
 // #[zero_copy(unsafe)]
@@ -42,21 +46,21 @@ pub struct GetStateResult {
 }
 
 pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
-    let oracle = &ctx.accounts.oracle;
+    let oracle = &mut ctx.accounts.oracle;
     let wooracle = &ctx.accounts.wooracle;
+    let priceUpdate = &mut ctx.accounts.price_update;
 
-    Ok(get_price_impl(oracle, wooracle)?)
+    Ok(get_price_impl(oracle, wooracle, priceUpdate)?)
 }
 
-pub fn get_price_impl<'info>(oracle: &Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetPriceResult> {
+pub fn get_price_impl<'info>(oracle: &mut Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>, price_update: &mut Account<'info, PriceUpdateV2>) -> Result<GetPriceResult> {
     let now = Clock::get()?.unix_timestamp;
 
-    // TODO Prince: find a better way to include pyth reciever into normal 
-    //logic
-    //if (oracle.oracle_type == OracleType::Pyth) {
-        // get price
-    //}
-    // TODO Prince: update pyth oracle or chainlink oracle price in this call.
+    if (oracle.oracle_type == OracleType::Pyth) {
+        update_pythoracle::update(price_update, oracle);
+    } else if (oracle.oracle_type == OracleType::ChainLink) {
+        // TODO Prince: auto fetch chainlink price
+    }
 
     let wo_price = wooracle.price;
     let wo_timestamp = wooracle.updated_at;
@@ -97,8 +101,8 @@ pub fn get_price_impl<'info>(oracle: &Account<'info, Oracle>, wooracle: &Account
     })
 }
 
-pub fn get_state_impl<'info>(oracle: &Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>) -> Result<GetStateResult> {
-    let price_result = get_price_impl(oracle, wooracle)?;
+pub fn get_state_impl<'info>(oracle: &mut Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>, price_update: &mut Account<'info, PriceUpdateV2>) -> Result<GetStateResult> {
+    let price_result = get_price_impl(oracle, wooracle, price_update)?;
     Ok(GetStateResult{
         price_out: price_result.price_out,
         spread: wooracle.spread,
