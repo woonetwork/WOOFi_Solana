@@ -30,12 +30,13 @@ export type SwapParams = {
   woopoolFrom: PublicKey;
   tokenOwnerAccountFrom: PublicKey;
   tokenVaultFrom: PublicKey;
+  priceUpdateFrom: PublicKey;
   oracleTo: PublicKey;
   wooracleTo: PublicKey;
   woopoolTo: PublicKey;
   tokenOwnerAccountTo: PublicKey;
   tokenVaultTo: PublicKey;
-  priceUpdate: PublicKey;
+  priceUpdateTo: PublicKey;
 };
 
 /**
@@ -65,12 +66,13 @@ export function swapIx(program: Program<Woospmm>, params: SwapParams): Promise<T
     woopoolFrom,
     tokenOwnerAccountFrom,
     tokenVaultFrom,
+    priceUpdateFrom,
     oracleTo,
     wooracleTo,
     woopoolTo,
     tokenOwnerAccountTo,
     tokenVaultTo,
-    priceUpdate,
+    priceUpdateTo
   } = params;
 
   const ix = program
@@ -84,12 +86,13 @@ export function swapIx(program: Program<Woospmm>, params: SwapParams): Promise<T
       woopoolFrom,
       tokenOwnerAccountFrom,
       tokenVaultFrom,
+      priceUpdateFrom,
       oracleTo,
       wooracleTo,
       woopoolTo,
       tokenOwnerAccountTo,
       tokenVaultTo,
-      priceUpdate
+      priceUpdateTo
     })
     .instruction();
 

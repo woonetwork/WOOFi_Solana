@@ -559,6 +559,11 @@
           "isSigner": false
         },
         {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracleTo",
           "isMut": false,
           "isSigner": false
@@ -574,7 +579,7 @@
           "isSigner": false
         },
         {
-          "name": "priceUpdate",
+          "name": "priceUpdateTo",
           "isMut": false,
           "isSigner": false
         }
@@ -628,6 +633,11 @@
           "isSigner": false
         },
         {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracleTo",
           "isMut": false,
           "isSigner": false
@@ -653,7 +663,7 @@
           "isSigner": false
         },
         {
-          "name": "priceUpdate",
+          "name": "priceUpdateTo",
           "isMut": false,
           "isSigner": false
         }
@@ -1032,6 +1042,6 @@
     }
   ],
   "metadata": {
-    "address": "7xgWXBHKS9LVryec7cSsCue4CaUtDbV7Z8ZaKGLwUoKT"
+    "address": "Dk5yihoEqQKWrMV1yTamUEkmDeTLEEBncLbsmtYt5tVP"
   }
 }

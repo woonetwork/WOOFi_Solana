@@ -21,10 +21,11 @@ export type TryQuerySwapParams = {
   oracleFrom: PublicKey;
   wooracleFrom: PublicKey;
   woopoolFrom: PublicKey;
+  priceUpdateFrom: PublicKey;
   oracleTo: PublicKey;
   wooracleTo: PublicKey;
   woopoolTo: PublicKey;
-  priceUpdate: PublicKey;
+  priceUpdateTo: PublicKey;
 };
 
 /**
@@ -51,10 +52,11 @@ export function tryQuerySwapIx(program: Program<Woospmm>, params: TryQuerySwapPa
     oracleFrom,
     wooracleFrom,
     woopoolFrom,
+    priceUpdateFrom,
     oracleTo,
     wooracleTo,
     woopoolTo,
-    priceUpdate
+    priceUpdateTo
   } = params;
 
   const ix = program
@@ -64,10 +66,11 @@ export function tryQuerySwapIx(program: Program<Woospmm>, params: TryQuerySwapPa
       oracleFrom,
       wooracleFrom,
       woopoolFrom,
+      priceUpdateFrom,
       oracleTo,
       wooracleTo,
       woopoolTo,
-      priceUpdate
+      priceUpdateTo
     })
     .instruction();
 

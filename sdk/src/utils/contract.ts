@@ -238,16 +238,17 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     fromAmount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
+    fromPriceUpdate: PublicKey,
     toTokenMint: PublicKey,
     toOracleFeedAccount: PublicKey,
-    priceUpdate: PublicKey
+    toPriceUpdate: PublicKey
   ): Promise<QueryResult> => {
-    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, priceUpdate, ctx.program);
+    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, fromPriceUpdate, ctx.program);
     const oracle_from = await ctx.program.account.oracle.fetch(fromPoolParams.oracle);
     const wooracle_from = await ctx.program.account.woOracle.fetch(fromPoolParams.wooracle);
     const woopool_from = await ctx.program.account.wooPool.fetch(fromPoolParams.woopool);
 
-    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, priceUpdate, ctx.program);
+    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, toPriceUpdate, ctx.program);
     const wooracle_to = await ctx.program.account.woOracle.fetch(toPoolParams.wooracle);
     const oracle_to = await ctx.program.account.oracle.fetch(toPoolParams.oracle);
     const woopool_to = await ctx.program.account.wooPool.fetch(toPoolParams.woopool);

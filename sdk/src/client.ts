@@ -20,9 +20,10 @@ export class WoospmmClient {
       fromAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[fromToken]),
+      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[fromToken]),
       new PublicKey(TOKEN_MINTS[toToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[toToken]),
-      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT)
+      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[toToken])
     )
   }
 
@@ -37,9 +38,10 @@ export class WoospmmClient {
       fromAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[fromToken]),
+      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[fromToken]),
       new PublicKey(TOKEN_MINTS[toToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[toToken]),
-      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT)
+      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[toToken])
     )
   }
 
@@ -54,6 +56,7 @@ export class WoospmmClient {
       fromAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
       new PublicKey(CHAINLINK_FEED_ACCOUNT[fromToken]),
+      new PublicKey(CHAINLINK_PROGRAM_ACCOUNT),
       new PublicKey(TOKEN_MINTS[toToken]),
       new PublicKey(CHAINLINK_FEED_ACCOUNT[toToken]),
       new PublicKey(CHAINLINK_PROGRAM_ACCOUNT)
@@ -65,22 +68,24 @@ export class WoospmmClient {
     amount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
+    fromPriceUpdate: PublicKey,
     toTokenMint: PublicKey,
     toOracleFeedAccount: PublicKey,
-    priceUpdate: PublicKey
+    toPriceUpdate: PublicKey
   ): Promise<TransactionInstruction> {
-    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, priceUpdate, ctx.program);
-    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, priceUpdate, ctx.program);
+    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, fromPriceUpdate, ctx.program);
+    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, toPriceUpdate, ctx.program);
 
     const tryQuerySwapParams: TryQuerySwapParams = {
       amount,
       oracleFrom: fromPoolParams.oracle,
       wooracleFrom: fromPoolParams.wooracle,
       woopoolFrom: fromPoolParams.woopool,
+      priceUpdateFrom: fromPriceUpdate,
       oracleTo: toPoolParams.oracle,
       wooracleTo: toPoolParams.wooracle,
       woopoolTo: toPoolParams.woopool,
-      priceUpdate
+      priceUpdateTo: toPriceUpdate
     }
 
     const tx = tryQuerySwapIx(ctx.program, tryQuerySwapParams);
@@ -99,10 +104,11 @@ export class WoospmmClient {
       new PublicKey(TOKEN_MINTS[fromToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[fromToken]),
       new PublicKey(WOOPOOL_VAULTS[fromToken]),
+      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[fromToken]),
       new PublicKey(TOKEN_MINTS[toToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[toToken]),
       new PublicKey(WOOPOOL_VAULTS[toToken]),
-      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT)
+      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[toToken])
     )
   }
 
@@ -120,15 +126,16 @@ export class WoospmmClient {
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
     fromPoolVault: PublicKey,
+    fromPriceUpdate: PublicKey,
     toTokenMint: PublicKey,
     toOracleFeedAccount: PublicKey,
     toPoolVault: PublicKey,
-    priceUpdate: PublicKey
+    toPriceUpdate: PublicKey
   ): Promise<TransactionInstruction[]> {
     const instructions: TransactionInstruction[] = [];
 
-    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, priceUpdate, ctx.program);
-    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, priceUpdate, ctx.program);
+    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, fromPriceUpdate, ctx.program);
+    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, toPriceUpdate, ctx.program);
 
     const tokenOwnerAccountFrom = getAssociatedTokenAddressSync(fromTokenMint, ctx.wallet.publicKey);
     const tokenOwnerAccountTo = getAssociatedTokenAddressSync(toTokenMint, ctx.wallet.publicKey);
@@ -198,12 +205,13 @@ export class WoospmmClient {
       woopoolFrom: fromPoolParams.woopool,
       tokenOwnerAccountFrom,
       tokenVaultFrom: fromPoolVault,
+      priceUpdateFrom: fromPriceUpdate,
       oracleTo: toPoolParams.oracle,
       wooracleTo: toPoolParams.wooracle,
       woopoolTo: toPoolParams.woopool,
       tokenOwnerAccountTo,
       tokenVaultTo: toPoolVault,
-      priceUpdate
+      priceUpdateTo: toPriceUpdate
     }
 
     const tx = await swapIx(ctx.program, swapParams);

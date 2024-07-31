@@ -559,6 +559,11 @@ export type Woospmm = {
           "isSigner": false
         },
         {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracleTo",
           "isMut": false,
           "isSigner": false
@@ -574,7 +579,7 @@ export type Woospmm = {
           "isSigner": false
         },
         {
-          "name": "priceUpdate",
+          "name": "priceUpdateTo",
           "isMut": false,
           "isSigner": false
         }
@@ -628,6 +633,11 @@ export type Woospmm = {
           "isSigner": false
         },
         {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracleTo",
           "isMut": false,
           "isSigner": false
@@ -653,7 +663,7 @@ export type Woospmm = {
           "isSigner": false
         },
         {
-          "name": "priceUpdate",
+          "name": "priceUpdateTo",
           "isMut": false,
           "isSigner": false
         }
@@ -1594,6 +1604,11 @@ export const IDL: Woospmm = {
           "isSigner": false
         },
         {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracleTo",
           "isMut": false,
           "isSigner": false
@@ -1609,7 +1624,7 @@ export const IDL: Woospmm = {
           "isSigner": false
         },
         {
-          "name": "priceUpdate",
+          "name": "priceUpdateTo",
           "isMut": false,
           "isSigner": false
         }
@@ -1663,6 +1678,11 @@ export const IDL: Woospmm = {
           "isSigner": false
         },
         {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracleTo",
           "isMut": false,
           "isSigner": false
@@ -1688,7 +1708,7 @@ export const IDL: Woospmm = {
           "isSigner": false
         },
         {
-          "name": "priceUpdate",
+          "name": "priceUpdateTo",
           "isMut": false,
           "isSigner": false
         }
