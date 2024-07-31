@@ -18,20 +18,41 @@ describe("woospmm_swap", () => {
 
   const program = anchor.workspace.Woospmm as Program<Woospmm>;
 
-  let cloracle_price: BN;
-  let cloracle_decimal: Number;
-
   const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
   const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 
+    // SOL pyth oracle price feed
+  // https://pyth.network/developers/price-feed-ids
+  const bs58 = require('bs58')
+  const sol_bytes = Buffer.from('ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d', 'hex')
+  const sol_priceFeed = bs58.encode(sol_bytes)
+  console.log("SOL PriceFeed:", sol_priceFeed)
+  const usdc_bytes = Buffer.from('eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a', 'hex')
+  const usdc_priceFeed = bs58.encode(usdc_bytes)
+  console.log("USDC PriceFeed:", usdc_priceFeed)
+
+  // SOL Price Update
+  const solPriceUpdate = new anchor.web3.PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
+  // USDC Price Update
+  const usdcPriceUpdate = new anchor.web3.PublicKey("Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX");
   // SOL/USD
-  const solFeedAccount = new anchor.web3.PublicKey("99B2bTijsU6f1GCT73HmdR7HCFFjGMBcPZY6jZ96ynrR");
+  const solFeedAccount = new anchor.web3.PublicKey(sol_priceFeed);
   // USDC/USD
-  const usdcFeedAccount = new anchor.web3.PublicKey("2EmfL3MqL3YHABudGNmajjCpR13NNEn9Y4LWxbDm6SwR");
-  const chainLinkProgramAccount = new anchor.web3.PublicKey("HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny");
+  const usdcFeedAccount = new anchor.web3.PublicKey(usdc_priceFeed);
+
   const confirmOptionsRetryTres: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
   const tenpow18 = new BN(10).pow(new BN(18));
   const tenpow16 = new BN(10).pow(new BN(16));
+
+  let pythoracleAccount;
+  let wooracleAccount;
+  let pythoracle_price: BN;
+  let pythoracle_decimal: Number;
+
+  let traderSetPrice = new BN(2200000000);
+  let rangeMin = new BN(2000000000);
+  let rangeMax = new BN(2300000000);
+
 
   const getReturnLog = (confirmedTransaction) => {
     const prefix = "Program return: ";
@@ -44,14 +65,14 @@ describe("woospmm_swap", () => {
     return [key, data, buffer];
   };
 
-  const getOraclePriceResult = async (oracle: anchor.web3.PublicKey, wooracle: anchor.web3.PublicKey) => {
+  const getOraclePriceResult = async (oracle: anchor.web3.PublicKey, wooracle: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
     const tx = await program
       .methods
       .getPrice()
       .accounts({
         oracle,
         wooracle,
-        priceUpdate: chainLinkProgramAccount
+        priceUpdate
       })
       .rpc(confirmOptionsRetryTres);
 
@@ -67,14 +88,14 @@ describe("woospmm_swap", () => {
     return [price, feasible];
   };
 
-  const createOracle = async (feedAccount: anchor.web3.PublicKey) => {
-    const [cloracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+  const createOracle = async (feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
+    const [pythoracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('pythoracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
 
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+      [Buffer.from('wooracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
 
@@ -86,13 +107,13 @@ describe("woospmm_swap", () => {
       if (error.message.indexOf("Account does not exist") >= 0) {
         await program
           .methods
-          .createOracleChainlink()
+          .createOraclePyth()
           .accounts({
-            cloracle,
+            pythoracle,
             wooracle,
             admin: provider.wallet.publicKey,
-            feedAccount: feedAccount,
-            chainlinkProgram: chainLinkProgramAccount
+            feedAccount,
+            priceUpdate
           })
           .rpc(confirmOptionsRetryTres);   
       }
@@ -103,12 +124,12 @@ describe("woospmm_swap", () => {
     }
 
     // init set wooracle range min and max
-    const oracleChinlinkData = await program.account.oracle.fetch(cloracle);
-    console.log('oracle chainlink price:' + oracleChinlinkData.round);
+    const oraclePythData = await program.account.oracle.fetch(pythoracle);
+    console.log('oracle pyth price:' + oraclePythData.round);
     console.log('wooracle price:' + oracleItemData.price);
 
-    const rangeMin = oracleChinlinkData.round.mul(new BN(0.5));
-    const rangeMax = oracleChinlinkData.round.mul(new BN(1.5));
+    const rangeMin = oraclePythData.round.mul(new BN(0.5));
+    const rangeMax = oraclePythData.round.mul(new BN(1.5));
     await program
       .methods
       .setWooRange(rangeMin, rangeMax)
@@ -121,14 +142,14 @@ describe("woospmm_swap", () => {
     return oracleItemData;
   }
 
-  const createPool = async (feedAccount: anchor.web3.PublicKey, tokenMint: anchor.web3.PublicKey) => {
-    const [cloracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+  const createPool = async (feedAccount: anchor.web3.PublicKey, tokenMint: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
+    const [pythoracle] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('pythoracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
 
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+      [Buffer.from('wooracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
 
@@ -160,7 +181,7 @@ describe("woospmm_swap", () => {
           authority: provider.wallet.publicKey,
           woopool,
           tokenVault: tokenVaultKeypair.publicKey,
-          oracle: cloracle,
+          oracle: pythoracle,
           wooracle,
           tokenProgram: token.TOKEN_PROGRAM_ID, 
           systemProgram: web3.SystemProgram.programId,
@@ -196,15 +217,16 @@ describe("woospmm_swap", () => {
 
   const generatePoolParams = async(
     feedAccount: anchor.web3.PublicKey,
-    tokenMint: anchor.web3.PublicKey
+    tokenMint: anchor.web3.PublicKey,
+    priceUpdate: anchor.web3.PublicKey
   ) => {
     const [oracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('cloracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+      [Buffer.from('pythoracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
 
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
+      [Buffer.from('wooracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
 
@@ -227,12 +249,12 @@ describe("woospmm_swap", () => {
   describe("#create_sol_pool()", async () => {
     it("creates sol pool", async () => {
 
-      let solOracle = await createOracle(solFeedAccount);
+      let solOracle = await createOracle(solFeedAccount, solPriceUpdate);
       assert.ok(
         solOracle.authority.equals(provider.wallet.publicKey)
       );
   
-      let solPool = await createPool(solFeedAccount, solTokenMint);
+      let solPool = await createPool(solFeedAccount, solTokenMint, solPriceUpdate);
       assert.ok(
         solPool.authority.equals(provider.wallet.publicKey)
       );
@@ -241,12 +263,12 @@ describe("woospmm_swap", () => {
 
   describe("#create_usdc_pool()", async () => {
     it("creates usdc pool", async () => {
-      let usdcOracle = await createOracle(usdcFeedAccount);
+      let usdcOracle = await createOracle(usdcFeedAccount, usdcPriceUpdate);
       assert.ok(
         usdcOracle.authority.equals(provider.wallet.publicKey)
       );
 
-      let usdcPool = await createPool(usdcFeedAccount, usdcTokenMint);
+      let usdcPool = await createPool(usdcFeedAccount, usdcTokenMint, usdcPriceUpdate);
       assert.ok(
         usdcPool.authority.equals(provider.wallet.publicKey)
       );
@@ -312,14 +334,14 @@ describe("woospmm_swap", () => {
       console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
       console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
     
-      const fromPoolParams = await generatePoolParams(solFeedAccount, solTokenMint);
-      const toPoolParams = await generatePoolParams(usdcFeedAccount, usdcTokenMint);
+      const fromPoolParams = await generatePoolParams(solFeedAccount, solTokenMint, solPriceUpdate);
+      const toPoolParams = await generatePoolParams(usdcFeedAccount, usdcTokenMint, usdcPriceUpdate);
 
-      const [fromPrice, fromFeasible] = await getOraclePriceResult(fromPoolParams.oracle, fromPoolParams.wooracle);  
+      const [fromPrice, fromFeasible] = await getOraclePriceResult(fromPoolParams.oracle, fromPoolParams.wooracle, solPriceUpdate);  
       console.log(`price - ${fromPrice}`);
       console.log(`feasible - ${fromFeasible}`);
 
-      const [toPrice, toFeasible] = await getOraclePriceResult(toPoolParams.oracle, toPoolParams.wooracle);  
+      const [toPrice, toFeasible] = await getOraclePriceResult(toPoolParams.oracle, toPoolParams.wooracle, usdcPriceUpdate);  
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
 
@@ -330,10 +352,11 @@ describe("woospmm_swap", () => {
           oracleFrom: fromPoolParams.oracle,
           wooracleFrom: fromPoolParams.wooracle,
           woopoolFrom: fromPoolParams.woopool,
+          priceUpdateFrom: solPriceUpdate,
           oracleTo: toPoolParams.oracle,
           wooracleTo: toPoolParams.wooracle,
           woopoolTo: toPoolParams.woopool,
-          priceUpdate: chainLinkProgramAccount
+          priceUpdateTo: usdcPriceUpdate
         })
         .rpc(confirmOptionsRetryTres);
 
@@ -386,12 +409,13 @@ describe("woospmm_swap", () => {
           woopoolFrom: fromPoolParams.woopool,
           tokenOwnerAccountFrom: fromTokenAccount,
           tokenVaultFrom: fromPoolParams.tokenVault,
+          priceUpdateFrom: solPriceUpdate,
           oracleTo: toPoolParams.oracle,
           wooracleTo: toPoolParams.wooracle,
           woopoolTo: toPoolParams.woopool,
           tokenOwnerAccountTo: toTokenAccount,
           tokenVaultTo: toPoolParams.tokenVault,
-          priceUpdate: chainLinkProgramAccount
+          priceUpdateTo: usdcPriceUpdate
         })
         .signers([fromWallet])
         .rpc(confirmOptionsRetryTres);

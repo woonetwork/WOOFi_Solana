@@ -44,6 +44,7 @@ pub struct Swap<'info> {
         address = woopool_from.token_vault
     )]
     token_vault_from: Box<Account<'info, TokenAccount>>,
+    price_update_from: Account<'info, PriceUpdateV2>,
 
     #[account(
         constraint = oracle_to.key() == woopool_to.oracle
@@ -69,15 +70,15 @@ pub struct Swap<'info> {
         address = woopool_to.token_vault
     )]
     token_vault_to: Box<Account<'info, TokenAccount>>,
-
-    pub price_update: Account<'info, PriceUpdateV2>
+    price_update_to: Account<'info, PriceUpdateV2>,
 }
 
 pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     // TODO Prince: check from_amount upper, total amount limit in one swap
     // TODO Prince: use checked_mul checked_div in math
 
-    let price_update = &mut ctx.accounts.price_update;
+    let price_update_from = &mut ctx.accounts.price_update_from;
+    let price_update_to = &mut ctx.accounts.price_update_to;
 
     let token_owner_account_from = &ctx.accounts.token_owner_account_from;
     require!(token_owner_account_from.amount as u128 >= from_amount, ErrorCode::NotEnoughBalance);
@@ -90,13 +91,13 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
     let wooracle_from = &mut ctx.accounts.wooracle_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
 
-    let mut state_from = get_price::get_state_impl(oracle_from, wooracle_from, price_update)?;
+    let mut state_from = get_price::get_state_impl(oracle_from, wooracle_from, price_update_from)?;
 
     let oracle_to = &mut ctx.accounts.oracle_to;
     let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to, price_update)?;
+    let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to, price_update_to)?;
 
     let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);

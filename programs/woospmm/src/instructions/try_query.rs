@@ -28,6 +28,7 @@ pub struct TryQuery<'info> {
     )]
     wooracle_from: Account<'info, WOOracle>,
     woopool_from: Box<Account<'info, WooPool>>,
+    price_update_from: Account<'info, PriceUpdateV2>,
 
     #[account(
         constraint = oracle_to.key() == woopool_to.oracle
@@ -44,13 +45,7 @@ pub struct TryQuery<'info> {
     )]
     wooracle_to: Account<'info, WOOracle>,
     woopool_to: Box<Account<'info, WooPool>>,
-
-    // Add this account to any instruction Context that needs price data.
-    // Warning: 
-    // users must ensure that the account passed to their instruction is owned by the Pyth pull oracle program.
-    // Using Anchor with the Account<'info, PriceUpdateV2> type will automatically perform this check. 
-    // However, if you are not using Anchor, it is your responsibility to perform this check.
-    pub price_update: Account<'info, PriceUpdateV2>,
+    price_update_to: Account<'info, PriceUpdateV2>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
@@ -62,19 +57,20 @@ pub struct QueryResult {
 
 pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult> {
 
-    let price_update = &mut ctx.accounts.price_update;
+    let price_update_from = &mut ctx.accounts.price_update_from;
+    let price_update_to = &mut ctx.accounts.price_update_to;
 
     let oracle_from = &mut ctx.accounts.oracle_from;
     let wooracle_from = &ctx.accounts.wooracle_from;
     let woopool_from = &ctx.accounts.woopool_from;
 
-    let mut state_from = get_price::get_state_impl(oracle_from, wooracle_from, price_update)?;
+    let mut state_from = get_price::get_state_impl(oracle_from, wooracle_from, price_update_from)?;
 
     let oracle_to = &mut ctx.accounts.oracle_to;
     let wooracle_to = &ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to, price_update)?;
+    let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to, price_update_to)?;
 
     let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
