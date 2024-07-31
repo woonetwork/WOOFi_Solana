@@ -81,7 +81,7 @@ pub fn handler(ctx: Context<CreateOraclePyth>) -> Result<()> {
     ctx.accounts.pythoracle.oracle_type = OracleType::Pyth;
     ctx.accounts.pythoracle.authority = ctx.accounts.admin.key();
     ctx.accounts.pythoracle.feed_account = ctx.accounts.feed_account.key();
-    ctx.accounts.pythoracle.price_update_account = ctx.accounts.price_update.key();
+    ctx.accounts.pythoracle.price_update = ctx.accounts.price_update.key();
 
     let price_update = &mut ctx.accounts.price_update;
     // get_price_no_older_than will fail if the price update is more than 30 seconds old

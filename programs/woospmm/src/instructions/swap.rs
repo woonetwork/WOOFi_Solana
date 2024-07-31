@@ -21,14 +21,15 @@ pub struct Swap<'info> {
     pub owner: Signer<'info>,
 
     #[account(
-        constraint = oracle_from.key() == woopool_from.oracle
+        constraint = oracle_from.key() == woopool_from.oracle,
+        constraint = oracle_from.price_update == price_update_from.key()
     )]
     oracle_from: Account<'info, Oracle>,
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
             oracle_from.feed_account.as_ref(),
-            oracle_from.price_update_account.as_ref()
+            oracle_from.price_update.as_ref()
         ],
         bump,
         constraint = wooracle_from.key() == woopool_from.wooracle
@@ -47,14 +48,15 @@ pub struct Swap<'info> {
     price_update_from: Account<'info, PriceUpdateV2>,
 
     #[account(
-        constraint = oracle_to.key() == woopool_to.oracle
+        constraint = oracle_to.key() == woopool_to.oracle,
+        constraint = oracle_to.price_update == price_update_to.key()
     )]
     oracle_to: Account<'info, Oracle>,
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
             oracle_to.feed_account.as_ref(),
-            oracle_to.price_update_account.as_ref()
+            oracle_to.price_update.as_ref()
         ],
         bump,
         constraint = wooracle_to.key() == woopool_to.wooracle

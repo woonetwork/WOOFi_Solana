@@ -10,6 +10,8 @@ pub mod swap;
 pub mod update_pythoracle;
 pub mod create_oracle_chainlink;
 pub mod create_oracle_pyth;
+pub mod set_woo_admin;
+pub mod set_pool_admin;
 
 pub use set_outer_preferred::*;
 pub use set_woo_state::*;
@@ -23,3 +25,5 @@ pub use swap::*;
 pub use update_pythoracle::*;
 pub use create_oracle_chainlink::*;
 pub use create_oracle_pyth::*;
+pub use set_woo_admin::*;
+pub use set_pool_admin::*;

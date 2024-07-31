@@ -13,16 +13,19 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct GetPrice<'info> {
+    #[account(
+        has_one = price_update
+    )]
     pub oracle: Account<'info, Oracle>,
     #[account(
         has_one = oracle,
         seeds = [
             WOORACLE_SEED.as_bytes(),
             oracle.feed_account.as_ref(),
-            oracle.price_update_account.as_ref()
+            oracle.price_update.as_ref()
         ],
         bump,
-        constraint = oracle.authority == wooracle.authority,
+        constraint = oracle.authority == wooracle.authority
     )]
     pub wooracle: Account<'info, WOOracle>,
     pub price_update: Account<'info, PriceUpdateV2>
@@ -48,17 +51,17 @@ pub struct GetStateResult {
 pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
     let oracle = &mut ctx.accounts.oracle;
     let wooracle = &ctx.accounts.wooracle;
-    let priceUpdate = &mut ctx.accounts.price_update;
+    let price_update = &mut ctx.accounts.price_update;
 
-    Ok(get_price_impl(oracle, wooracle, priceUpdate)?)
+    Ok(get_price_impl(oracle, wooracle, price_update)?)
 }
 
 pub fn get_price_impl<'info>(oracle: &mut Account<'info, Oracle>, wooracle: &Account<'info, WOOracle>, price_update: &mut Account<'info, PriceUpdateV2>) -> Result<GetPriceResult> {
     let now = Clock::get()?.unix_timestamp;
 
-    if (oracle.oracle_type == OracleType::Pyth) {
-        update_pythoracle::update(price_update, oracle);
-    } else if (oracle.oracle_type == OracleType::ChainLink) {
+    if oracle.oracle_type == OracleType::Pyth {
+        let _ = update_pythoracle::update(price_update, oracle);
+    } else if oracle.oracle_type == OracleType::ChainLink {
         // TODO Prince: auto fetch chainlink price
     }
 

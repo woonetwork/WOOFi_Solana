@@ -80,7 +80,7 @@ pub fn handler(ctx: Context<CreateOracleChainlink>) -> Result<()> {
   ctx.accounts.cloracle.oracle_type = OracleType::ChainLink;
   ctx.accounts.cloracle.authority = ctx.accounts.admin.key();
   ctx.accounts.cloracle.feed_account = ctx.accounts.feed_account.key();
-  ctx.accounts.cloracle.price_update_account = ctx.accounts.chainlink_program.key();
+  ctx.accounts.cloracle.price_update = ctx.accounts.chainlink_program.key();
   ctx.accounts.cloracle.updated_at = timestamp;
 
   // get decimal value from chainlink program

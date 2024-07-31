@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use pyth_solana_receiver_sdk::price_update::{self, PriceUpdateV2};
+use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 use crate::state::oracle::*;
 
@@ -7,7 +7,7 @@ use crate::state::oracle::*;
 pub struct UpdatePythOracle<'info> {
     #[account(
         mut,
-        constraint = pythoracle.price_update_account == price_update.key(),
+        constraint = pythoracle.price_update == price_update.key(),
         has_one = authority,
     )]
     pythoracle: Account<'info, Oracle>,

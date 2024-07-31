@@ -4,7 +4,11 @@ use crate::state::wooracle::*;
 
 #[derive(Accounts)]
 pub struct SetWooState<'info> {
-    #[account(mut, has_one = authority)]
+    #[account(mut,
+        constraint = 
+            wooracle.authority == authority.key() || 
+            wooracle.admin_authority == authority.key()
+    )]
     pub wooracle: Account<'info, WOOracle>,
 
     pub authority: Signer<'info>,
@@ -28,7 +32,7 @@ pub fn set_bound_handler(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
     Ok(ctx.accounts.wooracle.update_bound(bound)?)
 }
 
-pub fn set_rang_handler(ctx: Context<SetWooState>, range_min: u128, range_max: u128) -> Result<()> {
+pub fn set_range_handler(ctx: Context<SetWooState>, range_min: u128, range_max: u128) -> Result<()> {
     let _ = ctx.accounts.wooracle.update_range_min(range_min);
     let _ = ctx.accounts.wooracle.update_range_max(range_max);
 

@@ -63,7 +63,7 @@ pub mod woospmm {
     }
 
     pub fn set_woo_range(ctx: Context<SetWooState>, range_min: u128, range_max: u128) -> Result<()> {
-        return instructions::set_woo_state::set_rang_handler(ctx, range_min, range_max);
+        return instructions::set_woo_state::set_range_handler(ctx, range_min, range_max);
     }
 
     pub fn set_woo_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
@@ -80,6 +80,10 @@ pub mod woospmm {
 
     pub fn set_clo_preferred(ctx: Context<SetOuterPreferred>, clo_preferred: bool) -> Result<()> {
         return instructions::set_outer_preferred::handler(ctx, clo_preferred);
+    }
+
+    pub fn set_woo_admin(ctx: Context<SetWooAdmin>, admin_authority: Pubkey) -> Result<()> {
+        return instructions::set_woo_admin_handler(ctx, admin_authority);
     }
 
     pub fn set_woo_state(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
@@ -105,8 +109,16 @@ pub mod woospmm {
         return instructions::get_price::handler(ctx);        
     }
 
-    pub fn create_pool(ctx: Context<CreatePool>, fee_authority: Pubkey) -> Result<()> {
-        return instructions::create_pool::handler(ctx, fee_authority);
+    pub fn create_pool(ctx: Context<CreatePool>, admin_authority: Pubkey, fee_authority: Pubkey) -> Result<()> {
+        return instructions::create_pool::handler(ctx, admin_authority, fee_authority);
+    }
+
+    pub fn set_pool_admin(ctx: Context<SetPoolAdmin>, admin_authority: Pubkey) -> Result<()> {
+        return instructions::set_pool_admin_handler(ctx, admin_authority);
+    }
+
+    pub fn set_pool_fee_admin(ctx: Context<SetPoolAdmin>, fee_authority: Pubkey) -> Result<()> {
+        return instructions::set_pool_fee_admin_handler(ctx, fee_authority);
     }
 
     pub fn set_pool_state(ctx: Context<SetPoolState>, fee_rate: u16, cap_balance: u128, tgt_balance: u128, shift_max: u16) -> Result<()> {

@@ -16,10 +16,8 @@ pub struct CreatePool<'info> {
         init,
         payer = authority,
         space = WooPool::LEN,
-        // TODO Prince: double check fee authority is good for seeds param. since the value maybe changed.
         seeds = [
           WOOPOOL_SEED.as_bytes(),
-          // fee_authority.as_ref(),
           token_mint.key().as_ref(),
         ],
         bump)]
@@ -49,7 +47,7 @@ pub struct CreatePool<'info> {
         seeds = [
             WOORACLE_SEED.as_bytes(),
             oracle.feed_account.as_ref(),
-            oracle.price_update_account.as_ref()
+            oracle.price_update.as_ref()
         ],
         bump,
     )]
@@ -63,6 +61,7 @@ pub struct CreatePool<'info> {
 
 pub fn handler(
     ctx: Context<CreatePool>,
+    admin_authority: Pubkey,
     fee_authority: Pubkey
 ) -> Result<()> {
     let authority = ctx.accounts.authority.key();
@@ -78,6 +77,7 @@ pub fn handler(
     Ok(woopool.initialize(
         bump,
         authority,
+        admin_authority,
         fee_authority,
         oracle,
         wooracle,

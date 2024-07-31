@@ -43,6 +43,8 @@ pub struct WooPool {
 
     pub authority: Pubkey,      // 32
 
+    pub admin_authority: Pubkey, // 32
+
     pub fee_authority: Pubkey,  // 32
 
     pub oracle: Pubkey,       // 32
@@ -83,7 +85,7 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
+    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
     
     pub fn seeds(&self) -> [&[u8]; 3] {
         [
@@ -98,6 +100,7 @@ impl WooPool {
         &mut self,
         bump: u8,
         authority: Pubkey,
+        admin_authority: Pubkey,
         fee_authority: Pubkey,
         oracle: Pubkey,
         wooracle: Pubkey,
@@ -107,6 +110,7 @@ impl WooPool {
     ) -> Result<()> {
         self.woopool_bump = [bump];
         self.authority = authority;
+        self.admin_authority = admin_authority;
         self.fee_authority = fee_authority;
         
         self.oracle = oracle;
@@ -124,6 +128,18 @@ impl WooPool {
         self.token_vault = token_vault;
 
         self.base_decimals = base_decimals;
+
+        Ok(())
+    }
+
+    pub fn update_admin_authority(&mut self, admin_authority: Pubkey) -> Result<()> {
+        self.admin_authority = admin_authority;
+
+        Ok(())
+    }
+
+    pub fn update_fee_authority(&mut self, fee_authority: Pubkey) -> Result<()> {
+        self.fee_authority = fee_authority;
 
         Ok(())
     }
