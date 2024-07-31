@@ -294,11 +294,6 @@
           "isSigner": true
         },
         {
-          "name": "feedAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "priceUpdate",
           "isMut": false,
           "isSigner": false
@@ -316,6 +311,11 @@
         },
         {
           "name": "wooracle",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
           "isMut": false,
           "isSigner": false
         }
@@ -572,6 +572,11 @@
           "name": "woopoolTo",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -646,6 +651,11 @@
           "name": "tokenVaultTo",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -668,6 +678,10 @@
           },
           {
             "name": "feedAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "priceUpdateAccount",
             "type": "publicKey"
           },
           {
@@ -1018,6 +1032,6 @@
     }
   ],
   "metadata": {
-    "address": "72wk7v8QECDSSbdg2LLUFqsZm2H4WHHkGDjMnpbcMWKH"
+    "address": "7xgWXBHKS9LVryec7cSsCue4CaUtDbV7Z8ZaKGLwUoKT"
   }
 }

@@ -50,15 +50,16 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
   export const generatePoolParams = async(
     feedAccount: PublicKey,
     tokenMint: PublicKey,
+    priceUpdate: PublicKey,
     program: Program<Woospmm> 
   ) => {
     const [oracle] = await PublicKey.findProgramAddressSync(
-      [Buffer.from('cloracle'), feedAccount.toBuffer(), new PublicKey(CHAINLINK_PROGRAM_ACCOUNT).toBuffer()],
+      [Buffer.from('pythoracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
   
     const [wooracle] = await PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer()],
+      [Buffer.from('wooracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
   
@@ -239,13 +240,14 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     fromOracleFeedAccount: PublicKey,
     toTokenMint: PublicKey,
     toOracleFeedAccount: PublicKey,
+    priceUpdate: PublicKey
   ): Promise<QueryResult> => {
-    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, ctx.program);
+    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, priceUpdate, ctx.program);
     const oracle_from = await ctx.program.account.oracle.fetch(fromPoolParams.oracle);
     const wooracle_from = await ctx.program.account.woOracle.fetch(fromPoolParams.wooracle);
     const woopool_from = await ctx.program.account.wooPool.fetch(fromPoolParams.woopool);
 
-    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, ctx.program);
+    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, priceUpdate, ctx.program);
     const wooracle_to = await ctx.program.account.woOracle.fetch(toPoolParams.wooracle);
     const oracle_to = await ctx.program.account.oracle.fetch(toPoolParams.oracle);
     const woopool_to = await ctx.program.account.wooPool.fetch(toPoolParams.woopool);

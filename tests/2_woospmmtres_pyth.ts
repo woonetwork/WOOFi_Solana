@@ -25,11 +25,15 @@ describe("woospmm", () => {
   // SOL pyth oracle price feed
   // https://pyth.network/developers/price-feed-ids
   const bs58 = require('bs58')
-  const bytes = Buffer.from('ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d', 'hex')
-  const priceFeed = bs58.encode(bytes)
-  console.log(priceFeed)
+  const sol_bytes = Buffer.from('ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d', 'hex')
+  const sol_priceFeed = bs58.encode(sol_bytes)
+  console.log("SOL PriceFeed:", sol_priceFeed)
 
-  const feedAccount = new anchor.web3.PublicKey(priceFeed);
+  const usdc_bytes = Buffer.from('eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a', 'hex')
+  const usdc_priceFeed = bs58.encode(usdc_bytes)
+  console.log("USDC PriceFeed:", usdc_priceFeed)
+
+  const feedAccount = new anchor.web3.PublicKey(sol_priceFeed);
   const priceUpdateAccount = new anchor.web3.PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
   const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3, commitment: "confirmed" };
   const tenpow18 = new BN(10).pow(new BN(18));
@@ -57,7 +61,8 @@ describe("woospmm", () => {
       .getPrice()
       .accounts({
         oracle: pythoracleAccount,
-        wooracle: wooracleAccount
+        wooracle: wooracleAccount,
+        priceUpdate: priceUpdateAccount
       })
       .rpc(confirmOptions);
 
@@ -241,7 +246,8 @@ describe("woospmm", () => {
           .getPrice()
           .accounts({
             oracle: pythoracleAccount,
-            wooracle: wooracleAccount
+            wooracle: wooracleAccount,
+            priceUpdate: priceUpdateAccount
           })
           .rpc(confirmOptionsRetryTres);
 
@@ -295,7 +301,8 @@ describe("woospmm", () => {
           .getPrice()
           .accounts({
             oracle: pythoracleAccount,
-            wooracle: wooracleAccount
+            wooracle: wooracleAccount,
+            priceUpdate: priceUpdateAccount
           })
           .rpc(confirmOptionsRetryTres);
 
@@ -357,7 +364,8 @@ describe("woospmm", () => {
         .getPrice()
         .accounts({
           oracle: pythoracleAccount,
-          wooracle: wooracleAccount
+          wooracle: wooracleAccount,
+          priceUpdate: priceUpdateAccount
         })
         .rpc(confirmOptions);
 

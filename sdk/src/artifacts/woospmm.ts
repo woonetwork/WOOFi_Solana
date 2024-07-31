@@ -294,11 +294,6 @@ export type Woospmm = {
           "isSigner": true
         },
         {
-          "name": "feedAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "priceUpdate",
           "isMut": false,
           "isSigner": false
@@ -316,6 +311,11 @@ export type Woospmm = {
         },
         {
           "name": "wooracle",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
           "isMut": false,
           "isSigner": false
         }
@@ -572,6 +572,11 @@ export type Woospmm = {
           "name": "woopoolTo",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -646,6 +651,11 @@ export type Woospmm = {
           "name": "tokenVaultTo",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -668,6 +678,10 @@ export type Woospmm = {
           },
           {
             "name": "feedAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "priceUpdateAccount",
             "type": "publicKey"
           },
           {
@@ -1315,11 +1329,6 @@ export const IDL: Woospmm = {
           "isSigner": true
         },
         {
-          "name": "feedAccount",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "priceUpdate",
           "isMut": false,
           "isSigner": false
@@ -1337,6 +1346,11 @@ export const IDL: Woospmm = {
         },
         {
           "name": "wooracle",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
           "isMut": false,
           "isSigner": false
         }
@@ -1593,6 +1607,11 @@ export const IDL: Woospmm = {
           "name": "woopoolTo",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1667,6 +1686,11 @@ export const IDL: Woospmm = {
           "name": "tokenVaultTo",
           "isMut": true,
           "isSigner": false
+        },
+        {
+          "name": "priceUpdate",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -1689,6 +1713,10 @@ export const IDL: Woospmm = {
           },
           {
             "name": "feedAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "priceUpdateAccount",
             "type": "publicKey"
           },
           {

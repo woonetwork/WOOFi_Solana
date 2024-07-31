@@ -23,6 +23,13 @@ export const TOKEN_MINTS = {
   stSOL: "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
 };
 
+export const PYTH_PRICE_UPDATE_ACCOUNT = "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE";
+
+export const PYTH_FEED_ACCOUNT = {
+  SOL: "H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG",
+  USDC: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD"
+};
+
 export const CHAINLINK_PROGRAM_ACCOUNT = "HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny";
 
 export const CHAINLINK_FEED_ACCOUNT = {

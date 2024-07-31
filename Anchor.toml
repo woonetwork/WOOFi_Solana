@@ -5,10 +5,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-woospmm = "7KTS4GH4BPsN7KVqD7UahJnRPNGU2xCEGWFfRjzZSSnt"
+woospmm = "7xgWXBHKS9LVryec7cSsCue4CaUtDbV7Z8ZaKGLwUoKT"
 
 [programs.devnet]
-woospmm = "7KTS4GH4BPsN7KVqD7UahJnRPNGU2xCEGWFfRjzZSSnt"
+woospmm = "7xgWXBHKS9LVryec7cSsCue4CaUtDbV7Z8ZaKGLwUoKT"
 
 [registry]
 url = "https://api.apr.dev"

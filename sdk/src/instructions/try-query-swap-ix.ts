@@ -14,6 +14,7 @@ import { Woospmm } from "../artifacts/woospmm";
  * @param oracleTo - PublicKey for the outside oracle account for to woopool.
  * @param wooracleTo - PublicKey for the wooracle account for to woopool.
  * @param woopoolTo - PublicKey for the woopool that the swap will occur on to.
+ * @param priceUpdate - PublicKey for the pyth oracle update.
  */
 export type TryQuerySwapParams = {
   amount: BN;
@@ -23,6 +24,7 @@ export type TryQuerySwapParams = {
   oracleTo: PublicKey;
   wooracleTo: PublicKey;
   woopoolTo: PublicKey;
+  priceUpdate: PublicKey;
 };
 
 /**
@@ -52,6 +54,7 @@ export function tryQuerySwapIx(program: Program<Woospmm>, params: TryQuerySwapPa
     oracleTo,
     wooracleTo,
     woopoolTo,
+    priceUpdate
   } = params;
 
   const ix = program
@@ -64,6 +67,7 @@ export function tryQuerySwapIx(program: Program<Woospmm>, params: TryQuerySwapPa
       oracleTo,
       wooracleTo,
       woopoolTo,
+      priceUpdate
     })
     .instruction();
 

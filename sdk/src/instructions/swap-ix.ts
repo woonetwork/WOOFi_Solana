@@ -20,6 +20,7 @@ import { Woospmm } from "../artifacts/woospmm";
  * @param woopoolTo - PublicKey for the woopool that the swap will occur on to.
  * @param tokenOwnerAccountTo - PublicKey for the associated token account for token to in the collection wallet.
  * @param tokenVaultTo - PublicKey for the token vault for to woopool.
+ * @param priceUpdate - PublicKey for the pyth oracle update.
  */
 export type SwapParams = {
   amount: BN;
@@ -34,6 +35,7 @@ export type SwapParams = {
   woopoolTo: PublicKey;
   tokenOwnerAccountTo: PublicKey;
   tokenVaultTo: PublicKey;
+  priceUpdate: PublicKey;
 };
 
 /**
@@ -68,6 +70,7 @@ export function swapIx(program: Program<Woospmm>, params: SwapParams): Promise<T
     woopoolTo,
     tokenOwnerAccountTo,
     tokenVaultTo,
+    priceUpdate,
   } = params;
 
   const ix = program
@@ -86,6 +89,7 @@ export function swapIx(program: Program<Woospmm>, params: SwapParams): Promise<T
       woopoolTo,
       tokenOwnerAccountTo,
       tokenVaultTo,
+      priceUpdate
     })
     .instruction();
 
