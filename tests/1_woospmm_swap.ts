@@ -50,7 +50,8 @@ describe("woospmm_swap", () => {
       .getPrice()
       .accounts({
         oracle,
-        wooracle
+        wooracle,
+        priceUpdate: chainLinkProgramAccount
       })
       .rpc(confirmOptionsRetryTres);
 
@@ -73,7 +74,7 @@ describe("woospmm_swap", () => {
     );
 
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer()],
+      [Buffer.from('wooracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
       program.programId
     );
 
@@ -127,7 +128,7 @@ describe("woospmm_swap", () => {
     );
 
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer()],
+      [Buffer.from('wooracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
       program.programId
     );
 
@@ -203,7 +204,7 @@ describe("woospmm_swap", () => {
     );
 
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer()],
+      [Buffer.from('wooracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
       program.programId
     );
 
@@ -331,7 +332,8 @@ describe("woospmm_swap", () => {
           woopoolFrom: fromPoolParams.woopool,
           oracleTo: toPoolParams.oracle,
           wooracleTo: toPoolParams.wooracle,
-          woopoolTo: toPoolParams.woopool
+          woopoolTo: toPoolParams.woopool,
+          priceUpdate: chainLinkProgramAccount
         })
         .rpc(confirmOptionsRetryTres);
 
@@ -388,7 +390,8 @@ describe("woospmm_swap", () => {
           wooracleTo: toPoolParams.wooracle,
           woopoolTo: toPoolParams.woopool,
           tokenOwnerAccountTo: toTokenAccount,
-          tokenVaultTo: toPoolParams.tokenVault
+          tokenVaultTo: toPoolParams.tokenVault,
+          priceUpdate: chainLinkProgramAccount
         })
         .signers([fromWallet])
         .rpc(confirmOptionsRetryTres);

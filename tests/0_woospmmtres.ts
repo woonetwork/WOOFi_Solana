@@ -48,7 +48,8 @@ describe("woospmm", () => {
       .getPrice()
       .accounts({
         oracle: cloracleAccount,
-        wooracle: wooracleAccount
+        wooracle: wooracleAccount,
+        priceUpdate: chainLinkProgramAccount
       })
       .rpc(confirmOptions);
 
@@ -73,7 +74,7 @@ describe("woospmm", () => {
       );
 
       const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooracle'), feedAccount.toBuffer()],
+        [Buffer.from('wooracle'), feedAccount.toBuffer(), chainLinkProgramAccount.toBuffer()],
         program.programId
       );
 
@@ -338,7 +339,8 @@ describe("woospmm", () => {
         .getPrice()
         .accounts({
           oracle: cloracleAccount,
-          wooracle: wooracleAccount
+          wooracle: wooracleAccount,
+          priceUpdate: chainLinkProgramAccount
         })
         .rpc(confirmOptions);
 
