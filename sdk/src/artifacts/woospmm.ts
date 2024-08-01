@@ -226,6 +226,27 @@ export type Woospmm = {
       ]
     },
     {
+      "name": "setWooAdmin",
+      "accounts": [
+        {
+          "name": "wooracle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "setWooState",
       "accounts": [
         {
@@ -372,6 +393,52 @@ export type Woospmm = {
           "name": "rent",
           "isMut": false,
           "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        },
+        {
+          "name": "feeAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolAdmin",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolFeeAdmin",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
@@ -691,7 +758,7 @@ export type Woospmm = {
             "type": "publicKey"
           },
           {
-            "name": "priceUpdateAccount",
+            "name": "priceUpdate",
             "type": "publicKey"
           },
           {
@@ -735,6 +802,10 @@ export type Woospmm = {
           },
           {
             "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuthority",
             "type": "publicKey"
           },
           {
@@ -806,6 +877,10 @@ export type Woospmm = {
         "fields": [
           {
             "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuthority",
             "type": "publicKey"
           },
           {
@@ -1271,6 +1346,27 @@ export const IDL: Woospmm = {
       ]
     },
     {
+      "name": "setWooAdmin",
+      "accounts": [
+        {
+          "name": "wooracle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "setWooState",
       "accounts": [
         {
@@ -1417,6 +1513,52 @@ export const IDL: Woospmm = {
           "name": "rent",
           "isMut": false,
           "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        },
+        {
+          "name": "feeAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolAdmin",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolFeeAdmin",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
@@ -1736,7 +1878,7 @@ export const IDL: Woospmm = {
             "type": "publicKey"
           },
           {
-            "name": "priceUpdateAccount",
+            "name": "priceUpdate",
             "type": "publicKey"
           },
           {
@@ -1780,6 +1922,10 @@ export const IDL: Woospmm = {
           },
           {
             "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuthority",
             "type": "publicKey"
           },
           {
@@ -1851,6 +1997,10 @@ export const IDL: Woospmm = {
         "fields": [
           {
             "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuthority",
             "type": "publicKey"
           },
           {

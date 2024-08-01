@@ -40,7 +40,7 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, state::*, instructions::*, };
 
-declare_id!("Dk5yihoEqQKWrMV1yTamUEkmDeTLEEBncLbsmtYt5tVP");
+declare_id!("48KN3Khr7mEW46Xkqm49xkmRVN1GpFsSRL8xaYtRd9T4");
 
 #[program]
 pub mod woospmm {

@@ -169,6 +169,10 @@ describe("woospmm", () => {
         `price - ${price}`
       );
 
+      console.log('traderSetPrice: ', traderSetPrice.toNumber());
+      console.log('rangeMin: ', rangeMin.toNumber());
+      console.log('rangeMax: ', rangeMax.toNumber());
+
       console.log(`round - ${result.round}`);
       console.log(`decimal - ${result.decimals}`);
       console.log(`updated at - ${updatedAt}`);

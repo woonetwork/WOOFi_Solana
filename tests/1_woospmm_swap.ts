@@ -128,8 +128,12 @@ describe("woospmm_swap", () => {
     console.log('oracle pyth price:' + oraclePythData.round);
     console.log('wooracle price:' + oracleItemData.price);
 
-    const rangeMin = oraclePythData.round.mul(new BN(0.5));
-    const rangeMax = oraclePythData.round.mul(new BN(1.5));
+    const rangeMin = oraclePythData.round.mul(new BN(10)).div(new BN(20));
+    const rangeMax = oraclePythData.round.mul(new BN(30)).div(new BN(20));
+    console.log('oraclePythData', oraclePythData.round.toNumber());
+    console.log('rangeMin:', rangeMin.toNumber());
+    console.log('rangeMax:', rangeMax.toNumber());
+
     await program
       .methods
       .setWooRange(rangeMin, rangeMax)
@@ -153,6 +157,7 @@ describe("woospmm_swap", () => {
       program.programId
     );
 
+    const adminAuthority = provider.wallet.publicKey;
     const feeAuthority = provider.wallet.publicKey;
 
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
@@ -175,7 +180,7 @@ describe("woospmm_swap", () => {
         console.log('start create pool:');
         await program
         .methods
-        .createPool(feeAuthority)
+        .createPool(adminAuthority, feeAuthority)
         .accounts({
           tokenMint,
           authority: provider.wallet.publicKey,
@@ -200,9 +205,17 @@ describe("woospmm_swap", () => {
     .accounts({
       woopool: woopool,
       authority: provider.wallet.publicKey
-    })
-    .rpc(confirmOptionsRetryTres);
+    }).rpc(confirmOptionsRetryTres);
 
+    // init set Pool Max Notional Swap
+    await program
+    .methods
+    .setPoolMaxGamma(new BN(1000))
+    .accounts({
+      woopool: woopool,
+      authority: provider.wallet.publicKey
+    }).rpc(confirmOptionsRetryTres);
+    
     if (woopoolData == null) {
       woopoolData = await program.account.wooPool.fetch(woopool);
     }
@@ -211,6 +224,8 @@ describe("woospmm_swap", () => {
     console.log('feeAuthority:' + woopoolData.feeAuthority);
     console.log('tokenMint:' + woopoolData.tokenMint);
     console.log('tokenVault:' + woopoolData.tokenVault);
+    console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
+    console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
 
     return woopoolData;
   }
@@ -274,6 +289,53 @@ describe("woospmm_swap", () => {
       );
     });
   });
+
+  describe("#get_price_from_contract", async ()=> {
+    it("get_sol_price", async ()=> {
+      const fromPoolParams = await generatePoolParams(solFeedAccount, solTokenMint, solPriceUpdate);
+
+      // init set wooracle range min and max
+      const oraclePythData = await program.account.oracle.fetch(fromPoolParams.oracle);
+      console.log('oracle pyth price:' + oraclePythData.round);
+      const oracleItemData = await program.account.woOracle.fetch(fromPoolParams.wooracle);
+      const rangeMin = oraclePythData.round.mul(new BN(10)).div(new BN(20));
+      const rangeMax = oraclePythData.round.mul(new BN(30)).div(new BN(20));
+      console.log('oraclePythData.round', oraclePythData.round.toNumber());
+      console.log('rangeMin:', rangeMin.toNumber());
+      console.log('rangeMax:', rangeMax.toNumber());
+
+      console.log('wooracle price:', oracleItemData.price.toNumber());
+      console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
+      console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
+
+      const [fromPrice, fromFeasible] = await getOraclePriceResult(fromPoolParams.oracle, fromPoolParams.wooracle, solPriceUpdate);  
+      console.log(`price - ${fromPrice}`);
+      console.log(`feasible - ${fromFeasible}`);
+    })
+
+    it("get_usdc_price", async ()=> {
+      const toPoolParams = await generatePoolParams(usdcFeedAccount, usdcTokenMint, usdcPriceUpdate);
+
+      // init set wooracle range min and max
+      const oraclePythData = await program.account.oracle.fetch(toPoolParams.oracle);
+      console.log('oracle pyth price:' + oraclePythData.round);
+      const oracleItemData = await program.account.woOracle.fetch(toPoolParams.wooracle);
+      console.log('wooracle price:' + oracleItemData.price);
+      const rangeMin = oraclePythData.round.mul(new BN(10)).div(new BN(20));
+      const rangeMax = oraclePythData.round.mul(new BN(30)).div(new BN(20));
+      console.log('oraclePythData.round', oraclePythData.round.toNumber());
+      console.log('rangeMin:', rangeMin.toNumber());
+      console.log('rangeMax:', rangeMax.toNumber());
+
+      console.log('wooracle price:', oracleItemData.price.toNumber());
+      console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
+      console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
+
+      const [toPrice, toFeasible] = await getOraclePriceResult(toPoolParams.oracle, toPoolParams.wooracle, usdcPriceUpdate);  
+      console.log(`price - ${toPrice}`);
+      console.log(`feasible - ${toFeasible}`);
+    })
+  })
 
   describe("#swap_between_sol_and_usdc", async ()=> {
     it("swap_from_sol_to_usdc", async ()=> {

@@ -226,6 +226,27 @@
       ]
     },
     {
+      "name": "setWooAdmin",
+      "accounts": [
+        {
+          "name": "wooracle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "setWooState",
       "accounts": [
         {
@@ -372,6 +393,52 @@
           "name": "rent",
           "isMut": false,
           "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        },
+        {
+          "name": "feeAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolAdmin",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "adminAuthority",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolFeeAdmin",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
@@ -691,7 +758,7 @@
             "type": "publicKey"
           },
           {
-            "name": "priceUpdateAccount",
+            "name": "priceUpdate",
             "type": "publicKey"
           },
           {
@@ -735,6 +802,10 @@
           },
           {
             "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuthority",
             "type": "publicKey"
           },
           {
@@ -806,6 +877,10 @@
         "fields": [
           {
             "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "adminAuthority",
             "type": "publicKey"
           },
           {
@@ -1042,6 +1117,6 @@
     }
   ],
   "metadata": {
-    "address": "Dk5yihoEqQKWrMV1yTamUEkmDeTLEEBncLbsmtYt5tVP"
+    "address": "48KN3Khr7mEW46Xkqm49xkmRVN1GpFsSRL8xaYtRd9T4"
   }
 }

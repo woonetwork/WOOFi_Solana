@@ -107,8 +107,8 @@ describe("woospmm_swap", () => {
     console.log('oracle chainlink price:' + oracleChinlinkData.round);
     console.log('wooracle price:' + oracleItemData.price);
 
-    const rangeMin = oracleChinlinkData.round.mul(new BN(0.5));
-    const rangeMax = oracleChinlinkData.round.mul(new BN(1.5));
+    const rangeMin = oracleChinlinkData.round.mul(new BN(10)).div(new BN(20));
+    const rangeMax = oracleChinlinkData.round.mul(new BN(30)).div(new BN(20));
     await program
       .methods
       .setWooRange(rangeMin, rangeMax)
@@ -132,6 +132,7 @@ describe("woospmm_swap", () => {
       program.programId
     );
 
+    const adminAuthority = provider.wallet.publicKey;
     const feeAuthority = provider.wallet.publicKey;
 
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
@@ -154,7 +155,7 @@ describe("woospmm_swap", () => {
         console.log('start create pool:');
         await program
         .methods
-        .createPool(feeAuthority)
+        .createPool(adminAuthority, feeAuthority)
         .accounts({
           tokenMint,
           authority: provider.wallet.publicKey,
@@ -182,6 +183,14 @@ describe("woospmm_swap", () => {
     })
     .rpc(confirmOptionsRetryTres);
 
+    await program
+    .methods
+    .setPoolMaxGamma(new BN(1000))
+    .accounts({
+      woopool: woopool,
+      authority: provider.wallet.publicKey
+    }).rpc(confirmOptionsRetryTres);
+
     if (woopoolData == null) {
       woopoolData = await program.account.wooPool.fetch(woopool);
     }
@@ -190,6 +199,8 @@ describe("woospmm_swap", () => {
     console.log('feeAuthority:' + woopoolData.feeAuthority);
     console.log('tokenMint:' + woopoolData.tokenMint);
     console.log('tokenVault:' + woopoolData.tokenVault);
+    console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
+    console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
 
     return woopoolData;
   }
@@ -330,10 +341,11 @@ describe("woospmm_swap", () => {
           oracleFrom: fromPoolParams.oracle,
           wooracleFrom: fromPoolParams.wooracle,
           woopoolFrom: fromPoolParams.woopool,
+          priceUpdateFrom: chainLinkProgramAccount,
           oracleTo: toPoolParams.oracle,
           wooracleTo: toPoolParams.wooracle,
           woopoolTo: toPoolParams.woopool,
-          priceUpdate: chainLinkProgramAccount
+          priceUpdateTo: chainLinkProgramAccount
         })
         .rpc(confirmOptionsRetryTres);
 
@@ -386,12 +398,13 @@ describe("woospmm_swap", () => {
           woopoolFrom: fromPoolParams.woopool,
           tokenOwnerAccountFrom: fromTokenAccount,
           tokenVaultFrom: fromPoolParams.tokenVault,
+          priceUpdateFrom: chainLinkProgramAccount,
           oracleTo: toPoolParams.oracle,
           wooracleTo: toPoolParams.wooracle,
           woopoolTo: toPoolParams.woopool,
           tokenOwnerAccountTo: toTokenAccount,
           tokenVaultTo: toPoolParams.tokenVault,
-          priceUpdate: chainLinkProgramAccount
+          priceUpdateTo: chainLinkProgramAccount
         })
         .signers([fromWallet])
         .rpc(confirmOptionsRetryTres);
