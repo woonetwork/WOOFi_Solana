@@ -75,7 +75,7 @@ pub struct Swap<'info> {
     price_update_to: Account<'info, PriceUpdateV2>,
 }
 
-pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
+pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
     // TODO Prince: check from_amount upper, total amount limit in one swap
     // TODO Prince: use checked_mul checked_div in math
 
@@ -145,6 +145,8 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
         &state_to)?;
 
     require!(token_vault_to.amount as u128 >= to_amount, ErrorCode::NotEnoughOut);
+
+    require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
     // TODO Prince:
     // we have from_amount, to_amount, swap_fee_amount here

@@ -153,8 +153,8 @@ pub mod woospmm {
         return instructions::try_query::handler(ctx, from_amount);
     }
 
-    pub fn swap(ctx: Context<Swap>, from_amount: u128) -> Result<()> {
-        return instructions::swap::handler(ctx, from_amount);
+    pub fn swap(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+        return instructions::swap::handler(ctx, from_amount, min_to_amount);
     }
 
 }

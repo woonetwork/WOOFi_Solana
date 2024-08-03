@@ -462,7 +462,7 @@ describe("woospmm_swap", () => {
   
       await program
         .methods
-        .swap(new BN(fromAmount))
+        .swap(new BN(fromAmount), new BN(0))
         .accounts({
           tokenProgram: token.TOKEN_PROGRAM_ID,
           owner: fromWallet.publicKey,  // is the user want to do swap

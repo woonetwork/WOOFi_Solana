@@ -9,6 +9,7 @@ import { Woospmm } from "../artifacts/woospmm";
  *
  * @category Instruction Types
  * @param amount - The amount of input token to swap from.
+ * @param minToAmount - The minimum amount of token swap to.
  * @param owner - PublicKey of the user wallet want to do the swap.
  * @param oracleFrom - PublicKey for the outside oracle account for from woopool.
  * @param wooracleFrom - PublicKey for the wooracle account for from woopool.
@@ -24,6 +25,7 @@ import { Woospmm } from "../artifacts/woospmm";
  */
 export type SwapParams = {
   amount: BN;
+  minToAmount: BN;
   owner: PublicKey;
   oracleFrom: PublicKey;
   wooracleFrom: PublicKey;
@@ -60,6 +62,7 @@ export type SwapParams = {
 export function swapIx(program: Program<Woospmm>, params: SwapParams): Promise<TransactionInstruction> {
   const {
     amount,
+    minToAmount,
     owner,
     oracleFrom,
     wooracleFrom,
@@ -77,7 +80,7 @@ export function swapIx(program: Program<Woospmm>, params: SwapParams): Promise<T
 
   const ix = program
     .methods
-    .swap(amount)
+    .swap(amount, minToAmount)
     .accounts({
       tokenProgram: TOKEN_PROGRAM_ID,
       owner,

@@ -95,12 +95,14 @@ export class WoospmmClient {
   public static async swap(
     ctx: WoospmmContext,
     fromAmount: BN,
+    minToAmount: BN,
     fromToken: WOOSPMM_TOKENS,
     toToken: WOOSPMM_TOKENS,
   ): Promise<TransactionInstruction[]> {
     return WoospmmClient.swapInner(
       ctx,
       fromAmount,
+      minToAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[fromToken]),
       new PublicKey(WOOPOOL_VAULTS[fromToken]),
@@ -123,6 +125,7 @@ export class WoospmmClient {
   private static async swapInner(
     ctx: WoospmmContext,
     amount: BN,
+    minToAmount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
     fromPoolVault: PublicKey,
@@ -199,6 +202,7 @@ export class WoospmmClient {
 
     const swapParams : SwapParams = {
       amount,
+      minToAmount,
       owner: ctx.wallet.publicKey,
       oracleFrom: fromPoolParams.oracle,
       wooracleFrom: fromPoolParams.wooracle,

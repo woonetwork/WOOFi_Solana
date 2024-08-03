@@ -55,6 +55,8 @@ pub enum ErrorCode {
     BurnTooMuch,
     #[msg("Not enough out")]
     NotEnoughOut,
+    #[msg("Amount out below minimum threshold")]
+    AmountOutBelowMinimum,
 }
 
 impl From<TryFromIntError> for ErrorCode {

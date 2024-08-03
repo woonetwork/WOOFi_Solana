@@ -739,6 +739,10 @@
         {
           "name": "fromAmount",
           "type": "u128"
+        },
+        {
+          "name": "minToAmount",
+          "type": "u128"
         }
       ]
     }
@@ -1114,6 +1118,11 @@
       "code": 6022,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
+    },
+    {
+      "code": 6023,
+      "name": "AmountOutBelowMinimum",
+      "msg": "Amount out below minimum threshold"
     }
   ],
   "metadata": {

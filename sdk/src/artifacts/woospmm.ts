@@ -739,6 +739,10 @@ export type Woospmm = {
         {
           "name": "fromAmount",
           "type": "u128"
+        },
+        {
+          "name": "minToAmount",
+          "type": "u128"
         }
       ]
     }
@@ -1114,6 +1118,11 @@ export type Woospmm = {
       "code": 6022,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
+    },
+    {
+      "code": 6023,
+      "name": "AmountOutBelowMinimum",
+      "msg": "Amount out below minimum threshold"
     }
   ]
 };
@@ -1859,6 +1868,10 @@ export const IDL: Woospmm = {
         {
           "name": "fromAmount",
           "type": "u128"
+        },
+        {
+          "name": "minToAmount",
+          "type": "u128"
         }
       ]
     }
@@ -2234,6 +2247,11 @@ export const IDL: Woospmm = {
       "code": 6022,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
+    },
+    {
+      "code": 6023,
+      "name": "AmountOutBelowMinimum",
+      "msg": "Amount out below minimum threshold"
     }
   ]
 };
