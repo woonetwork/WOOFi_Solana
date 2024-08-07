@@ -11,7 +11,8 @@ pub struct CreateRebatePool<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    pub rebate_authority: AccountInfo<'info>,
+    /// CHECK: Todo
+    pub rebate_authority: UncheckedAccount<'info>,
 
     #[account(
         init,
