@@ -161,4 +161,8 @@ pub mod woospmm {
         return instructions::swap::handler(ctx, from_amount, min_to_amount);
     }
 
+    pub fn create_rebate_pool(ctx: Context<CreateRebatePool>) -> Result<()> {
+        return instructions::create_rebate_pool::handler(ctx);
+    }
+
 }

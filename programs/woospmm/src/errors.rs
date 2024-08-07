@@ -32,6 +32,10 @@ pub enum ErrorCode {
     ProtocolFeeMaxExceeded, // 0x1792
     #[msg("Protocol fee not enough")]
     ProtocolFeeNotEnough, // 0x1793
+    #[msg("Exceeded max rebate fee")]
+    RebateFeeMaxExceeded, // 0x1792
+    #[msg("Rebate fee not enough")]
+    RebateFeeNotEnough, // 0x1793
 
     #[msg("Woo oracle is not feasible")]
     WooOracleNotFeasible, //0x1794

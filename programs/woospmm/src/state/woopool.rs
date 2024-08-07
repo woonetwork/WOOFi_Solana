@@ -50,8 +50,7 @@ pub struct WooPool {
     pub oracle: Pubkey,       // 32
 
     pub wooracle: Pubkey,       // 32
-    // Stored as hundredths of a basis point
-    // u16::MAX corresponds to ~6.5%
+    // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
     // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
     // Max fee rate supported is u16::MAX around 65.5%.
     pub fee_rate: u16,          // 2
