@@ -161,16 +161,16 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
 
     transfer_from_owner_to_vault(
         &ctx.accounts.owner,
-        &token_owner_account_from,
-        &token_vault_from,
+        token_owner_account_from,
+        token_vault_from,
         &ctx.accounts.token_program,
         from_amount as u64,
     )?;
 
     transfer_from_vault_to_owner(
-        &woopool_to,
-        &token_vault_to,
-        &token_owner_account_to,
+        woopool_to,
+        token_vault_to,
+        token_owner_account_to,
         &ctx.accounts.token_program,
         to_amount as u64,
     )?;

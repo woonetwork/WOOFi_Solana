@@ -169,4 +169,12 @@ pub mod woospmm {
         return instructions::swap_with_rebate::handler(ctx, from_amount, min_to_amount);
     }
 
+    pub fn claim_fee(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
+        return instructions::claim_fee::handler(ctx, claim_amount);
+    }
+
+    pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>, claim_amount: u128) -> Result<()> {
+        return instructions::claim_rebate_fee::handler(ctx, claim_amount);
+    }
+
 }
