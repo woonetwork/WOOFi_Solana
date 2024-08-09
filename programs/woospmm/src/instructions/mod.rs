@@ -14,6 +14,7 @@ pub mod set_woo_admin;
 pub mod set_pool_admin;
 pub mod query;
 pub mod create_rebate_pool;
+pub mod swap_with_rebate;
 
 pub use set_outer_preferred::*;
 pub use set_woo_state::*;
@@ -31,3 +32,4 @@ pub use set_woo_admin::*;
 pub use set_pool_admin::*;
 pub use query::*;
 pub use create_rebate_pool::*;
+pub use swap_with_rebate::*;
