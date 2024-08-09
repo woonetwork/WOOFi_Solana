@@ -165,4 +165,8 @@ pub mod woospmm {
         return instructions::create_rebate_pool::handler(ctx);
     }
 
+    pub fn swap_with_rebate(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+        return instructions::swap_with_rebate::handler(ctx, from_amount, min_to_amount);
+    }
+
 }
