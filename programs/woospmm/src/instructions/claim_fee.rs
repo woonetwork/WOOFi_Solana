@@ -27,7 +27,7 @@ pub struct ClaimFee<'info> {
     pub woopool: Box<Account<'info, WooPool>>,
 
     #[account(
-        constraint = token_vault.key() == woopool.token_vault,
+        address = woopool.token_vault,
         constraint = token_vault.mint == token_mint.key()
       )]
     pub token_vault: Box<Account<'info, TokenAccount>>,
@@ -45,7 +45,6 @@ pub fn handler(
 ) -> Result<()> {
     let token_vault = &ctx.accounts.token_vault;
     let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
-
     let woopool = &mut ctx.accounts.woopool;
 
     require!(token_vault.amount as u128 >= claim_amount, ErrorCode::ProtocolFeeNotEnough);

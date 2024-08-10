@@ -39,8 +39,8 @@ pub struct ClaimRebateFee<'info> {
     pub rebate_pool: Account<'info, RebatePool>,
 
     #[account(
-        constraint = rebate_vault.key() == rebate_pool.token_vault,
-        constraint = rebate_vault.mint == token_mint.key()
+        address = rebate_pool.token_vault,
+        constraint = rebate_vault.mint == token_mint.key(),
       )]
     pub rebate_vault: Box<Account<'info, TokenAccount>>,
 
@@ -55,18 +55,16 @@ pub fn handler(
     ctx: Context<ClaimRebateFee>,
     claim_amount: u128
 ) -> Result<()> {
+    let rebate_pool = &mut ctx.accounts.rebate_pool;
     let rebate_vault = &ctx.accounts.rebate_vault;
     let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
-
-    let woopool = &ctx.accounts.woopool;
-    let rebate_pool = &mut ctx.accounts.rebate_pool;
 
     require!(rebate_vault.amount as u128 >= claim_amount, ErrorCode::RebateFeeNotEnough);
 
     let _ = rebate_pool.sub_rebate_fee(claim_amount)?;
 
-    transfer_from_vault_to_owner(
-        woopool,
+    transfer_from_rebate_vault_to_owner(
+        rebate_pool,
         rebate_vault,
         claim_fee_to_account,
         &ctx.accounts.token_program,
