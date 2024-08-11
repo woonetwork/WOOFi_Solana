@@ -1,6 +1,5 @@
 pub mod set_outer_preferred;
 pub mod set_woo_state;
-pub mod re_initialize_cloracle;
 pub mod update_cloracle;
 pub mod get_price;
 pub mod create_pool;
@@ -20,7 +19,6 @@ pub mod claim_rebate_fee;
 
 pub use set_outer_preferred::*;
 pub use set_woo_state::*;
-pub use re_initialize_cloracle::*;
 pub use update_cloracle::*;
 pub use get_price::*;
 pub use create_pool::*;

@@ -91,13 +91,6 @@ pub mod woospmm {
         return instructions::set_woo_state::set_state_handler(ctx, price, coeff, spread);
     }
 
-    // Cannot support change feed account key and program key after create
-    // Due to wooracle and cloracle's seed need to change
-    // If need to change feed account, just create another pair of wooralce and cloracle
-    // pub fn re_initialize_cloracle(ctx: Context<ReInitializeCLOracle>, clo_preferred: bool) -> Result<()> {
-    //     return instructions::re_initialize_cloracle::handler(ctx, clo_preferred);
-    // }
-
     pub fn update_cloracle(ctx: Context<UpdateCLOracle>) -> Result<()> {
         return instructions::update_cloracle::handler(ctx);
     }
