@@ -4,11 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
 
 use crate::{
-    constants::*,
-    errors::ErrorCode,
-    state::*,
-    instructions::*,
-    util::*
+    constants::*, errors::ErrorCode, events::SwapWithRebateEvent, instructions::*, state::*, util::*
 };
 
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
@@ -177,6 +173,7 @@ pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u
     
     // calc rebate amount
     let rebate_pool = &mut ctx.accounts.rebate_pool;
+    let rebate_vault = &ctx.accounts.rebate_vault;
     let rebate_fee_amount = checked_mul_div(swap_fee_amount, rebate_pool.rebate_rate as u128, TE5U128).unwrap();
     let swap_fee_after_rebate = swap_fee_amount.checked_sub(rebate_fee_amount).unwrap();
     woopool_from.add_protocol_fee(swap_fee_after_rebate).unwrap();
@@ -205,10 +202,35 @@ pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u
     transfer_from_vault_to_owner(
         woopool_from,
         token_vault_from,
-        token_owner_account_from,
+        rebate_vault,
         &ctx.accounts.token_program, 
         rebate_fee_amount as u64
     )?;
+
+    emit!(SwapWithRebateEvent{
+        owner: ctx.accounts.owner.key(),
+        oracle_from: oracle_from.key(), 
+        wooracle_from: wooracle_from.key(), 
+        woopool_from: woopool_from.key(), 
+        token_owner_account_from: token_owner_account_from.key(), 
+        token_vault_from: token_vault_from.key(), 
+        price_update_from: price_update_from.key(), 
+        oracle_to: oracle_to.key(), 
+        wooracle_to: wooracle_to.key(), 
+        woopool_to: woopool_to.key(), 
+        token_owner_account_to: token_owner_account_to.key(), 
+        token_vault_to: token_vault_to.key(), 
+        price_update_to: price_update_to.key(),
+        rebate_authority: ctx.accounts.rebate_authority.key(),
+        rebate_pool: rebate_pool.key(),
+        rebate_vault: rebate_vault.key(),
+        from_amount,
+        min_to_amount,
+        to_amount,
+        swap_fee_amount,
+        swap_fee_after_rebate,
+        rebate_fee_amount,
+     });
 
     Ok(())
 }

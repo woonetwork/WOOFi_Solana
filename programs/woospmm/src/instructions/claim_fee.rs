@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::ClaimFeeEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
@@ -58,6 +58,14 @@ pub fn handler(
         &ctx.accounts.token_program,
         claim_amount as u64,
     )?;
+
+    emit!(ClaimFeeEvent{ 
+        authority: ctx.accounts.authority.key(), 
+        woopool: woopool.key(), 
+        token_vault: token_vault.key(),
+        claim_fee_to_account: claim_fee_to_account.key(), 
+        claim_amount 
+    });
 
     Ok(())
 }

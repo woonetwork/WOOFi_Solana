@@ -1,4 +1,4 @@
-use crate::state::*;
+use crate::{events::ClaimRebateFeeEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
@@ -70,6 +70,15 @@ pub fn handler(
         &ctx.accounts.token_program,
         claim_amount as u64,
     )?;
+
+    emit!(ClaimRebateFeeEvent{
+        rebate_authority: ctx.accounts.rebate_authority.key(),
+        woopool: ctx.accounts.woopool.key(),
+        rebate_pool: rebate_pool.key(),
+        rebate_vault: rebate_vault.key(),
+        claim_fee_to_account: claim_fee_to_account.key(),
+        claim_amount,
+    });
 
     Ok(())
 }

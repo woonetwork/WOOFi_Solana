@@ -6,8 +6,9 @@ use anchor_spl::token::{self, Token, TokenAccount};
 use crate::{
     constants::*,
     errors::ErrorCode,
-    state::*,
+    events::SwapEvent,
     instructions::*,
+    state::*,
     util::*
 };
 
@@ -174,6 +175,26 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         &ctx.accounts.token_program,
         to_amount as u64,
     )?;
+
+    emit!(SwapEvent{
+        owner: ctx.accounts.owner.key(),
+        oracle_from: oracle_from.key(), 
+        wooracle_from: wooracle_from.key(), 
+        woopool_from: woopool_from.key(), 
+        token_owner_account_from: token_owner_account_from.key(), 
+        token_vault_from: token_vault_from.key(), 
+        price_update_from: price_update_from.key(), 
+        oracle_to: oracle_to.key(), 
+        wooracle_to: wooracle_to.key(), 
+        woopool_to: woopool_to.key(), 
+        token_owner_account_to: token_owner_account_to.key(), 
+        token_vault_to: token_vault_to.key(), 
+        price_update_to: price_update_to.key(), 
+        from_amount,
+        min_to_amount,
+        to_amount,
+        swap_fee_amount,
+     });
 
     Ok(())
 }
