@@ -41,7 +41,7 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, state::*, instructions::*, };
 
-declare_id!("48KN3Khr7mEW46Xkqm49xkmRVN1GpFsSRL8xaYtRd9T4");
+declare_id!("BkKSqRGkL8gRZDwjqnStophdFJ4v736mygRoLZvz8H4Y");
 
 #[program]
 pub mod woospmm {
@@ -51,8 +51,12 @@ pub mod woospmm {
         return instructions::create_oracle_chainlink::handler(ctx);
     }
 
-    pub fn create_oracle_pyth(ctx: Context<CreateOraclePyth>) -> Result<()> {
-        return instructions::create_oracle_pyth::handler(ctx);
+    pub fn create_oracle_pyth(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
+        return instructions::create_oracle_pyth::handler(ctx, maximum_age);
+    }
+
+    pub fn set_oracle_maximum_age(ctx: Context<SetOracleMaximumAge>, maximum_age: u64) -> Result<()> {
+        return instructions::set_oracle_maximum_age::handler(ctx, maximum_age);
     }
 
     pub fn set_stale_duration(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {

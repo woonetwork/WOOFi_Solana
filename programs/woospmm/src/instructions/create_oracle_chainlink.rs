@@ -82,6 +82,8 @@ pub fn handler(ctx: Context<CreateOracleChainlink>) -> Result<()> {
   ctx.accounts.cloracle.feed_account = ctx.accounts.feed_account.key();
   ctx.accounts.cloracle.price_update = ctx.accounts.chainlink_program.key();
   ctx.accounts.cloracle.updated_at = timestamp;
+  // maximum_age used for pythoracle, set to 0 here
+  ctx.accounts.cloracle.maximum_age = 0;
 
   // get decimal value from chainlink program
   let decimals = chainlink::decimals(

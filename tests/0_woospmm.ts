@@ -104,9 +104,11 @@ describe("woospmm", () => {
       } catch (e) {
         const error = e as Error;
         if (error.message.indexOf("Account does not exist") >= 0) {
+          // TODO Prince: need notice here
+          // set maximum age to larger seconds due to pyth oracled push in 20mins in Dev env.
           const tx = await program
             .methods
-            .createOraclePyth()
+            .createOraclePyth(new BN(1000))
             .accounts({
               pythoracle,
               wooracle,

@@ -77,7 +77,7 @@ pub struct CreateOraclePyth<'info> {
     pub price_update: Account<'info, PriceUpdateV2>,
 }
 
-pub fn handler(ctx: Context<CreateOraclePyth>) -> Result<()> {
+pub fn handler(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
     ctx.accounts.pythoracle.oracle_type = OracleType::Pyth;
     ctx.accounts.pythoracle.authority = ctx.accounts.admin.key();
     ctx.accounts.pythoracle.feed_account = ctx.accounts.feed_account.key();
@@ -85,9 +85,9 @@ pub fn handler(ctx: Context<CreateOraclePyth>) -> Result<()> {
 
     let price_update = &mut ctx.accounts.price_update;
     // get_price_no_older_than will fail if the price update is more than 30 seconds old
-    // TODO Prince: move the 30s to config later
-    // TODO Prince: need take action here, the sponsored feed's update time is not stable, change to 60s for now.
-    let maximum_age: u64 = 60;
+    // 30s has been stored in oracle's param maximum_age
+    // the sponsored feed's update time is not stable in dev env. need set based on needs.
+    ctx.accounts.pythoracle.maximum_age = maximum_age;
     // get_price_no_older_than will fail if the price update is for a different price feed.
     // This string is the id of the BTC/USD feed. See https://pyth.network/developers/price-feed-ids for all available ids.
     // let feed_id = get_feed_id_from_hex(ctx.accounts.feed_account.key().to_string().as_str())?;

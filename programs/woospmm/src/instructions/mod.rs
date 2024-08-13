@@ -16,6 +16,7 @@ pub mod create_rebate_pool;
 pub mod swap_with_rebate;
 pub mod claim_fee;
 pub mod claim_rebate_fee;
+pub mod set_oracle_maximum_age;
 
 pub use set_outer_preferred::*;
 pub use set_woo_state::*;
@@ -35,3 +36,4 @@ pub use create_rebate_pool::*;
 pub use swap_with_rebate::*;
 pub use claim_fee::*;
 pub use claim_rebate_fee::*;
+pub use set_oracle_maximum_age::*;
