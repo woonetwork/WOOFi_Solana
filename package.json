@@ -1,56 +1,58 @@
 {
-    "name": "woofi_solana",
-    "private": true,
-    "license": "Apache-2.0",
-    "packageManager": "yarn@1.22.22^",
-    "type": "module",
-    "scripts": {
-        "build": "anchor build -p woospmm",
-        "test": "cargo test -p woospmm --lib",
-        "format": "cargo clippy -p woospmm --fix --allow-dirty --allow-staged -- -D clippy::all && cargo fmt -p woospmm",
-        "lint": "cargo clippy -p woospmm -- -D clippy::all",
-        "clean": "anchor clean"
-        },
-    "dependencies": {
-        "@coral-xyz/anchor": "^0.29.0",
-        "@solana-developers/helpers": "^2.3.0",
-        "@solana/spl-token": "^0.4.1",
-        "decimal.js": "^10.4.3",
-        "dotenv": "^16.4.5",
-        "moment": "^2.30.1"
-    },
-    "devDependencies": {
-        "@types/bn.js": "^5.1.0",
-        "@types/chai": "^4.3.4",
-        "@types/mocha": "^10.0.1",
-        "chai": "^4.3.7",
-        "decimal.js": "^10.4.3",
-        "mocha": "^10.2.0",
-        "prettier": "^3.1.1",
-        "ts-mocha": "^10.0.0",
-        "typescript": "^4.9.5"
-    },
-    "lint-staged": {
-        "*": "yarn format"
-      },
-      "repository": {
-        "type": "git",
-        "url": "git+https://github.com/woonetwork/WOOFi_Solana.git"
-      },
-      "keywords": [
-        "woonetwork",
-        "woospmm",
-        "woopool",
-        "solana",
-        "anchor",
-        "typescript",
-        "sdk",
-        "crypto",
-        "dex"
-      ],
-      "author": "team@woonetwork",
-      "bugs": {
-        "url": "https://github.com/woonetwork/WOOFi_Solana/issues"
-      },
-      "homepage": "https://fi.woo.org"
+  "name": "woofi_solana",
+  "private": true,
+  "license": "Apache-2.0",
+  "packageManager": "yarn@1.22.22",
+  "type": "module",
+  "scripts": {
+    "build": "anchor build -p woospmm",
+    "test": "cargo test -p woospmm --lib",
+    "format": "cargo clippy -p woospmm --fix --allow-dirty --allow-staged -- -D clippy::all && cargo fmt -p woospmm",
+    "lint": "cargo clippy -p woospmm -- -D clippy::all",
+    "clean": "anchor clean",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana-developers/helpers": "^2.3.0",
+    "@solana/spl-token": "^0.4.1",
+    "decimal.js": "^10.4.3",
+    "dotenv": "^16.4.5",
+    "moment": "^2.30.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.0",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.7",
+    "decimal.js": "^10.4.3",
+    "husky": "^9.1.4",
+    "mocha": "^10.2.0",
+    "prettier": "^3.1.1",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^4.9.5"
+  },
+  "lint-staged": {
+    "*": "yarn format"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/woonetwork/WOOFi_Solana.git"
+  },
+  "keywords": [
+    "woonetwork",
+    "woospmm",
+    "woopool",
+    "solana",
+    "anchor",
+    "typescript",
+    "sdk",
+    "crypto",
+    "dex"
+  ],
+  "author": "team@woonetwork",
+  "bugs": {
+    "url": "https://github.com/woonetwork/WOOFi_Solana/issues"
+  },
+  "homepage": "https://fi.woo.org"
 }
