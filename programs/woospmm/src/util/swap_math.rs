@@ -14,7 +14,7 @@ pub fn calc_usd_amount_sell_base(
     if !state.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
     }
-    if state.price_out <= 0 {
+    if state.price_out == 0 {
         return Err(ErrorCode::WooOraclePriceNotValid.into());
     }
 
@@ -84,7 +84,7 @@ pub fn calc_base_amount_sell_usd(
     if !state.feasible_out {
         return Err(ErrorCode::WooOracleNotFeasible.into());
     }
-    if state.price_out <= 0 {
+    if state.price_out == 0 {
         return Err(ErrorCode::WooOraclePriceNotValid.into());
     }
 
