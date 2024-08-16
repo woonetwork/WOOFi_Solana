@@ -80,7 +80,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
         woopool_from.base_decimals as u32,
     );
 
-    let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
+    let swap_fee_amount = checked_mul_div_round_up(from_amount, fee_rate as u128, TE5U128)?;
     let swap_fee = checked_mul_div(
         swap_fee_amount,
         state_from.price_out,

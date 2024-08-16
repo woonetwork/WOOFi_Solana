@@ -112,7 +112,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         woopool_from.base_decimals as u32,
     );
 
-    let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
+    let swap_fee_amount = checked_mul_div_round_up(from_amount, fee_rate as u128, TE5U128)?;
     let remain_amount = from_amount.checked_sub(swap_fee_amount).unwrap();
 
     let (remain_usd_amount, from_new_price) = swap_math::calc_usd_amount_sell_base(

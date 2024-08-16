@@ -135,6 +135,10 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     return a.mul(b).div(c)
   }
 
+  export const checked_mul_div_round = (a: BN, b: BN, c: BN): BN => {
+    return a.mul(b).divRound(c)
+  }
+
   // TODO Prince: use checked mul div muldiv to do the calc
   export const calc_usd_amount_sell_base = (
     base_amount: BN,
@@ -268,7 +272,7 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
         woopool_from.baseDecimals
     );
 
-    let swap_fee_amount = checked_mul_div(fromAmount, fee_rate, TE5U128);
+    let swap_fee_amount = checked_mul_div_round(fromAmount, fee_rate, TE5U128);
     let swap_fee = checked_mul_div(swap_fee_amount, state_from.price_out, decimals_from.price_dec);
     let remain_amount = fromAmount.sub(swap_fee_amount);
 
