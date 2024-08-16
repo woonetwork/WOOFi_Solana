@@ -1,7 +1,10 @@
 {
     "scripts": {
-        "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-        "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+        "build": "anchor build -p woospmm",
+        "test": "cargo test -p woospmm --lib",
+        "format": "cargo clippy -p woospmm --fix --allow-dirty --allow-staged -- -D clippy::all && cargo fmt -p woospmm",
+        "lint": "cargo clippy -p woospmm -- -D clippy::all",
+        "clean": "anchor clean"
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.29.0",
