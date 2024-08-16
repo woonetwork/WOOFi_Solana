@@ -369,7 +369,7 @@ dependencies = [
  "anchor-lang 0.30.1",
  "spl-associated-token-account",
  "spl-pod",
- "spl-token",
+ "spl-token 4.0.3",
  "spl-token-2022",
  "spl-token-group-interface",
  "spl-token-metadata-interface",
@@ -1716,7 +1716,7 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b7854c4176470c8d86de301dc5b57ac84227dabb9527328b585fc332962d60b"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang 0.30.1",
  "hex",
  "pythnet-sdk",
  "solana-program",
@@ -1728,7 +1728,7 @@ version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bbbc0456f9f27c9ad16b6c3bf1b2a7fea61eebf900f4d024a0468b9a84fe0c1"
 dependencies = [
- "anchor-lang 0.29.0",
+ "anchor-lang 0.30.1",
  "bincode",
  "borsh 0.10.3",
  "bytemuck",
@@ -2312,7 +2312,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "solana-program",
- "spl-token",
+ "spl-token 4.0.3",
  "spl-token-2022",
  "thiserror",
 ]
@@ -2415,9 +2415,24 @@ dependencies = [
 
 [[package]]
 name = "spl-token"
-version = "4.0.1"
+version = "4.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95ae123223633a389f95d1da9d49c2d0a50d499e7060b9624626a69e536ad2a4"
+checksum = "b9eb465e4bf5ce1d498f05204c8089378c1ba34ef2777ea95852fc53a1fd4fb2"
+dependencies = [
+ "arrayref",
+ "bytemuck",
+ "num-derive",
+ "num-traits",
+ "num_enum",
+ "solana-program",
+ "thiserror",
+]
+
+[[package]]
+name = "spl-token"
+version = "5.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03a6dd29e0f3affa31495eb450ed6744765029ea483e3a26d320ea66f01a8eb7"
 dependencies = [
  "arrayref",
  "bytemuck",
@@ -2444,7 +2459,7 @@ dependencies = [
  "solana-zk-token-sdk",
  "spl-memo",
  "spl-pod",
- "spl-token",
+ "spl-token 4.0.3",
  "spl-token-group-interface",
  "spl-token-metadata-interface",
  "spl-transfer-hook-interface",
@@ -2878,7 +2893,7 @@ dependencies = [
  "chainlink_solana",
  "pyth-solana-receiver-sdk",
  "solana-program",
- "spl-token",
+ "spl-token 5.0.1",
 ]
 
 [[package]]
