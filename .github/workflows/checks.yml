@@ -1,0 +1,44 @@
+name: Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: "checks"
+  cancel-in-progress: true
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Build Packages
+      uses: ./.github/actions/anchor
+      with:
+        run: |
+          yarn build --output-style static
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Run Tests
+      uses: ./.github/actions/anchor
+      with:
+        run: |
+          yarn test --output-style static
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Run Lint
+      uses: ./.github/actions/anchor
+      with:
+        run: |
+          yarn lint --output-style static
