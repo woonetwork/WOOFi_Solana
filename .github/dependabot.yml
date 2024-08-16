@@ -8,8 +8,7 @@ updates:
   - package-ecosystem: "cargo"
     directories:
       - "/"
-      - "rust-sdk/*"
-      - "ts-sdk/*"
+      - "sdk/*"
     schedule:
       interval: "daily"
     labels: [ ]
