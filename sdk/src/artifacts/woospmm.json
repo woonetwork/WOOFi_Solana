@@ -72,7 +72,33 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "maximumAge",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "setOracleMaximumAge",
+      "accounts": [
+        {
+          "name": "oracle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "maximumAge",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "setStaleDuration",
@@ -662,6 +688,79 @@
       }
     },
     {
+      "name": "query",
+      "accounts": [
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "oracleFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "oracleTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdateTo",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fromAmount",
+          "type": "u128"
+        },
+        {
+          "name": "minToAmount",
+          "type": "u128"
+        }
+      ],
+      "returns": {
+        "defined": "QueryResult"
+      }
+    },
+    {
       "name": "swap",
       "accounts": [
         {
@@ -745,6 +844,244 @@
           "type": "u128"
         }
       ]
+    },
+    {
+      "name": "createRebatePool",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rebateAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rebatePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "swapWithRebate",
+      "accounts": [
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "oracleFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerAccountFrom",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultFrom",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdateFrom",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "oracleTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerAccountTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultTo",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "priceUpdateTo",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rebateAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rebatePool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rebateVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fromAmount",
+          "type": "u128"
+        },
+        {
+          "name": "minToAmount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "claimFee",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "woopool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "claimFeeToAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "claimAmount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "claimRebateFee",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rebateAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "woopool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rebatePool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rebateVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "claimFeeToAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "claimAmount",
+          "type": "u128"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -764,6 +1101,10 @@
           {
             "name": "priceUpdate",
             "type": "publicKey"
+          },
+          {
+            "name": "maximumAge",
+            "type": "u64"
           },
           {
             "name": "updatedAt",
@@ -786,6 +1127,53 @@
             "type": {
               "defined": "OracleType"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RebatePool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "rebateAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "woopool",
+            "type": "publicKey"
+          },
+          {
+            "name": "rebateRate",
+            "type": "u16"
+          },
+          {
+            "name": "rebateReserve",
+            "type": "u128"
+          },
+          {
+            "name": "tokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "baseDecimals",
+            "docs": [
+              "Number of base 10 digits to the right of the decimal place."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
           }
         ]
       }
@@ -1003,6 +1391,338 @@
       }
     }
   ],
+  "events": [
+    {
+      "name": "ClaimFeeEvent",
+      "fields": [
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "woopool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "claimFeeToAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "claimAmount",
+          "type": "u128",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "ClaimRebateFeeEvent",
+      "fields": [
+        {
+          "name": "rebateAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "woopool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rebatePool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rebateVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "claimFeeToAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "claimAmount",
+          "type": "u128",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "SetPoolAdminEvent",
+      "fields": [
+        {
+          "name": "woopool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "adminAuthority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "SetPoolFeeAdminEvent",
+      "fields": [
+        {
+          "name": "woopool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "feeAuthority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "SetWooracleAdminEvent",
+      "fields": [
+        {
+          "name": "wooracle",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "adminAuthority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "SwapEvent",
+      "fields": [
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "oracleFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "wooracleFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "woopoolFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenOwnerAccountFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenVaultFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "priceUpdateFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "oracleTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "wooracleTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "woopoolTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenOwnerAccountTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenVaultTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "priceUpdateTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "fromAmount",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "minToAmount",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "toAmount",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "swapFeeAmount",
+          "type": "u128",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "SwapWithRebateEvent",
+      "fields": [
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "oracleFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "wooracleFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "woopoolFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenOwnerAccountFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenVaultFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "priceUpdateFrom",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "oracleTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "wooracleTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "woopoolTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenOwnerAccountTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenVaultTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "priceUpdateTo",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rebateAuthority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rebatePool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rebateVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "fromAmount",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "minToAmount",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "toAmount",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "swapFeeAmount",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "swapFeeAfterRebate",
+          "type": "u128",
+          "index": false
+        },
+        {
+          "name": "rebateFeeAmount",
+          "type": "u128",
+          "index": false
+        }
+      ]
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -1071,61 +1791,71 @@
     },
     {
       "code": 6013,
+      "name": "RebateFeeMaxExceeded",
+      "msg": "Exceeded max rebate fee"
+    },
+    {
+      "code": 6014,
+      "name": "RebateFeeNotEnough",
+      "msg": "Rebate fee not enough"
+    },
+    {
+      "code": 6015,
       "name": "WooOracleNotFeasible",
       "msg": "Woo oracle is not feasible"
     },
     {
-      "code": 6014,
+      "code": 6016,
       "name": "WooOraclePriceNotValid",
       "msg": "Woo oracle price is not valid"
     },
     {
-      "code": 6015,
+      "code": 6017,
       "name": "WooOraclePriceRangeMin",
       "msg": "Woo oracle price below range MIN"
     },
     {
-      "code": 6016,
+      "code": 6018,
       "name": "WooOraclePriceRangeMax",
       "msg": "Woo oracle price exceed range MAX"
     },
     {
-      "code": 6017,
+      "code": 6019,
       "name": "WooPoolExceedMaxNotionalValue",
       "msg": "Woo pp exceed max notional value"
     },
     {
-      "code": 6018,
+      "code": 6020,
       "name": "WooPoolExceedMaxGamma",
       "msg": "Woo pp exceed max gamma"
     },
     {
-      "code": 6019,
+      "code": 6021,
       "name": "NotEnoughBalance",
       "msg": "Src Balance < LP Deposit Amount."
     },
     {
-      "code": 6020,
+      "code": 6022,
       "name": "NoPoolMintOutput",
       "msg": "Pool Mint Amount < 0 on LP Deposit"
     },
     {
-      "code": 6021,
+      "code": 6023,
       "name": "BurnTooMuch",
       "msg": "Trying to burn too much"
     },
     {
-      "code": 6022,
+      "code": 6024,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
     },
     {
-      "code": 6023,
+      "code": 6025,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
     }
   ],
   "metadata": {
-    "address": "48KN3Khr7mEW46Xkqm49xkmRVN1GpFsSRL8xaYtRd9T4"
+    "address": "BkKSqRGkL8gRZDwjqnStophdFJ4v736mygRoLZvz8H4Y"
   }
 }
