@@ -5,8 +5,8 @@ use crate::state::wooracle::*;
 #[derive(Accounts)]
 pub struct SetWooState<'info> {
     #[account(mut,
-        constraint = 
-            wooracle.authority == authority.key() || 
+        constraint =
+            wooracle.authority == authority.key() ||
             wooracle.admin_authority == authority.key()
     )]
     pub wooracle: Account<'info, WOOracle>,

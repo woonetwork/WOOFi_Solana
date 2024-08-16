@@ -5,8 +5,8 @@ use crate::state::woopool::*;
 #[derive(Accounts)]
 pub struct SetPoolState<'info> {
     #[account(mut,
-        constraint = 
-            woopool.authority == authority.key() || 
+        constraint =
+            woopool.authority == authority.key() ||
             woopool.admin_authority == authority.key()
     )]
     pub woopool: Account<'info, WooPool>,

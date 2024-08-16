@@ -38,7 +38,7 @@ pub struct SwapWithRebate<'info> {
         constraint = token_owner_account_from.mint == woopool_from.token_mint
     )]
     token_owner_account_from: Box<Account<'info, TokenAccount>>,
-    #[account(mut, 
+    #[account(mut,
         address = woopool_from.token_vault
     )]
     token_vault_from: Box<Account<'info, TokenAccount>>,
@@ -65,7 +65,7 @@ pub struct SwapWithRebate<'info> {
         constraint = token_owner_account_to.mint == woopool_to.token_mint
     )]
     token_owner_account_to: Box<Account<'info, TokenAccount>>,
-    #[account(mut, 
+    #[account(mut,
         address = woopool_to.token_vault
     )]
     token_vault_to: Box<Account<'info, TokenAccount>>,
@@ -82,7 +82,7 @@ pub struct SwapWithRebate<'info> {
             woopool_from.token_mint.as_ref(),
         ],
         bump,
-        constraint = rebate_pool.enabled, 
+        constraint = rebate_pool.enabled,
     )]
     rebate_pool: Account<'info, RebatePool>,
 

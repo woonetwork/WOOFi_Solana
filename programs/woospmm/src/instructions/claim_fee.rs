@@ -16,7 +16,7 @@ pub struct ClaimFee<'info> {
           token_mint.key().as_ref(),
         ],
         bump,
-        constraint = woopool.authority == authority.key() 
+        constraint = woopool.authority == authority.key()
                   || woopool.fee_authority == authority.key(),
         constraint = woopool.token_mint == token_mint.key()
     )]
