@@ -62,7 +62,7 @@ pub struct CreatePool<'info> {
 pub fn handler(
     ctx: Context<CreatePool>,
     admin_authority: Pubkey,
-    fee_authority: Pubkey
+    fee_authority: Pubkey,
 ) -> Result<()> {
     let authority = ctx.accounts.authority.key();
     let token_mint = ctx.accounts.token_mint.key();
@@ -74,7 +74,7 @@ pub fn handler(
     let oracle = ctx.accounts.oracle.key();
     let wooracle = ctx.accounts.wooracle.key();
 
-    Ok(woopool.initialize(
+    woopool.initialize(
         bump,
         authority,
         admin_authority,
@@ -83,6 +83,6 @@ pub fn handler(
         wooracle,
         token_mint,
         token_vault,
-        base_decimals
-    )?)
+        base_decimals,
+    )
 }

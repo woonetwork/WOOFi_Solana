@@ -4,12 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
 
 use crate::{
-    constants::*,
-    errors::ErrorCode,
-    events::SwapEvent,
-    instructions::*,
-    state::*,
-    util::*
+    constants::*, errors::ErrorCode, events::SwapEvent, instructions::*, state::*, util::*,
 };
 
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
@@ -84,8 +79,11 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     let price_update_to = &mut ctx.accounts.price_update_to;
 
     let token_owner_account_from = &ctx.accounts.token_owner_account_from;
-    require!(token_owner_account_from.amount as u128 >= from_amount, ErrorCode::NotEnoughBalance);
-    
+    require!(
+        token_owner_account_from.amount as u128 >= from_amount,
+        ErrorCode::NotEnoughBalance
+    );
+
     let token_vault_from = &ctx.accounts.token_vault_from;
     let token_owner_account_to = &ctx.accounts.token_owner_account_to;
     let token_vault_to = &ctx.accounts.token_vault_to;
@@ -109,43 +107,50 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     state_to.spread = spread;
 
     let decimals_from = Decimals::new(
-        oracle_from.decimals as u32, 
+        oracle_from.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
-        woopool_from.base_decimals as u32);
+        woopool_from.base_decimals as u32,
+    );
 
     let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
     let remain_amount = from_amount.checked_sub(swap_fee_amount).unwrap();
-    
+
     let (remain_usd_amount, from_new_price) = swap_math::calc_usd_amount_sell_base(
-        remain_amount, 
-        woopool_from, 
-        &decimals_from, 
-        &state_from)?;
-    
+        remain_amount,
+        woopool_from,
+        &decimals_from,
+        &state_from,
+    )?;
+
     // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
     // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
-    //     from_amount, 
-    //     woopool_from, 
-    //     &decimals_from, 
-    //     wooracle_from.coeff, 
-    //     spread, 
+    //     from_amount,
+    //     woopool_from,
+    //     &decimals_from,
+    //     wooracle_from.coeff,
+    //     spread,
     //     &price_from)?;
-    
+
     // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
-        oracle_to.decimals as u32, 
+        oracle_to.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
-        woopool_to.base_decimals as u32);
+        woopool_to.base_decimals as u32,
+    );
 
     let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_usd(
-        remain_usd_amount, 
-        woopool_to, 
-        &decimals_to, 
-        &state_to)?;
+        remain_usd_amount,
+        woopool_to,
+        &decimals_to,
+        &state_to,
+    )?;
 
-    require!(token_vault_to.amount as u128 >= to_amount, ErrorCode::NotEnoughOut);
+    require!(
+        token_vault_to.amount as u128 >= to_amount,
+        ErrorCode::NotEnoughOut
+    );
 
     require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
@@ -176,25 +181,25 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         to_amount as u64,
     )?;
 
-    emit!(SwapEvent{
+    emit!(SwapEvent {
         owner: ctx.accounts.owner.key(),
-        oracle_from: oracle_from.key(), 
-        wooracle_from: wooracle_from.key(), 
-        woopool_from: woopool_from.key(), 
-        token_owner_account_from: token_owner_account_from.key(), 
-        token_vault_from: token_vault_from.key(), 
-        price_update_from: price_update_from.key(), 
-        oracle_to: oracle_to.key(), 
-        wooracle_to: wooracle_to.key(), 
-        woopool_to: woopool_to.key(), 
-        token_owner_account_to: token_owner_account_to.key(), 
-        token_vault_to: token_vault_to.key(), 
-        price_update_to: price_update_to.key(), 
+        oracle_from: oracle_from.key(),
+        wooracle_from: wooracle_from.key(),
+        woopool_from: woopool_from.key(),
+        token_owner_account_from: token_owner_account_from.key(),
+        token_vault_from: token_vault_from.key(),
+        price_update_from: price_update_from.key(),
+        oracle_to: oracle_to.key(),
+        wooracle_to: wooracle_to.key(),
+        woopool_to: woopool_to.key(),
+        token_owner_account_to: token_owner_account_to.key(),
+        token_vault_to: token_vault_to.key(),
+        price_update_to: price_update_to.key(),
         from_amount,
         min_to_amount,
         to_amount,
         swap_fee_amount,
-     });
+    });
 
     Ok(())
 }

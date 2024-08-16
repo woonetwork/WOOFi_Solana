@@ -3,13 +3,7 @@ use std::cmp::max;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount};
 
-use crate::{
-    constants::*,
-    errors::ErrorCode,
-    state::*,
-    instructions::*,
-    util::*
-};
+use crate::{constants::*, errors::ErrorCode, instructions::*, state::*, util::*};
 
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
@@ -58,7 +52,7 @@ pub struct Query<'info> {
     price_update_to: Account<'info, PriceUpdateV2>,
 }
 
-pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> Result<(QueryResult)> {
+pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> Result<QueryResult> {
     // TODO Prince: check from_amount upper, total amount limit in one swap
     // TODO Prince: use checked_mul checked_div in math
 
@@ -86,51 +80,62 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     state_to.spread = spread;
 
     let decimals_from = Decimals::new(
-        oracle_from.decimals as u32, 
+        oracle_from.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
-        woopool_from.base_decimals as u32);
+        woopool_from.base_decimals as u32,
+    );
 
     let swap_fee_amount = checked_mul_div(from_amount, fee_rate as u128, TE5U128)?;
-    let swap_fee = checked_mul_div(swap_fee_amount, state_from.price_out, decimals_from.price_dec as u128)?;
+    let swap_fee = checked_mul_div(
+        swap_fee_amount,
+        state_from.price_out,
+        decimals_from.price_dec as u128,
+    )?;
     let remain_amount = from_amount.checked_sub(swap_fee_amount).unwrap();
-    
-    let (remain_usd_amount, from_new_price) = swap_math::calc_usd_amount_sell_base(
-        remain_amount, 
-        woopool_from, 
-        &decimals_from, 
-        &state_from)?;
-    
+
+    let (remain_usd_amount, _from_new_price) = swap_math::calc_usd_amount_sell_base(
+        remain_amount,
+        woopool_from,
+        &decimals_from,
+        &state_from,
+    )?;
+
     // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
     // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
-    //     from_amount, 
-    //     woopool_from, 
-    //     &decimals_from, 
-    //     wooracle_from.coeff, 
-    //     spread, 
+    //     from_amount,
+    //     woopool_from,
+    //     &decimals_from,
+    //     wooracle_from.coeff,
+    //     spread,
     //     &price_from)?;
-    
+
     // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
-        oracle_to.decimals as u32, 
+        oracle_to.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
-        woopool_to.base_decimals as u32);
+        woopool_to.base_decimals as u32,
+    );
 
-    let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_usd(
-        remain_usd_amount, 
-        woopool_to, 
-        &decimals_to, 
-        &state_to)?;
+    let (to_amount, _to_new_price) = swap_math::calc_base_amount_sell_usd(
+        remain_usd_amount,
+        woopool_to,
+        &decimals_to,
+        &state_to,
+    )?;
 
     // TODO Prince: throw exception for now, need check evm logic to see whether send out max to_amount.
-    require!(token_vault_to.amount as u128 >= to_amount, ErrorCode::NotEnoughOut);
+    require!(
+        token_vault_to.amount as u128 >= to_amount,
+        ErrorCode::NotEnoughOut
+    );
 
     require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
     Ok(QueryResult {
         to_amount,
         swap_fee_amount,
-        swap_fee
+        swap_fee,
     })
 }

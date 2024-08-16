@@ -30,16 +30,16 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-mod state;
-mod instructions;
 mod constants;
 mod errors;
 mod events;
+mod instructions;
+mod state;
 mod util;
 
 use anchor_lang::prelude::*;
 
-use crate::{constants::*, state::*, instructions::*, };
+use crate::{constants::*, instructions::*, state::*};
 
 declare_id!("BkKSqRGkL8gRZDwjqnStophdFJ4v736mygRoLZvz8H4Y");
 
@@ -48,131 +48,169 @@ pub mod woospmm {
     use super::*;
 
     pub fn create_oracle_chainlink(ctx: Context<CreateOracleChainlink>) -> Result<()> {
-        return instructions::create_oracle_chainlink::handler(ctx);
+        instructions::create_oracle_chainlink::handler(ctx)
     }
 
     pub fn create_oracle_pyth(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
-        return instructions::create_oracle_pyth::handler(ctx, maximum_age);
+        instructions::create_oracle_pyth::handler(ctx, maximum_age)
     }
 
-    pub fn set_oracle_maximum_age(ctx: Context<SetOracleMaximumAge>, maximum_age: u64) -> Result<()> {
-        return instructions::set_oracle_maximum_age::handler(ctx, maximum_age);
+    pub fn set_oracle_maximum_age(
+        ctx: Context<SetOracleMaximumAge>,
+        maximum_age: u64,
+    ) -> Result<()> {
+        instructions::set_oracle_maximum_age::handler(ctx, maximum_age)
     }
 
     pub fn set_stale_duration(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {
-        return instructions::set_woo_state::set_stale_duration_handler(ctx, stale_duration);
+        instructions::set_woo_state::set_stale_duration_handler(ctx, stale_duration)
     }
 
     pub fn set_woo_bound(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
-        return instructions::set_woo_state::set_bound_handler(ctx, bound);
+        instructions::set_woo_state::set_bound_handler(ctx, bound)
     }
 
-    pub fn set_woo_range(ctx: Context<SetWooState>, range_min: u128, range_max: u128) -> Result<()> {
-        return instructions::set_woo_state::set_range_handler(ctx, range_min, range_max);
+    pub fn set_woo_range(
+        ctx: Context<SetWooState>,
+        range_min: u128,
+        range_max: u128,
+    ) -> Result<()> {
+        instructions::set_woo_state::set_range_handler(ctx, range_min, range_max)
     }
 
     pub fn set_woo_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
-        return instructions::set_woo_state::set_price_handler(ctx, price, true);
+        instructions::set_woo_state::set_price_handler(ctx, price, true)
     }
 
     pub fn set_woo_coeff(ctx: Context<SetWooState>, coeff: u64) -> Result<()> {
-        return instructions::set_woo_state::set_coeff_handler(ctx, coeff, true);
+        instructions::set_woo_state::set_coeff_handler(ctx, coeff, true)
     }
 
     pub fn set_woo_spread(ctx: Context<SetWooState>, spread: u64) -> Result<()> {
-        return instructions::set_woo_state::set_spread_handler(ctx, spread, true);
+        instructions::set_woo_state::set_spread_handler(ctx, spread, true)
     }
 
     pub fn set_clo_preferred(ctx: Context<SetOuterPreferred>, clo_preferred: bool) -> Result<()> {
-        return instructions::set_outer_preferred::handler(ctx, clo_preferred);
+        instructions::set_outer_preferred::handler(ctx, clo_preferred)
     }
 
     pub fn set_woo_admin(ctx: Context<SetWooAdmin>, admin_authority: Pubkey) -> Result<()> {
-        return instructions::set_woo_admin_handler(ctx, admin_authority);
+        instructions::set_woo_admin_handler(ctx, admin_authority)
     }
 
-    pub fn set_woo_state(ctx: Context<SetWooState>, price: u128, coeff: u64, spread: u64) -> Result<()> {
-        return instructions::set_woo_state::set_state_handler(ctx, price, coeff, spread);
+    pub fn set_woo_state(
+        ctx: Context<SetWooState>,
+        price: u128,
+        coeff: u64,
+        spread: u64,
+    ) -> Result<()> {
+        instructions::set_woo_state::set_state_handler(ctx, price, coeff, spread)
     }
 
     pub fn update_cloracle(ctx: Context<UpdateCLOracle>) -> Result<()> {
-        return instructions::update_cloracle::handler(ctx);
+        instructions::update_cloracle::handler(ctx)
     }
 
     pub fn update_pythoracle(ctx: Context<UpdatePythOracle>) -> Result<()> {
-        return instructions::update_pythoracle::handler(ctx);
+        instructions::update_pythoracle::handler(ctx)
     }
 
     pub fn get_price(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
-        return instructions::get_price::handler(ctx);        
+        instructions::get_price::handler(ctx)
     }
 
-    pub fn create_pool(ctx: Context<CreatePool>, admin_authority: Pubkey, fee_authority: Pubkey) -> Result<()> {
-        return instructions::create_pool::handler(ctx, admin_authority, fee_authority);
+    pub fn create_pool(
+        ctx: Context<CreatePool>,
+        admin_authority: Pubkey,
+        fee_authority: Pubkey,
+    ) -> Result<()> {
+        instructions::create_pool::handler(ctx, admin_authority, fee_authority)
     }
 
     pub fn set_pool_admin(ctx: Context<SetPoolAdmin>, admin_authority: Pubkey) -> Result<()> {
-        return instructions::set_pool_admin_handler(ctx, admin_authority);
+        instructions::set_pool_admin_handler(ctx, admin_authority)
     }
 
     pub fn set_pool_fee_admin(ctx: Context<SetPoolAdmin>, fee_authority: Pubkey) -> Result<()> {
-        return instructions::set_pool_fee_admin_handler(ctx, fee_authority);
+        instructions::set_pool_fee_admin_handler(ctx, fee_authority)
     }
 
-    pub fn set_pool_state(ctx: Context<SetPoolState>, fee_rate: u16, cap_balance: u128, tgt_balance: u128, shift_max: u16) -> Result<()> {
-        return instructions::set_pool_state::set_pool_state_handler(ctx, fee_rate, cap_balance, tgt_balance, shift_max);
+    pub fn set_pool_state(
+        ctx: Context<SetPoolState>,
+        fee_rate: u16,
+        cap_balance: u128,
+        tgt_balance: u128,
+        shift_max: u16,
+    ) -> Result<()> {
+        instructions::set_pool_state::set_pool_state_handler(
+            ctx,
+            fee_rate,
+            cap_balance,
+            tgt_balance,
+            shift_max,
+        )
     }
 
     pub fn set_pool_fee_rate(ctx: Context<SetPoolState>, fee_rate: u16) -> Result<()> {
-        return instructions::set_pool_state::set_fee_rate_handler(ctx, fee_rate);
+        instructions::set_pool_state::set_fee_rate_handler(ctx, fee_rate)
     }
 
     pub fn set_pool_cap_balance(ctx: Context<SetPoolState>, cap_balance: u128) -> Result<()> {
-        return instructions::set_pool_state::set_cap_balance_handler(ctx, cap_balance);
+        instructions::set_pool_state::set_cap_balance_handler(ctx, cap_balance)
     }
 
     pub fn set_pool_tgt_balance(ctx: Context<SetPoolState>, tgt_balance: u128) -> Result<()> {
-        return instructions::set_pool_state::set_tgt_balance_handler(ctx, tgt_balance);
+        instructions::set_pool_state::set_tgt_balance_handler(ctx, tgt_balance)
     }
 
     pub fn set_pool_shift_max(ctx: Context<SetPoolState>, shift_max: u16) -> Result<()> {
-        return instructions::set_pool_state::set_shift_max_handler(ctx, shift_max);
+        instructions::set_pool_state::set_shift_max_handler(ctx, shift_max)
     }
 
     pub fn set_pool_max_gamma(ctx: Context<SetPoolState>, max_gamma: u128) -> Result<()> {
-        return instructions::set_pool_state::set_max_gamma_handler(ctx, max_gamma);
+        instructions::set_pool_state::set_max_gamma_handler(ctx, max_gamma)
     }
 
-    pub fn set_pool_max_notional_swap(ctx: Context<SetPoolState>, max_notional_swap: u128) -> Result<()> {
-        return instructions::set_pool_state::set_max_notional_swap_handler(ctx, max_notional_swap);
+    pub fn set_pool_max_notional_swap(
+        ctx: Context<SetPoolState>,
+        max_notional_swap: u128,
+    ) -> Result<()> {
+        instructions::set_pool_state::set_max_notional_swap_handler(ctx, max_notional_swap)
     }
 
     pub fn try_query(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult> {
-        return instructions::try_query::handler(ctx, from_amount);
+        instructions::try_query::handler(ctx, from_amount)
     }
 
-    pub fn query(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> Result<QueryResult> {
-        return instructions::query::handler(ctx, from_amount, min_to_amount);
+    pub fn query(
+        ctx: Context<Query>,
+        from_amount: u128,
+        min_to_amount: u128,
+    ) -> Result<QueryResult> {
+        instructions::query::handler(ctx, from_amount, min_to_amount)
     }
 
     pub fn swap(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
-        return instructions::swap::handler(ctx, from_amount, min_to_amount);
+        instructions::swap::handler(ctx, from_amount, min_to_amount)
     }
 
     pub fn create_rebate_pool(ctx: Context<CreateRebatePool>) -> Result<()> {
-        return instructions::create_rebate_pool::handler(ctx);
+        instructions::create_rebate_pool::handler(ctx)
     }
 
-    pub fn swap_with_rebate(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u128) -> Result<()> {
-        return instructions::swap_with_rebate::handler(ctx, from_amount, min_to_amount);
+    pub fn swap_with_rebate(
+        ctx: Context<SwapWithRebate>,
+        from_amount: u128,
+        min_to_amount: u128,
+    ) -> Result<()> {
+        instructions::swap_with_rebate::handler(ctx, from_amount, min_to_amount)
     }
 
     pub fn claim_fee(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
-        return instructions::claim_fee::handler(ctx, claim_amount);
+        instructions::claim_fee::handler(ctx, claim_amount)
     }
 
     pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>, claim_amount: u128) -> Result<()> {
-        return instructions::claim_rebate_fee::handler(ctx, claim_amount);
+        instructions::claim_rebate_fee::handler(ctx, claim_amount)
     }
-
 }

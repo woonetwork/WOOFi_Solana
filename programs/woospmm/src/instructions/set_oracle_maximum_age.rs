@@ -13,5 +13,5 @@ pub struct SetOracleMaximumAge<'info> {
 }
 
 pub fn handler(ctx: Context<SetOracleMaximumAge>, maximum_age: u64) -> Result<()> {
-    Ok(ctx.accounts.oracle.update_maximum_age(maximum_age)?)    
+    ctx.accounts.oracle.update_maximum_age(maximum_age)
 }

@@ -31,41 +31,38 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+use crate::{constants::*, errors::ErrorCode};
 use anchor_lang::prelude::*;
-use crate::{
-    constants::*,
-    errors::ErrorCode,
-};
 
 #[account]
 pub struct RebatePool {
-    pub authority: Pubkey,        // 32
+    pub authority: Pubkey, // 32
 
     pub rebate_authority: Pubkey, // 32
 
-    pub woopool: Pubkey,          // 32
+    pub woopool: Pubkey, // 32
 
     // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
     // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
     // Max fee rate supported is u16::MAX around 65.5%.
-    pub rebate_rate: u16,         // 2
+    pub rebate_rate: u16, // 2
 
     // rebate reserve
-    pub rebate_reserve: u128,            // 16
+    pub rebate_reserve: u128, // 16
 
-    pub token_mint: Pubkey,       // 32
+    pub token_mint: Pubkey, // 32
 
-    pub token_vault: Pubkey,      // 32
+    pub token_vault: Pubkey, // 32
 
     /// Number of base 10 digits to the right of the decimal place.
-    pub base_decimals: u8,        // 1
+    pub base_decimals: u8, // 1
 
-    pub enabled: bool             // 1
+    pub enabled: bool, // 1
 }
 
 impl RebatePool {
-    pub const LEN : usize = 8 + (32 + 32 + 32 + 2 + 16 + 32 + 32 + 1 + 1);
-    
+    pub const LEN: usize = 8 + (32 + 32 + 32 + 2 + 16 + 32 + 32 + 1 + 1);
+
     pub fn seeds(&self) -> [&[u8]; 4] {
         [
             REBATEPOOL_SEED.as_bytes(),
@@ -86,7 +83,7 @@ impl RebatePool {
     ) -> Result<()> {
         self.authority = authority;
         self.rebate_authority = rebate_authority;
-        
+
         self.woopool = woopool;
 
         self.rebate_rate = 0;
@@ -117,9 +114,9 @@ impl RebatePool {
         Ok(())
     }
 
-
     pub fn add_rebate_fee(&mut self, fee: u128) -> Result<()> {
-        self.rebate_reserve = self.rebate_reserve
+        self.rebate_reserve = self
+            .rebate_reserve
             .checked_add(fee)
             .ok_or(ErrorCode::RebateFeeMaxExceeded)?;
 
@@ -128,10 +125,11 @@ impl RebatePool {
 
     pub fn sub_rebate_fee(&mut self, fee: u128) -> Result<()> {
         if fee > self.rebate_reserve {
-            return Err(ErrorCode::RebateFeeNotEnough.into())
+            return Err(ErrorCode::RebateFeeNotEnough.into());
         }
-        
-        self.rebate_reserve = self.rebate_reserve
+
+        self.rebate_reserve = self
+            .rebate_reserve
             .checked_sub(fee)
             .ok_or(ErrorCode::RebateFeeNotEnough)?;
 

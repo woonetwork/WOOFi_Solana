@@ -11,5 +11,5 @@ pub struct SetOuterPreferred<'info> {
 }
 
 pub fn handler(ctx: Context<SetOuterPreferred>, outer_preferred: bool) -> Result<()> {
-    Ok(ctx.accounts.oracle.update_outer_preferred(outer_preferred)?)
+    ctx.accounts.oracle.update_outer_preferred(outer_preferred)
 }

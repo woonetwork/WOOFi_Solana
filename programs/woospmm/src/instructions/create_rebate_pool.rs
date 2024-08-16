@@ -47,9 +47,7 @@ pub struct CreateRebatePool<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
-pub fn handler(
-    ctx: Context<CreateRebatePool>,
-) -> Result<()> {
+pub fn handler(ctx: Context<CreateRebatePool>) -> Result<()> {
     let authority = ctx.accounts.authority.key();
     let rebate_authority = ctx.accounts.rebate_authority.key();
     let token_mint = ctx.accounts.token_mint.key();
@@ -59,12 +57,12 @@ pub fn handler(
 
     let rebate_pool = &mut ctx.accounts.rebate_pool;
 
-    Ok(rebate_pool.initialize(
+    rebate_pool.initialize(
         authority,
         rebate_authority,
         woopool,
         token_mint,
         token_vault,
         base_decimals,
-    )?)
+    )
 }

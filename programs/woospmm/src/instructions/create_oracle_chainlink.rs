@@ -75,39 +75,39 @@ pub struct CreateOracleChainlink<'info> {
 }
 
 pub fn handler(ctx: Context<CreateOracleChainlink>) -> Result<()> {
-  let timestamp = Clock::get()?.unix_timestamp;
+    let timestamp = Clock::get()?.unix_timestamp;
 
-  ctx.accounts.cloracle.oracle_type = OracleType::ChainLink;
-  ctx.accounts.cloracle.authority = ctx.accounts.admin.key();
-  ctx.accounts.cloracle.feed_account = ctx.accounts.feed_account.key();
-  ctx.accounts.cloracle.price_update = ctx.accounts.chainlink_program.key();
-  ctx.accounts.cloracle.updated_at = timestamp;
-  // maximum_age used for pythoracle, set to 0 here
-  ctx.accounts.cloracle.maximum_age = 0;
+    ctx.accounts.cloracle.oracle_type = OracleType::ChainLink;
+    ctx.accounts.cloracle.authority = ctx.accounts.admin.key();
+    ctx.accounts.cloracle.feed_account = ctx.accounts.feed_account.key();
+    ctx.accounts.cloracle.price_update = ctx.accounts.chainlink_program.key();
+    ctx.accounts.cloracle.updated_at = timestamp;
+    // maximum_age used for pythoracle, set to 0 here
+    ctx.accounts.cloracle.maximum_age = 0;
 
-  // get decimal value from chainlink program
-  let decimals = chainlink::decimals(
-      ctx.accounts.chainlink_program.to_account_info(),
-      ctx.accounts.feed_account.to_account_info(),
-  )?;
+    // get decimal value from chainlink program
+    let decimals = chainlink::decimals(
+        ctx.accounts.chainlink_program.to_account_info(),
+        ctx.accounts.feed_account.to_account_info(),
+    )?;
 
-  // get round value from chainlink program
-  let round = chainlink::latest_round_data(
-      ctx.accounts.chainlink_program.to_account_info(),
-      ctx.accounts.feed_account.to_account_info(),
-  )?;
+    // get round value from chainlink program
+    let round = chainlink::latest_round_data(
+        ctx.accounts.chainlink_program.to_account_info(),
+        ctx.accounts.feed_account.to_account_info(),
+    )?;
 
-  ctx.accounts.cloracle.decimals = decimals;
-  ctx.accounts.cloracle.round = round.answer;
+    ctx.accounts.cloracle.decimals = decimals;
+    ctx.accounts.cloracle.round = round.answer;
 
-  // Default set prefer clo to true
-  ctx.accounts.cloracle.outer_preferred = true;
+    // Default set prefer clo to true
+    ctx.accounts.cloracle.outer_preferred = true;
 
-  ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
-  ctx.accounts.wooracle.oracle = ctx.accounts.cloracle.key();
-  ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
-  // set default bound to 1e16 means 1%
-  ctx.accounts.wooracle.bound = DEFAULT_BOUND;
+    ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
+    ctx.accounts.wooracle.oracle = ctx.accounts.cloracle.key();
+    ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
+    // set default bound to 1e16 means 1%
+    ctx.accounts.wooracle.bound = DEFAULT_BOUND;
 
-  Ok(())
+    Ok(())
 }

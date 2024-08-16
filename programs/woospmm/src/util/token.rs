@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 use solana_program::program::invoke_signed;
-use spl_token::instruction::{burn_checked, close_account, mint_to, set_authority, AuthorityType};
+use spl_token::instruction::{burn_checked, close_account};
 
 use crate::{RebatePool, WooPool};
 

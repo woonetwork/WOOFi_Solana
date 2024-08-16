@@ -48,21 +48,21 @@ impl OracleType {
 
 #[account]
 pub struct Oracle {
-    pub authority: Pubkey,      // 32
-    pub feed_account: Pubkey,   // 32
+    pub authority: Pubkey,    // 32
+    pub feed_account: Pubkey, // 32
     // store pyth price update account
-    pub price_update: Pubkey,   // 32
+    pub price_update: Pubkey, // 32
     // store pyth oracle maximum age, in seconds, 60 means 60s
-    pub maximum_age: u64,       // 8
-    pub updated_at: i64,        // 8
-    pub decimals: u8,           // 1
-    pub round: i128,            // 16
-    pub outer_preferred: bool,  // 1
-    pub oracle_type: OracleType // 1
+    pub maximum_age: u64,        // 8
+    pub updated_at: i64,         // 8
+    pub decimals: u8,            // 1
+    pub round: i128,             // 16
+    pub outer_preferred: bool,   // 1
+    pub oracle_type: OracleType, // 1
 }
 
 impl Oracle {
-    pub const LEN : usize = 8 + (32 + 32 + 32 + 8 + 8 + 1 + 16 + 1 + 1);
+    pub const LEN: usize = 8 + (32 + 32 + 32 + 8 + 8 + 1 + 16 + 1 + 1);
 
     pub fn update_authority(&mut self, authority: Pubkey) -> Result<()> {
         self.authority = authority;

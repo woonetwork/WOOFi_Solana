@@ -31,61 +31,59 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+use crate::{constants::*, errors::ErrorCode};
 use anchor_lang::prelude::*;
-use crate::{
-    constants::*,
-    errors::ErrorCode,
-};
 
 #[account]
 pub struct WooPool {
-    pub woopool_bump: [u8; 1],  // 1
+    pub woopool_bump: [u8; 1], // 1
 
-    pub authority: Pubkey,      // 32
+    pub authority: Pubkey, // 32
 
     pub admin_authority: Pubkey, // 32
 
-    pub fee_authority: Pubkey,  // 32
+    pub fee_authority: Pubkey, // 32
 
-    pub oracle: Pubkey,       // 32
+    pub oracle: Pubkey, // 32
 
-    pub wooracle: Pubkey,       // 32
+    pub wooracle: Pubkey, // 32
     // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
     // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
     // Max fee rate supported is u16::MAX around 65.5%.
-    pub fee_rate: u16,          // 2
+    pub fee_rate: u16, // 2
 
     // balance reserve
-    pub reserve: u128,          // 16
+    pub reserve: u128, // 16
 
     // max range of `balance * k`
-    pub max_gamma: u128,         // 16
+    pub max_gamma: u128, // 16
 
     // max volume per swap
-    pub max_notional_swap: u128,  // 16
+    pub max_notional_swap: u128, // 16
 
     // maximum balance cap in token amount
-    pub cap_balance: u128,              // 16
+    pub cap_balance: u128, // 16
 
     // decimal = 5; 10 = 1bp = 0.01%; max = 65535
-    pub shift_max: u16,             // 2
+    pub shift_max: u16, // 2
 
     // target balance for swap fee
-    pub tgt_balance: u128,              // 16
+    pub tgt_balance: u128, // 16
 
     pub protocol_fee_owed: u128, // 16
 
-    pub token_mint: Pubkey,     // 32
+    pub token_mint: Pubkey, // 32
 
-    pub token_vault: Pubkey,    // 32
+    pub token_vault: Pubkey, // 32
 
     /// Number of base 10 digits to the right of the decimal place.
-    pub base_decimals: u8,           // 1 
+    pub base_decimals: u8, // 1
 }
 
 impl WooPool {
-    pub const LEN : usize = 8 + (1+ 32 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
-    
+    pub const LEN: usize =
+        8 + (1 + 32 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
+
     pub fn seeds(&self) -> [&[u8]; 3] {
         [
             WOOPOOL_SEED.as_bytes(),
@@ -111,7 +109,7 @@ impl WooPool {
         self.authority = authority;
         self.admin_authority = admin_authority;
         self.fee_authority = fee_authority;
-        
+
         self.oracle = oracle;
         self.wooracle = wooracle;
 
@@ -143,7 +141,13 @@ impl WooPool {
         Ok(())
     }
 
-    pub fn set_pool_state(&mut self, fee_rate: u16, cap_balance: u128, tgt_balance: u128, shift_max: u16) -> Result<()> {
+    pub fn set_pool_state(
+        &mut self,
+        fee_rate: u16,
+        cap_balance: u128,
+        tgt_balance: u128,
+        shift_max: u16,
+    ) -> Result<()> {
         if 2 * tgt_balance > cap_balance {
             return Err(ErrorCode::CapBalanceSmallerThanTargetBalance.into());
         }
@@ -152,7 +156,7 @@ impl WooPool {
         self.cap_balance = cap_balance;
         self.tgt_balance = tgt_balance;
         self.shift_max = shift_max;
-        
+
         Ok(())
     }
 
@@ -202,7 +206,8 @@ impl WooPool {
     }
 
     pub fn add_protocol_fee(&mut self, fee: u128) -> Result<()> {
-        self.protocol_fee_owed = self.protocol_fee_owed
+        self.protocol_fee_owed = self
+            .protocol_fee_owed
             .checked_add(fee)
             .ok_or(ErrorCode::ProtocolFeeMaxExceeded)?;
 
@@ -211,10 +216,11 @@ impl WooPool {
 
     pub fn sub_protocol_fee(&mut self, fee: u128) -> Result<()> {
         if fee > self.protocol_fee_owed {
-            return Err(ErrorCode::ProtocolFeeNotEnough.into())
+            return Err(ErrorCode::ProtocolFeeNotEnough.into());
         }
-        
-        self.protocol_fee_owed = self.protocol_fee_owed
+
+        self.protocol_fee_owed = self
+            .protocol_fee_owed
             .checked_sub(fee)
             .ok_or(ErrorCode::ProtocolFeeNotEnough)?;
 

@@ -2,11 +2,7 @@ use crate::{events::ClaimRebateFeeEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
-use crate::{
-    constants::*,
-    errors::ErrorCode,
-    util::*
-};
+use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct ClaimRebateFee<'info> {
@@ -51,17 +47,17 @@ pub struct ClaimRebateFee<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn handler(
-    ctx: Context<ClaimRebateFee>,
-    claim_amount: u128
-) -> Result<()> {
+pub fn handler(ctx: Context<ClaimRebateFee>, claim_amount: u128) -> Result<()> {
     let rebate_pool = &mut ctx.accounts.rebate_pool;
     let rebate_vault = &ctx.accounts.rebate_vault;
     let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
 
-    require!(rebate_vault.amount as u128 >= claim_amount, ErrorCode::RebateFeeNotEnough);
+    require!(
+        rebate_vault.amount as u128 >= claim_amount,
+        ErrorCode::RebateFeeNotEnough
+    );
 
-    let _ = rebate_pool.sub_rebate_fee(claim_amount)?;
+    rebate_pool.sub_rebate_fee(claim_amount)?;
 
     transfer_from_rebate_vault_to_owner(
         rebate_pool,
@@ -71,7 +67,7 @@ pub fn handler(
         claim_amount as u64,
     )?;
 
-    emit!(ClaimRebateFeeEvent{
+    emit!(ClaimRebateFeeEvent {
         rebate_authority: ctx.accounts.rebate_authority.key(),
         woopool: ctx.accounts.woopool.key(),
         rebate_pool: rebate_pool.key(),

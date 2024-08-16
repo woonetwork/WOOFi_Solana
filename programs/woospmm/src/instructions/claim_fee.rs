@@ -2,11 +2,7 @@ use crate::{events::ClaimFeeEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
-use crate::{
-    constants::*,
-    errors::ErrorCode,
-    util::*
-};
+use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct ClaimFee<'info> {
@@ -39,17 +35,17 @@ pub struct ClaimFee<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn handler(
-    ctx: Context<ClaimFee>,
-    claim_amount: u128
-) -> Result<()> {
+pub fn handler(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
     let token_vault = &ctx.accounts.token_vault;
     let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
     let woopool = &mut ctx.accounts.woopool;
 
-    require!(token_vault.amount as u128 >= claim_amount, ErrorCode::ProtocolFeeNotEnough);
+    require!(
+        token_vault.amount as u128 >= claim_amount,
+        ErrorCode::ProtocolFeeNotEnough
+    );
 
-    let _ = woopool.sub_protocol_fee(claim_amount)?;
+    woopool.sub_protocol_fee(claim_amount)?;
 
     transfer_from_vault_to_owner(
         woopool,
@@ -59,12 +55,12 @@ pub fn handler(
         claim_amount as u64,
     )?;
 
-    emit!(ClaimFeeEvent{ 
-        authority: ctx.accounts.authority.key(), 
-        woopool: woopool.key(), 
+    emit!(ClaimFeeEvent {
+        authority: ctx.accounts.authority.key(),
+        woopool: woopool.key(),
         token_vault: token_vault.key(),
-        claim_fee_to_account: claim_fee_to_account.key(), 
-        claim_amount 
+        claim_fee_to_account: claim_fee_to_account.key(),
+        claim_amount
     });
 
     Ok(())
