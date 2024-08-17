@@ -18,6 +18,8 @@ describe("woospmm_swap", () => {
 
   const program = anchor.workspace.Woospmm as Program<Woospmm>;
 
+  const TENPOW18U128 = new BN(10).pow(new BN(18));
+
   const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
   const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 
@@ -52,7 +54,6 @@ describe("woospmm_swap", () => {
   let traderSetPrice = new BN(2200000000);
   let rangeMin = new BN(2000000000);
   let rangeMax = new BN(2300000000);
-
 
   const getReturnLog = (confirmedTransaction) => {
     const prefix = "Program return: ";
@@ -302,12 +303,19 @@ describe("woospmm_swap", () => {
       const rangeMin = oraclePythData.round.mul(new BN(10)).div(new BN(20));
       const rangeMax = oraclePythData.round.mul(new BN(30)).div(new BN(20));
       console.log('oraclePythData.round', oraclePythData.round.toNumber());
-      console.log('rangeMin:', rangeMin.toNumber());
-      console.log('rangeMax:', rangeMax.toNumber());
+      console.log('oraclePythData.updatedAt', oraclePythData.updatedAt.toString());
+      console.log('calc rangeMin:', rangeMin.toNumber());
+      console.log('calc rangeMax:', rangeMax.toNumber());
 
       console.log('wooracle price:', oracleItemData.price.toNumber());
+      console.log('wooracle bound:', oracleItemData.bound.toString());
+      console.log(`wooracle bound percentage: ${oracleItemData.bound.mul(new BN(100)).div(TENPOW18U128)}%`);
+      console.log('wooracle coeff:', oracleItemData.coeff.toNumber());
+      console.log('wooracle spread:', oracleItemData.spread.toNumber());
       console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
       console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
+      console.log('wooracle updatedAt:', oracleItemData.updatedAt.toString());
+      console.log('wooracle staleDuration:', oracleItemData.staleDuration.toNumber());
 
       const [fromPrice, fromFeasible] = await getOraclePriceResult(oracle, wooracle, priceUpdate);  
       console.log(`price - ${fromPrice}`);

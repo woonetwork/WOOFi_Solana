@@ -4,7 +4,8 @@ pub const WOORACLE_SEED: &str = "wooracle";
 pub const WOOPOOL_SEED: &str = "woopool";
 pub const REBATEPOOL_SEED: &str = "rebatepool";
 
-pub const DEFAULT_STALE_DURATION: i64 = 300_000; // Default to 300s
+// unix timestamp in seconds
+pub const DEFAULT_STALE_DURATION: i64 = 300; // Default to 300s
 pub const DEFAULT_BOUND: u64 = 10_000_000_000_000_000;
 pub const TE5U128: u128 = 100_000;
 pub const TENPOW18U64: u64 = 1_000_000_000_000_000_000;
