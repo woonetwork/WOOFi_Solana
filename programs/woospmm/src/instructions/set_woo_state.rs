@@ -1,6 +1,10 @@
+use std::cmp::{max, min};
+
 use anchor_lang::prelude::*;
 
-use crate::state::wooracle::*;
+use crate::{
+    errors::ErrorCode, state::wooracle::*, util::checked_mul_div, TENPOW18U128, TENPOW18U64,
+};
 
 #[derive(Accounts)]
 pub struct SetWooState<'info> {
@@ -14,16 +18,79 @@ pub struct SetWooState<'info> {
     pub authority: Signer<'info>,
 }
 
+pub fn update_spread_for_new_price(price: u128, wooracle: &mut WOOracle) -> Result<()> {
+    let pre_spread = wooracle.spread;
+    let pre_price = wooracle.price;
+    if pre_price == 0 || price == 0 || pre_spread >= TENPOW18U64 {
+        // previous price or current price is 0, no action is needed
+        return Ok(());
+    }
+
+    let max_price = max(price, pre_price);
+    let min_price = min(price, pre_price);
+    // let anti_spread = (TENPOW18U128 * TENPOW18U128 * min_price) / max_price / (TENPOW18U128 - pre_spread as u128);
+    let anti_spread_calc_a = checked_mul_div(TENPOW18U128, min_price, max_price).unwrap();
+    let anti_spread = checked_mul_div(
+        TENPOW18U128,
+        anti_spread_calc_a,
+        TENPOW18U128 - pre_spread as u128,
+    )
+    .unwrap();
+    if anti_spread < TENPOW18U128 {
+        let new_spread = TENPOW18U128.checked_sub(anti_spread).unwrap() as u64;
+        if new_spread > pre_spread {
+            let _ = wooracle.update_spread(new_spread);
+        }
+    }
+
+    Ok(())
+}
+
+pub fn update_spread_for_new_price_and_spread(
+    price: u128,
+    spread: u64,
+    wooracle: &mut WOOracle,
+) -> Result<()> {
+    //require(spread < 1e18, "!_spread");
+    require!(spread < TENPOW18U64, ErrorCode::WooOracleSpreadExceed);
+
+    let pre_spread = wooracle.spread;
+    let pre_price = wooracle.price;
+    if pre_price == 0 || price == 0 || pre_spread >= TENPOW18U64 {
+        // previous price or current price is 0, just use spread
+        return wooracle.update_spread(spread);
+    }
+
+    let max_price = max(price, pre_price);
+    let min_price = min(price, pre_price);
+    let anti_spread_calc_a = checked_mul_div(TENPOW18U128, min_price, max_price).unwrap();
+    let anti_spread = checked_mul_div(
+        TENPOW18U128,
+        anti_spread_calc_a,
+        TENPOW18U128 - pre_spread as u128,
+    )
+    .unwrap();
+    if anti_spread < TENPOW18U128 {
+        let new_spread = TENPOW18U128.checked_sub(anti_spread).unwrap() as u64;
+        let _ = wooracle.update_spread(max(new_spread, spread));
+    } else {
+        let _ = wooracle.update_spread(spread);
+    }
+
+    Ok(())
+}
+
 pub fn set_state_handler(
     ctx: Context<SetWooState>,
     price: u128,
     coeff: u64,
     spread: u64,
 ) -> Result<()> {
-    ctx.accounts.wooracle.update_price(price)?;
-    ctx.accounts.wooracle.update_coeff(coeff)?;
-    ctx.accounts.wooracle.update_spread(spread)?;
-    ctx.accounts.wooracle.update_now()?;
+    let wooracle = &mut ctx.accounts.wooracle;
+    update_spread_for_new_price_and_spread(price, spread, wooracle)?;
+    wooracle.update_price(price)?;
+    wooracle.update_coeff(coeff)?;
+    wooracle.update_now()?;
 
     Ok(())
 }
@@ -61,7 +128,9 @@ pub fn set_price_handler(ctx: Context<SetWooState>, price: u128, update_time: bo
         ctx.accounts.wooracle.update_now()?
     }
 
-    ctx.accounts.wooracle.update_price(price)
+    let wooracle = &mut ctx.accounts.wooracle;
+    let _ = update_spread_for_new_price(price, wooracle);
+    wooracle.update_price(price)
 }
 
 pub fn set_spread_handler(ctx: Context<SetWooState>, spread: u64, update_time: bool) -> Result<()> {

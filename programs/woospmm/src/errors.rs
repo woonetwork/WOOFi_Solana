@@ -45,6 +45,8 @@ pub enum ErrorCode {
     WooOraclePriceRangeMin, //0x1796
     #[msg("Woo oracle price exceed range MAX")]
     WooOraclePriceRangeMax, //0x1797
+    #[msg("Woo oracle spread exceed 1E18")]
+    WooOracleSpreadExceed, //0x1797
 
     #[msg("Woo pp exceed max notional value")]
     WooPoolExceedMaxNotionalValue, //0x1798
