@@ -1,5 +1,5 @@
 import { BN } from "@coral-xyz/anchor";
-import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createCloseAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import { SwapParams, swapIx } from "./instructions/swap-ix"
 import { WoospmmContext } from "./context";
@@ -8,6 +8,19 @@ import { WOOSPMM_TOKENS, TOKEN_MINTS, CHAINLINK_FEED_ACCOUNT, WOOPOOL_VAULTS, PY
 import { generatePoolParams, QueryResult, tryCalculate } from "./utils/contract";
 
 export class WoospmmClient {
+  private static autoUnwrapWSOL: boolean = true;
+
+  public static isNativeMint(mint: PublicKey) {
+    return mint.equals(NATIVE_MINT);
+  }
+
+  public static isAutoUnwrapWSOL(): boolean {
+    return WoospmmClient.autoUnwrapWSOL;
+  }
+
+  public static setAutoUnwrapWSOL(autoUnwrap: boolean) {
+    WoospmmClient.autoUnwrapWSOL = autoUnwrap;
+  }
 
   public static async tryQuery(
     ctx: WoospmmContext,
@@ -197,9 +210,6 @@ export class WoospmmClient {
       );
     }
 
-    // TODO Prince: if (toTokenMint == NATIVE_MINT), need double check the wsol to sol logic
-    // consider have a flag to do the transfer
-
     const swapParams : SwapParams = {
       amount,
       minToAmount,
@@ -220,6 +230,20 @@ export class WoospmmClient {
 
     const tx = await swapIx(ctx.program, swapParams);
     instructions.push(tx);
+
+    if (WoospmmClient.isAutoUnwrapWSOL()) {
+      if (toTokenMint.equals(NATIVE_MINT)) {
+        instructions.push(
+          // close wSol account instruction
+          createCloseAccountInstruction(
+            tokenOwnerAccountTo,
+            ctx.wallet.publicKey,
+            ctx.wallet.publicKey
+          )
+        );
+      }
+    }
+
     return instructions;
   }
 }
