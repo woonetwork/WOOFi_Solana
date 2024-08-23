@@ -100,10 +100,6 @@ pub mod woospmm {
         instructions::set_woo_state::set_state_handler(ctx, price, coeff, spread)
     }
 
-    pub fn update_oracle(ctx: Context<UpdateOracle>) -> Result<()> {
-        instructions::update_oracle::handler(ctx)
-    }
-
     pub fn get_price(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
         instructions::get_price::handler(ctx)
     }

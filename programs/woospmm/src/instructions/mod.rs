@@ -12,7 +12,6 @@ pub mod set_woo_state;
 pub mod swap;
 pub mod swap_with_rebate;
 pub mod try_query;
-pub mod update_oracle;
 
 pub use claim_fee::*;
 pub use claim_rebate_fee::*;
@@ -28,4 +27,3 @@ pub use set_woo_state::*;
 pub use swap::*;
 pub use swap_with_rebate::*;
 pub use try_query::*;
-pub use update_oracle::*;
