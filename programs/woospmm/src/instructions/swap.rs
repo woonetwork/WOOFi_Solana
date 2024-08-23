@@ -16,12 +16,13 @@ pub struct Swap<'info> {
 
     pub owner: Signer<'info>,
 
-    #[account(
+    #[account(mut,
         address = woopool_from.wooracle,
+        has_one = quote_price_update,
         constraint = wooracle_from.price_update == price_update_from.key()
     )]
     wooracle_from: Account<'info, WOOracle>,
-    #[account(
+    #[account(mut,
         constraint = woopool_from.authority == wooracle_from.authority
     )]
     woopool_from: Box<Account<'info, WooPool>>,
@@ -34,10 +35,14 @@ pub struct Swap<'info> {
         address = woopool_from.token_vault
     )]
     token_vault_from: Box<Account<'info, TokenAccount>>,
+    #[account(mut,
+        address = wooracle_from.price_update,
+    )]
     price_update_from: Account<'info, PriceUpdateV2>,
 
-    #[account(
+    #[account(mut,
         address = woopool_to.wooracle,
+        has_one = quote_price_update,
         constraint = wooracle_to.price_update == price_update_to.key()
     )]
     wooracle_to: Account<'info, WOOracle>,
@@ -55,7 +60,12 @@ pub struct Swap<'info> {
         address = woopool_to.token_vault
     )]
     token_vault_to: Box<Account<'info, TokenAccount>>,
+    #[account(mut,
+        address = wooracle_to.price_update,
+    )]
     price_update_to: Account<'info, PriceUpdateV2>,
+
+    quote_price_update: Account<'info, PriceUpdateV2>,
 }
 
 pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
@@ -64,6 +74,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
 
     let price_update_from = &mut ctx.accounts.price_update_from;
     let price_update_to = &mut ctx.accounts.price_update_to;
+    let quote_price_update = &mut ctx.accounts.quote_price_update;
 
     let token_owner_account_from = &ctx.accounts.token_owner_account_from;
     require!(
@@ -78,12 +89,13 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     let wooracle_from = &mut ctx.accounts.wooracle_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
 
-    let mut state_from = get_price::get_state_impl(wooracle_from, price_update_from)?;
+    let mut state_from =
+        get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
 
     let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let mut state_to = get_price::get_state_impl(wooracle_to, price_update_to)?;
+    let mut state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
 
     let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
@@ -92,7 +104,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     state_to.spread = spread;
 
     let decimals_from = Decimals::new(
-        wooracle_from.decimals as u32,
+        wooracle_from.price_decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
         woopool_from.base_decimals as u32,
     );
@@ -120,7 +132,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
-        wooracle_to.decimals as u32,
+        wooracle_to.price_decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
         woopool_to.base_decimals as u32,
     );

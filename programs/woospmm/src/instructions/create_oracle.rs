@@ -103,9 +103,10 @@ pub fn handler(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
     // The price is (7160106530699 ± 5129162301) * 10^-8
     // msg!("The price is ({} ± {}) * 10^{}", price.price, price.conf, price.exponent);
 
-    ctx.accounts.wooracle.decimals = price.exponent.abs().try_into().unwrap();
-    ctx.accounts.wooracle.round = price.price as i128;
-    ctx.accounts.wooracle.updated_at = price.publish_time;
+    ctx.accounts.wooracle.price_decimals = price.exponent.abs().try_into().unwrap();
+    ctx.accounts.wooracle.base_decimals = ctx.accounts.token_mint.decimals;
+    // ctx.accounts.wooracle.round = price.price as i128;
+    // ctx.accounts.wooracle.updated_at = price.publish_time;
 
     // Default set prefer outer oracle to true
     ctx.accounts.wooracle.outer_preferred = true;

@@ -2,21 +2,19 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, errors::ErrorCode, state::wooracle::*};
 
-use super::update_oracle;
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct GetPrice<'info> {
-    #[account(mut,
+    #[account(
         has_one = price_update,
+        has_one = quote_price_update,
     )]
     pub oracle: Account<'info, WOOracle>,
     pub price_update: Account<'info, PriceUpdateV2>,
+    pub quote_price_update: Account<'info, PriceUpdateV2>,
 }
 
-// #[zero_copy(unsafe)]
-// #[repr(packed)]
-//#[derive(Default, Debug, BorshSerialize, BorshDeserialize)]
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
 pub struct GetPriceResult {
     pub price_out: u128,
@@ -32,25 +30,45 @@ pub struct GetStateResult {
 }
 
 pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
-    let oracle = &mut ctx.accounts.oracle;
+    let oracle = &ctx.accounts.oracle;
     let price_update = &mut ctx.accounts.price_update;
+    let quote_price_update = &mut ctx.accounts.quote_price_update;
 
-    get_price_impl(oracle, price_update)
+    get_price_impl(oracle, price_update, quote_price_update)
 }
 
 pub fn get_price_impl<'info>(
-    oracle: &mut Account<'info, WOOracle>,
+    oracle: &Account<'info, WOOracle>,
     price_update: &mut Account<'info, PriceUpdateV2>,
+    quote_price_update: &mut Account<'info, PriceUpdateV2>,
 ) -> Result<GetPriceResult> {
     let now = Clock::get()?.unix_timestamp;
 
-    let _ = update_oracle::update(price_update, oracle);
+    let pyth_result = price_update.get_price_no_older_than(
+        &Clock::get()?,
+        oracle.maximum_age,
+        &oracle.feed_account.key().to_bytes(),
+    )?;
+
+    let quote_price_result = quote_price_update.get_price_no_older_than(
+        &Clock::get()?,
+        oracle.maximum_age,
+        &oracle.quote_feed_account.key().to_bytes(),
+    )?;
+
+    let base_price = pyth_result.price as u128;
+    let quote_price = quote_price_result.price as u128;
+    let quote_decimal = quote_price_result.exponent.abs().try_into().unwrap();
+    let clo_price = base_price
+        .checked_mul(10_u128.pow(quote_decimal))
+        .unwrap()
+        .checked_div(quote_price)
+        .unwrap();
 
     let wo_price = oracle.price;
     let wo_timestamp = oracle.updated_at;
     let bound = oracle.bound as u128;
 
-    let clo_price = oracle.round as u128;
     let wo_feasible = clo_price != 0 && now <= (wo_timestamp + oracle.stale_duration);
     let wo_price_in_bound = clo_price != 0
         && ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price
@@ -87,10 +105,11 @@ pub fn get_price_impl<'info>(
 }
 
 pub fn get_state_impl<'info>(
-    oracle: &mut Account<'info, WOOracle>,
+    oracle: &Account<'info, WOOracle>,
     price_update: &mut Account<'info, PriceUpdateV2>,
+    quote_price_update: &mut Account<'info, PriceUpdateV2>,
 ) -> Result<GetStateResult> {
-    let price_result = get_price_impl(oracle, price_update)?;
+    let price_result = get_price_impl(oracle, price_update, quote_price_update)?;
     Ok(GetStateResult {
         price_out: price_result.price_out,
         spread: oracle.spread,

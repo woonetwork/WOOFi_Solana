@@ -5,9 +5,8 @@ use crate::WOOracle;
 
 #[derive(Accounts)]
 pub struct UpdateOracle<'info> {
-    #[account(
-        mut,
-        constraint = oracle.price_update == price_update.key(),
+    #[account(mut,
+        has_one = price_update,
         has_one = authority,
     )]
     oracle: Account<'info, WOOracle>,
@@ -35,7 +34,7 @@ pub fn update<'info>(
     // get_price_no_older_than will fail if the price update is for a different price feed.
     // This string is the id of the BTC/USD feed. See https://pyth.network/developers/price-feed-ids for all available ids.
     //let feed_id = get_feed_id_from_hex(ctx.accounts.feed_account.key().to_string().as_str())?;
-    let price = price_update.get_price_no_older_than(
+    let _price = price_update.get_price_no_older_than(
         &Clock::get()?,
         maximum_age,
         &oracle.feed_account.key().to_bytes(),
@@ -44,9 +43,9 @@ pub fn update<'info>(
     // The price is (7160106530699 ± 5129162301) * 10^-8
     // msg!("The price is ({} ± {}) * 10^{}", price.price, price.conf, price.exponent);
 
-    oracle.decimals = price.exponent.abs().try_into().unwrap();
-    oracle.round = price.price as i128;
-    oracle.updated_at = price.publish_time;
+    // oracle.decimals = price.exponent.abs().try_into().unwrap();
+    // oracle.round = price.price as i128;
+    // oracle.updated_at = price.publish_time;
 
     Ok(())
 }
