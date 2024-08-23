@@ -44,8 +44,6 @@ pub struct WooPool {
 
     pub fee_authority: Pubkey, // 32
 
-    pub oracle: Pubkey, // 32
-
     pub wooracle: Pubkey, // 32
     // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
     // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
@@ -82,12 +80,11 @@ pub struct WooPool {
 
 impl WooPool {
     pub const LEN: usize =
-        8 + (1 + 32 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
+        8 + (1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
 
     pub fn seeds(&self) -> [&[u8]; 3] {
         [
             WOOPOOL_SEED.as_bytes(),
-            // self.fee_authority.as_ref(),
             self.token_mint.as_ref(),
             self.woopool_bump.as_ref(),
         ]
@@ -99,7 +96,6 @@ impl WooPool {
         authority: Pubkey,
         admin_authority: Pubkey,
         fee_authority: Pubkey,
-        oracle: Pubkey,
         wooracle: Pubkey,
         token_mint: Pubkey,
         token_vault: Pubkey,
@@ -110,7 +106,6 @@ impl WooPool {
         self.admin_authority = admin_authority;
         self.fee_authority = fee_authority;
 
-        self.oracle = oracle;
         self.wooracle = wooracle;
 
         self.fee_rate = 0;

@@ -95,6 +95,16 @@ pub fn set_state_handler(
     Ok(())
 }
 
+pub fn set_maximum_age_handler(ctx: Context<SetWooState>, maximum_age: u64) -> Result<()> {
+    ctx.accounts.wooracle.update_maximum_age(maximum_age)
+}
+
+pub fn set_outer_preferred_handler(ctx: Context<SetWooState>, outer_preferred: bool) -> Result<()> {
+    ctx.accounts
+        .wooracle
+        .update_outer_preferred(outer_preferred)
+}
+
 pub fn set_stale_duration_handler(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {
     ctx.accounts.wooracle.update_stale_duration(stale_duration)
 }

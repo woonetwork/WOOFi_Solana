@@ -40,22 +40,9 @@ use crate::constants::*;
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
-pub struct CreateOraclePyth<'info> {
+pub struct CreateOracle<'info> {
     pub token_mint: Account<'info, Mint>,
 
-    #[account(
-        init,
-        payer = admin,
-        space = Oracle::LEN,
-        seeds = [
-            PYTHORACLE_SEED.as_bytes(),
-            token_mint.key().as_ref(),
-            feed_account.key().as_ref(),
-            price_update.key().as_ref()
-            ],
-        bump,
-    )]
-    pythoracle: Account<'info, Oracle>,
     #[account(
         init,
         payer = admin,
@@ -92,18 +79,18 @@ pub struct CreateOraclePyth<'info> {
     quote_price_update: Account<'info, PriceUpdateV2>,
 }
 
-pub fn handler(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
-    ctx.accounts.pythoracle.token_mint = ctx.accounts.token_mint.key();
-    ctx.accounts.pythoracle.oracle_type = OracleType::Pyth;
-    ctx.accounts.pythoracle.authority = ctx.accounts.admin.key();
-    ctx.accounts.pythoracle.feed_account = ctx.accounts.feed_account.key();
-    ctx.accounts.pythoracle.price_update = ctx.accounts.price_update.key();
+pub fn handler(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
+    ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
+    ctx.accounts.wooracle.admin_authority = ctx.accounts.admin.key();
+    ctx.accounts.wooracle.token_mint = ctx.accounts.token_mint.key();
+    ctx.accounts.wooracle.feed_account = ctx.accounts.feed_account.key();
+    ctx.accounts.wooracle.price_update = ctx.accounts.price_update.key();
 
     let price_update = &mut ctx.accounts.price_update;
     // get_price_no_older_than will fail if the price update is more than 30 seconds old
     // 30s has been stored in oracle's param maximum_age
     // the sponsored feed's update time is not stable in dev env. need set based on needs.
-    ctx.accounts.pythoracle.maximum_age = maximum_age;
+    ctx.accounts.wooracle.maximum_age = maximum_age;
     // get_price_no_older_than will fail if the price update is for a different price feed.
     // This string is the id of the BTC/USD feed. See https://pyth.network/developers/price-feed-ids for all available ids.
     // let feed_id = get_feed_id_from_hex(ctx.accounts.feed_account.key().to_string().as_str())?;
@@ -116,15 +103,13 @@ pub fn handler(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
     // The price is (7160106530699 ± 5129162301) * 10^-8
     // msg!("The price is ({} ± {}) * 10^{}", price.price, price.conf, price.exponent);
 
-    ctx.accounts.pythoracle.decimals = price.exponent.abs().try_into().unwrap();
-    ctx.accounts.pythoracle.round = price.price as i128;
-    ctx.accounts.pythoracle.updated_at = price.publish_time;
+    ctx.accounts.wooracle.decimals = price.exponent.abs().try_into().unwrap();
+    ctx.accounts.wooracle.round = price.price as i128;
+    ctx.accounts.wooracle.updated_at = price.publish_time;
 
-    // Default set prefer clo to true
-    ctx.accounts.pythoracle.outer_preferred = true;
+    // Default set prefer outer oracle to true
+    ctx.accounts.wooracle.outer_preferred = true;
 
-    ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
-    ctx.accounts.wooracle.oracle = ctx.accounts.pythoracle.key();
     ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
     // set default bound to 1e16 means 1%
     ctx.accounts.wooracle.bound = DEFAULT_BOUND;

@@ -39,25 +39,53 @@ use crate::{util::checked_mul_div, TENPOW18U128, TENPOW18U64};
 
 #[account]
 pub struct WOOracle {
-    pub authority: Pubkey,          // 32
-    pub admin_authority: Pubkey,    // 32
-    pub oracle: Pubkey,             // 32
+    pub authority: Pubkey,       // 32
+    pub admin_authority: Pubkey, // 32
+    pub token_mint: Pubkey,      // 32
+    pub feed_account: Pubkey,    // 32
+    // store pyth price update account
+    pub price_update: Pubkey, // 32
+    // store pyth oracle maximum age, in seconds, 60 means 60s
+    pub maximum_age: u64,           // 8
+    pub decimals: u8,               // 1
+    pub round: i128,                // 16
+    pub outer_preferred: bool,      // 1
+    pub updated_at: i64,            // 8
+    pub stale_duration: i64,        // 8
+    pub bound: u64,                 // 8
+    pub price: u128,                // 16 as chainlink oracle (e.g. decimal = 8)
+    pub coeff: u64,                 // 8 k: decimal = 18.    18.4 * 1e18
+    pub spread: u64,                // 8 s: decimal = 18.   spread <= 2e18   18.4 * 1e18
+    pub range_min: u128,            // 16
+    pub range_max: u128,            // 16
     pub quote_token_mint: Pubkey,   // 32
     pub quote_feed_account: Pubkey, // 32
     // store pyth price update account
     pub quote_price_update: Pubkey, // 32
-    pub updated_at: i64,         // 8
-    pub stale_duration: i64,     // 8
-    pub bound: u64,              // 8
-    pub price: u128,             // 16 as chainlink oracle (e.g. decimal = 8)
-    pub coeff: u64,              // 8 k: decimal = 18.    18.4 * 1e18
-    pub spread: u64,             // 8 s: decimal = 18.   spread <= 2e18   18.4 * 1e18
-    pub range_min: u128,         // 16
-    pub range_max: u128,         // 16
 }
 
 impl WOOracle {
-    pub const LEN: usize = 8 + (32 + 32 + 32 + 32 + 32 + 32 + 8 + 8 + 8 + 16 + 8 + 8 + 16 + 16);
+    pub const LEN: usize = 8
+        + (32
+            + 32
+            + 32
+            + 32
+            + 32
+            + 8
+            + 1
+            + 16
+            + 1
+            + 8
+            + 8
+            + 8
+            + 16
+            + 8
+            + 8
+            + 16
+            + 16
+            + 32
+            + 32
+            + 32);
 
     pub fn update_admin_authority(&mut self, admin_authority: Pubkey) -> Result<()> {
         self.admin_authority = admin_authority;
@@ -65,15 +93,21 @@ impl WOOracle {
         Ok(())
     }
 
-    pub fn update_oracle(&mut self, oracle: Pubkey) -> Result<()> {
-        self.oracle = oracle;
+    pub fn update_now(&mut self) -> Result<()> {
+        let timestamp = Clock::get()?.unix_timestamp;
+        self.updated_at = timestamp;
 
         Ok(())
     }
 
-    pub fn update_now(&mut self) -> Result<()> {
-        let timestamp = Clock::get()?.unix_timestamp;
-        self.updated_at = timestamp;
+    pub fn update_outer_preferred(&mut self, outer_preferred: bool) -> Result<()> {
+        self.outer_preferred = outer_preferred;
+
+        Ok(())
+    }
+
+    pub fn update_maximum_age(&mut self, maximum_age: u64) -> Result<()> {
+        self.maximum_age = maximum_age;
 
         Ok(())
     }

@@ -18,22 +18,13 @@ pub struct SwapWithRebate<'info> {
     pub owner: Signer<'info>,
 
     #[account(
-        constraint = oracle_from.key() == woopool_from.oracle,
-        constraint = oracle_from.key() == wooracle_from.oracle,
-        constraint = oracle_from.price_update == price_update_from.key()
-    )]
-    oracle_from: Account<'info, Oracle>,
-    #[account(
-        seeds = [
-            WOORACLE_SEED.as_bytes(),
-            oracle_from.token_mint.as_ref(),
-            oracle_from.feed_account.as_ref(),
-            oracle_from.price_update.as_ref()
-        ],
-        bump,
-        constraint = wooracle_from.key() == woopool_from.wooracle
+        address = woopool_from.wooracle,
+        constraint = wooracle_from.price_update == price_update_from.key()
     )]
     wooracle_from: Account<'info, WOOracle>,
+    #[account(
+        constraint = woopool_from.authority == wooracle_from.authority
+    )]
     woopool_from: Box<Account<'info, WooPool>>,
     #[account(mut,
         has_one = owner,
@@ -47,22 +38,14 @@ pub struct SwapWithRebate<'info> {
     price_update_from: Account<'info, PriceUpdateV2>,
 
     #[account(
-        constraint = oracle_to.key() == woopool_to.oracle,
-        constraint = oracle_to.key() == wooracle_to.oracle,
-        constraint = oracle_to.price_update == price_update_to.key()
-    )]
-    oracle_to: Account<'info, Oracle>,
-    #[account(
-        seeds = [
-            WOORACLE_SEED.as_bytes(),
-            oracle_to.token_mint.as_ref(),
-            oracle_to.feed_account.as_ref(),
-            oracle_to.price_update.as_ref()
-        ],
-        bump,
-        constraint = wooracle_to.key() == woopool_to.wooracle
+        address = woopool_to.wooracle,
+        constraint = wooracle_to.price_update == price_update_to.key()
     )]
     wooracle_to: Account<'info, WOOracle>,
+    #[account(
+        constraint = woopool_to.authority == woopool_from.authority,
+        constraint = woopool_to.authority == wooracle_to.authority,
+    )]
     woopool_to: Box<Account<'info, WooPool>>,
     #[account(mut,
         has_one = owner,
@@ -113,17 +96,15 @@ pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u
     let token_owner_account_to = &ctx.accounts.token_owner_account_to;
     let token_vault_to = &ctx.accounts.token_vault_to;
 
-    let oracle_from = &mut ctx.accounts.oracle_from;
     let wooracle_from = &mut ctx.accounts.wooracle_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
 
-    let mut state_from = get_price::get_state_impl(oracle_from, wooracle_from, price_update_from)?;
+    let mut state_from = get_price::get_state_impl(wooracle_from, price_update_from)?;
 
-    let oracle_to = &mut ctx.accounts.oracle_to;
     let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to, price_update_to)?;
+    let mut state_to = get_price::get_state_impl(wooracle_to, price_update_to)?;
 
     let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
@@ -132,7 +113,7 @@ pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u
     state_to.spread = spread;
 
     let decimals_from = Decimals::new(
-        oracle_from.decimals as u32,
+        wooracle_from.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
         woopool_from.base_decimals as u32,
     );
@@ -160,7 +141,7 @@ pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
-        oracle_to.decimals as u32,
+        wooracle_to.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
         woopool_to.base_decimals as u32,
     );
@@ -227,13 +208,11 @@ pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u
 
     emit!(SwapWithRebateEvent {
         owner: ctx.accounts.owner.key(),
-        oracle_from: oracle_from.key(),
         wooracle_from: wooracle_from.key(),
         woopool_from: woopool_from.key(),
         token_owner_account_from: token_owner_account_from.key(),
         token_vault_from: token_vault_from.key(),
         price_update_from: price_update_from.key(),
-        oracle_to: oracle_to.key(),
         wooracle_to: wooracle_to.key(),
         woopool_to: woopool_to.key(),
         token_owner_account_to: token_owner_account_to.key(),

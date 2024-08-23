@@ -9,40 +9,25 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 #[derive(Accounts)]
 pub struct TryQuery<'info> {
     #[account(
-        constraint = oracle_from.key() == woopool_from.oracle,
-        constraint = oracle_from.price_update == price_update_from.key()
-    )]
-    oracle_from: Account<'info, Oracle>,
-    #[account(
-        seeds = [
-            WOORACLE_SEED.as_bytes(),
-            oracle_from.token_mint.as_ref(),
-            oracle_from.feed_account.as_ref(),
-            oracle_from.price_update.as_ref()
-        ],
-        bump,
-        constraint = wooracle_from.key() == woopool_from.wooracle
+        address = woopool_from.wooracle,
+        constraint = wooracle_from.price_update == price_update_from.key()
     )]
     wooracle_from: Account<'info, WOOracle>,
+    #[account(
+        constraint = woopool_from.authority == wooracle_from.authority
+    )]
     woopool_from: Box<Account<'info, WooPool>>,
     price_update_from: Account<'info, PriceUpdateV2>,
 
     #[account(
-        constraint = oracle_to.key() == woopool_to.oracle,
-        constraint = oracle_to.price_update == price_update_to.key()
-    )]
-    oracle_to: Account<'info, Oracle>,
-    #[account(
-        seeds = [
-            WOORACLE_SEED.as_bytes(),
-            oracle_to.token_mint.as_ref(),
-            oracle_to.feed_account.as_ref(),
-            oracle_to.price_update.as_ref()
-        ],
-        bump,
-        constraint = wooracle_to.key() == woopool_to.wooracle
+        address = woopool_to.wooracle,
+        constraint = wooracle_to.price_update == price_update_to.key()
     )]
     wooracle_to: Account<'info, WOOracle>,
+    #[account(
+        constraint = woopool_to.authority == woopool_from.authority,
+        constraint = woopool_to.authority == wooracle_to.authority
+    )]
     woopool_to: Box<Account<'info, WooPool>>,
     price_update_to: Account<'info, PriceUpdateV2>,
 }
@@ -58,17 +43,15 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     let price_update_from = &mut ctx.accounts.price_update_from;
     let price_update_to = &mut ctx.accounts.price_update_to;
 
-    let oracle_from = &mut ctx.accounts.oracle_from;
-    let wooracle_from = &ctx.accounts.wooracle_from;
+    let wooracle_from = &mut ctx.accounts.wooracle_from;
     let woopool_from = &ctx.accounts.woopool_from;
 
-    let mut state_from = get_price::get_state_impl(oracle_from, wooracle_from, price_update_from)?;
+    let mut state_from = get_price::get_state_impl(wooracle_from, price_update_from)?;
 
-    let oracle_to = &mut ctx.accounts.oracle_to;
-    let wooracle_to = &ctx.accounts.wooracle_to;
+    let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
-    let mut state_to = get_price::get_state_impl(oracle_to, wooracle_to, price_update_to)?;
+    let mut state_to = get_price::get_state_impl(wooracle_to, price_update_to)?;
 
     let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
@@ -77,7 +60,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     state_to.spread = spread;
 
     let decimals_from = Decimals::new(
-        oracle_from.decimals as u32,
+        wooracle_from.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
         woopool_from.base_decimals as u32,
     );
@@ -110,7 +93,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
-        oracle_to.decimals as u32,
+        wooracle_to.decimals as u32,
         DEFAULT_QUOTE_DECIMALS,
         woopool_to.base_decimals as u32,
     );

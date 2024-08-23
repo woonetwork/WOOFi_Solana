@@ -47,19 +47,12 @@ declare_id!("5iw67fVCWD5D44Fd5xTKJ43oojtzy3hyyLgCsZP6KdEZ");
 pub mod woospmm {
     use super::*;
 
-    pub fn create_oracle_chainlink(ctx: Context<CreateOracleChainlink>) -> Result<()> {
-        instructions::create_oracle_chainlink::handler(ctx)
+    pub fn create_oracle(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
+        instructions::create_oracle::handler(ctx, maximum_age)
     }
 
-    pub fn create_oracle_pyth(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
-        instructions::create_oracle_pyth::handler(ctx, maximum_age)
-    }
-
-    pub fn set_oracle_maximum_age(
-        ctx: Context<SetOracleMaximumAge>,
-        maximum_age: u64,
-    ) -> Result<()> {
-        instructions::set_oracle_maximum_age::handler(ctx, maximum_age)
+    pub fn set_oracle_maximum_age(ctx: Context<SetWooState>, maximum_age: u64) -> Result<()> {
+        instructions::set_woo_state::set_maximum_age_handler(ctx, maximum_age)
     }
 
     pub fn set_stale_duration(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {
@@ -90,8 +83,8 @@ pub mod woospmm {
         instructions::set_woo_state::set_spread_handler(ctx, spread, true)
     }
 
-    pub fn set_clo_preferred(ctx: Context<SetOuterPreferred>, clo_preferred: bool) -> Result<()> {
-        instructions::set_outer_preferred::handler(ctx, clo_preferred)
+    pub fn set_out_preferred(ctx: Context<SetWooState>, out_preferred: bool) -> Result<()> {
+        instructions::set_woo_state::set_outer_preferred_handler(ctx, out_preferred)
     }
 
     pub fn set_woo_admin(ctx: Context<SetWooAdmin>, admin_authority: Pubkey) -> Result<()> {
@@ -107,12 +100,8 @@ pub mod woospmm {
         instructions::set_woo_state::set_state_handler(ctx, price, coeff, spread)
     }
 
-    pub fn update_cloracle(ctx: Context<UpdateCLOracle>) -> Result<()> {
-        instructions::update_cloracle::handler(ctx)
-    }
-
-    pub fn update_pythoracle(ctx: Context<UpdatePythOracle>) -> Result<()> {
-        instructions::update_pythoracle::handler(ctx)
+    pub fn update_oracle(ctx: Context<UpdateOracle>) -> Result<()> {
+        instructions::update_oracle::handler(ctx)
     }
 
     pub fn get_price(ctx: Context<GetPrice>) -> Result<GetPriceResult> {

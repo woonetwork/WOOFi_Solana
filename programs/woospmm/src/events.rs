@@ -58,13 +58,11 @@ pub struct SetWooracleAdminEvent {
 #[event]
 pub struct SwapEvent {
     pub owner: Pubkey,
-    pub oracle_from: Pubkey,
     pub wooracle_from: Pubkey,
     pub woopool_from: Pubkey,
     pub token_owner_account_from: Pubkey,
     pub token_vault_from: Pubkey,
     pub price_update_from: Pubkey,
-    pub oracle_to: Pubkey,
     pub wooracle_to: Pubkey,
     pub woopool_to: Pubkey,
     pub token_owner_account_to: Pubkey,
@@ -79,13 +77,11 @@ pub struct SwapEvent {
 #[event]
 pub struct SwapWithRebateEvent {
     pub owner: Pubkey,
-    pub oracle_from: Pubkey,
     pub wooracle_from: Pubkey,
     pub woopool_from: Pubkey,
     pub token_owner_account_from: Pubkey,
     pub token_vault_from: Pubkey,
     pub price_update_from: Pubkey,
-    pub oracle_to: Pubkey,
     pub wooracle_to: Pubkey,
     pub woopool_to: Pubkey,
     pub token_owner_account_to: Pubkey,

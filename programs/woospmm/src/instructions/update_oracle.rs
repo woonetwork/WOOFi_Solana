@@ -1,16 +1,16 @@
 use anchor_lang::prelude::*;
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
-use crate::state::oracle::*;
+use crate::WOOracle;
 
 #[derive(Accounts)]
-pub struct UpdatePythOracle<'info> {
+pub struct UpdateOracle<'info> {
     #[account(
         mut,
-        constraint = pythoracle.price_update == price_update.key(),
+        constraint = oracle.price_update == price_update.key(),
         has_one = authority,
     )]
-    pythoracle: Account<'info, Oracle>,
+    oracle: Account<'info, WOOracle>,
     authority: Signer<'info>,
     // Add this account to any instruction Context that needs price data.
     // Warning:
@@ -20,13 +20,13 @@ pub struct UpdatePythOracle<'info> {
     pub price_update: Account<'info, PriceUpdateV2>,
 }
 
-pub fn handler(ctx: Context<UpdatePythOracle>) -> Result<()> {
-    update(&mut ctx.accounts.price_update, &mut ctx.accounts.pythoracle)
+pub fn handler(ctx: Context<UpdateOracle>) -> Result<()> {
+    update(&mut ctx.accounts.price_update, &mut ctx.accounts.oracle)
 }
 
 pub fn update<'info>(
     price_update: &mut Account<'info, PriceUpdateV2>,
-    oracle: &mut Account<'info, Oracle>,
+    oracle: &mut Account<'info, WOOracle>,
 ) -> Result<()> {
     // get_price_no_older_than will fail if the price update is more than 30 seconds old
     // 30s has been stored in oracle's param maximum_age
