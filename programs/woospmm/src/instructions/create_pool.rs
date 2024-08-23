@@ -39,6 +39,7 @@ pub struct CreatePool<'info> {
     // find a way to identify the cloracle's token type
     #[account(
       has_one = authority,
+      has_one = token_mint
     )]
     oracle: Account<'info, Oracle>,
     #[account(
@@ -46,6 +47,7 @@ pub struct CreatePool<'info> {
         has_one = oracle,
         seeds = [
             WOORACLE_SEED.as_bytes(),
+            oracle.token_mint.as_ref(),
             oracle.feed_account.as_ref(),
             oracle.price_update.as_ref()
         ],

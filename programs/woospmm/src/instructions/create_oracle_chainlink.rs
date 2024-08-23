@@ -33,6 +33,7 @@
 
 use crate::state::*;
 use anchor_lang::prelude::*;
+use anchor_spl::token::Mint;
 
 use crate::constants::*;
 
@@ -40,12 +41,15 @@ use chainlink_solana as chainlink;
 
 #[derive(Accounts)]
 pub struct CreateOracleChainlink<'info> {
+    pub token_mint: Account<'info, Mint>,
+
     #[account(
         init,
         payer = admin,
         space = Oracle::LEN,
         seeds = [
             CLORACLE_SEED.as_bytes(),
+            token_mint.key().as_ref(),
             feed_account.key().as_ref(),
             chainlink_program.key().as_ref(),
             ],
@@ -59,6 +63,7 @@ pub struct CreateOracleChainlink<'info> {
         space = WOOracle::LEN,
         seeds = [
             WOORACLE_SEED.as_bytes(),
+            token_mint.key().as_ref(),
             feed_account.key().as_ref(),
             chainlink_program.key().as_ref(),
             ],
@@ -71,12 +76,19 @@ pub struct CreateOracleChainlink<'info> {
     /// CHECK: This is the Chainlink feed account
     feed_account: AccountInfo<'info>,
     /// CHECK: This is the Chainlink program library
-    pub chainlink_program: AccountInfo<'info>,
+    chainlink_program: AccountInfo<'info>,
+
+    quote_token_mint: Account<'info, Mint>,
+    /// CHECK: This is the Quote token's Chainlink feed account
+    quote_feed_account: AccountInfo<'info>,
+    /// CHECK: This is the Quote token's Chainlink program library
+    quote_chainlink_program: AccountInfo<'info>,
 }
 
 pub fn handler(ctx: Context<CreateOracleChainlink>) -> Result<()> {
     let timestamp = Clock::get()?.unix_timestamp;
 
+    ctx.accounts.cloracle.token_mint = ctx.accounts.token_mint.key();
     ctx.accounts.cloracle.oracle_type = OracleType::ChainLink;
     ctx.accounts.cloracle.authority = ctx.accounts.admin.key();
     ctx.accounts.cloracle.feed_account = ctx.accounts.feed_account.key();
@@ -108,6 +120,10 @@ pub fn handler(ctx: Context<CreateOracleChainlink>) -> Result<()> {
     ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
     // set default bound to 1e16 means 1%
     ctx.accounts.wooracle.bound = DEFAULT_BOUND;
+
+    ctx.accounts.wooracle.quote_token_mint = ctx.accounts.quote_token_mint.key();
+    ctx.accounts.wooracle.quote_feed_account = ctx.accounts.quote_feed_account.key();
+    ctx.accounts.wooracle.quote_price_update = ctx.accounts.quote_chainlink_program.key();
 
     Ok(())
 }

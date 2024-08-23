@@ -16,6 +16,7 @@ pub struct TryQuery<'info> {
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
+            oracle_from.token_mint.as_ref(),
             oracle_from.feed_account.as_ref(),
             oracle_from.price_update.as_ref()
         ],
@@ -34,6 +35,7 @@ pub struct TryQuery<'info> {
     #[account(
         seeds = [
             WOORACLE_SEED.as_bytes(),
+            oracle_to.token_mint.as_ref(),
             oracle_to.feed_account.as_ref(),
             oracle_to.price_update.as_ref()
         ],

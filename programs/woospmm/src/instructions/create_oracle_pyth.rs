@@ -33,6 +33,7 @@
 
 use crate::state::*;
 use anchor_lang::prelude::*;
+use anchor_spl::token::Mint;
 
 use crate::constants::*;
 
@@ -40,12 +41,15 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct CreateOraclePyth<'info> {
+    pub token_mint: Account<'info, Mint>,
+
     #[account(
         init,
         payer = admin,
         space = Oracle::LEN,
         seeds = [
             PYTHORACLE_SEED.as_bytes(),
+            token_mint.key().as_ref(),
             feed_account.key().as_ref(),
             price_update.key().as_ref()
             ],
@@ -58,6 +62,7 @@ pub struct CreateOraclePyth<'info> {
         space = WOOracle::LEN,
         seeds = [
             WOORACLE_SEED.as_bytes(),
+            token_mint.key().as_ref(),
             feed_account.key().as_ref(),
             price_update.key().as_ref()
             ],
@@ -74,10 +79,21 @@ pub struct CreateOraclePyth<'info> {
     // users must ensure that the account passed to their instruction is owned by the Pyth pull oracle program.
     // Using Anchor with the Account<'info, PriceUpdateV2> type will automatically perform this check.
     // However, if you are not using Anchor, it is your responsibility to perform this check.
-    pub price_update: Account<'info, PriceUpdateV2>,
+    price_update: Account<'info, PriceUpdateV2>,
+
+    quote_token_mint: Account<'info, Mint>,
+    /// CHECK: This is the Quote token's pyth feed account
+    quote_feed_account: AccountInfo<'info>,
+    // Add this account to any instruction Context that needs price data.
+    // Warning:
+    // users must ensure that the account passed to their instruction is owned by the Pyth pull oracle program.
+    // Using Anchor with the Account<'info, PriceUpdateV2> type will automatically perform this check.
+    // However, if you are not using Anchor, it is your responsibility to perform this check.
+    quote_price_update: Account<'info, PriceUpdateV2>,
 }
 
 pub fn handler(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
+    ctx.accounts.pythoracle.token_mint = ctx.accounts.token_mint.key();
     ctx.accounts.pythoracle.oracle_type = OracleType::Pyth;
     ctx.accounts.pythoracle.authority = ctx.accounts.admin.key();
     ctx.accounts.pythoracle.feed_account = ctx.accounts.feed_account.key();
@@ -112,6 +128,10 @@ pub fn handler(ctx: Context<CreateOraclePyth>, maximum_age: u64) -> Result<()> {
     ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
     // set default bound to 1e16 means 1%
     ctx.accounts.wooracle.bound = DEFAULT_BOUND;
+
+    ctx.accounts.wooracle.quote_token_mint = ctx.accounts.quote_token_mint.key();
+    ctx.accounts.wooracle.quote_feed_account = ctx.accounts.quote_feed_account.key();
+    ctx.accounts.wooracle.quote_price_update = ctx.accounts.quote_price_update.key();
 
     Ok(())
 }
