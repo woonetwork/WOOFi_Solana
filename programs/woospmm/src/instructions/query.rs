@@ -12,8 +12,6 @@ pub struct Query<'info> {
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
 
-    pub owner: Signer<'info>,
-
     #[account(
         address = woopool_from.wooracle,
         has_one = quote_price_update,
@@ -21,7 +19,8 @@ pub struct Query<'info> {
     )]
     wooracle_from: Account<'info, WOOracle>,
     #[account(
-        constraint = woopool_from.authority == wooracle_from.authority
+        constraint = woopool_from.authority == wooracle_from.authority,
+        constraint = woopool_from.quote_token_mint == wooracle_from.quote_token_mint
     )]
     woopool_from: Box<Account<'info, WooPool>>,
     #[account(mut,
@@ -38,6 +37,8 @@ pub struct Query<'info> {
     #[account(
         constraint = woopool_to.authority == woopool_from.authority,
         constraint = woopool_to.authority == wooracle_to.authority,
+        constraint = woopool_to.quote_token_mint == woopool_from.quote_token_mint,
+        constraint = woopool_to.quote_token_mint == wooracle_to.quote_token_mint
     )]
     woopool_to: Box<Account<'info, WooPool>>,
     #[account(

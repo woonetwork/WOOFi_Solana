@@ -74,18 +74,21 @@ pub struct WooPool {
 
     pub token_vault: Pubkey, // 32
 
+    pub quote_token_mint: Pubkey, // 32
+
     /// Number of base 10 digits to the right of the decimal place.
     pub base_decimals: u8, // 1
 }
 
 impl WooPool {
     pub const LEN: usize =
-        8 + (1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 1);
+        8 + (1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 32 + 1);
 
-    pub fn seeds(&self) -> [&[u8]; 3] {
+    pub fn seeds(&self) -> [&[u8]; 4] {
         [
             WOOPOOL_SEED.as_bytes(),
             self.token_mint.as_ref(),
+            self.quote_token_mint.as_ref(),
             self.woopool_bump.as_ref(),
         ]
     }
@@ -99,6 +102,7 @@ impl WooPool {
         wooracle: Pubkey,
         token_mint: Pubkey,
         token_vault: Pubkey,
+        quote_token_mint: Pubkey,
         base_decimals: u8,
     ) -> Result<()> {
         self.woopool_bump = [bump];
@@ -118,6 +122,8 @@ impl WooPool {
 
         self.token_mint = token_mint;
         self.token_vault = token_vault;
+
+        self.quote_token_mint = quote_token_mint;
 
         self.base_decimals = base_decimals;
 

@@ -8,6 +8,7 @@ use crate::constants::*;
 #[instruction(fee_authority: Pubkey)]
 pub struct CreatePool<'info> {
     pub token_mint: Account<'info, Mint>,
+    pub quote_token_mint: Account<'info, Mint>,
 
     #[account(mut)]
     pub authority: Signer<'info>,
@@ -19,6 +20,7 @@ pub struct CreatePool<'info> {
         seeds = [
           WOOPOOL_SEED.as_bytes(),
           token_mint.key().as_ref(),
+          quote_token_mint.key().as_ref()
         ],
         bump)]
     pub woopool: Box<Account<'info, WooPool>>,
@@ -34,6 +36,7 @@ pub struct CreatePool<'info> {
     #[account(
         has_one = authority,
         has_one = token_mint,
+        has_one = quote_token_mint
     )]
     wooracle: Account<'info, WOOracle>,
 
@@ -50,6 +53,7 @@ pub fn handler(
 ) -> Result<()> {
     let authority = ctx.accounts.authority.key();
     let token_mint = ctx.accounts.token_mint.key();
+    let quote_token_mint = ctx.accounts.quote_token_mint.key();
     let token_vault = ctx.accounts.token_vault.key();
     let base_decimals = ctx.accounts.token_mint.decimals;
 
@@ -65,6 +69,7 @@ pub fn handler(
         wooracle,
         token_mint,
         token_vault,
+        quote_token_mint,
         base_decimals,
     )
 }

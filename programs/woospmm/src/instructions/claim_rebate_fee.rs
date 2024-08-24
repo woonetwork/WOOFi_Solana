@@ -7,6 +7,7 @@ use crate::{constants::*, errors::ErrorCode, util::*};
 #[derive(Accounts)]
 pub struct ClaimRebateFee<'info> {
     pub token_mint: Account<'info, Mint>,
+    pub quote_token_mint: Account<'info, Mint>,
 
     pub rebate_authority: Signer<'info>,
 
@@ -14,6 +15,7 @@ pub struct ClaimRebateFee<'info> {
         seeds = [
           WOOPOOL_SEED.as_bytes(),
           token_mint.key().as_ref(),
+          quote_token_mint.key().as_ref(),
         ],
         bump,
         constraint = woopool.token_mint == token_mint.key(),
