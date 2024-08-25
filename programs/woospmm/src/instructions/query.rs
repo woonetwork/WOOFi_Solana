@@ -70,6 +70,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
 
     let token_vault_to = &ctx.accounts.token_vault_to;
     let quote_token_vault = &ctx.accounts.quote_token_vault;
+    let woopool_quote = &ctx.accounts.woopool_quote;
 
     let wooracle_from = &ctx.accounts.wooracle_from;
     let woopool_from = &ctx.accounts.woopool_from;
@@ -95,7 +96,6 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     );
 
     let mut quote_amount = from_amount;
-    let mut check_swap_fee_vault = true;
     if woopool_from.token_mint != woopool_from.quote_token_mint {
         let (_quote_amount, _) = swap_math::calc_quote_amount_sell_base(
             from_amount,
@@ -105,16 +105,14 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
         )?;
 
         quote_amount = _quote_amount;
-    } else {
-        check_swap_fee_vault = false;
     }
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, TE5U128)?;
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
-    if check_swap_fee_vault {
+    if woopool_from.token_mint != woopool_from.quote_token_mint {
         require!(
-            quote_token_vault.amount as u128 >= swap_fee,
+            woopool_quote.reserve >= swap_fee && quote_token_vault.amount as u128 >= swap_fee,
             ErrorCode::NotEnoughOut
         );
     }
@@ -137,7 +135,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     }
 
     require!(
-        token_vault_to.amount as u128 >= to_amount,
+        woopool_to.reserve >= to_amount && token_vault_to.amount as u128 >= to_amount,
         ErrorCode::NotEnoughOut
     );
 
