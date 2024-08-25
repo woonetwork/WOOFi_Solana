@@ -36,6 +36,10 @@ pub enum ErrorCode {
     RebateFeeMaxExceeded, // 0x1792
     #[msg("Rebate fee not enough")]
     RebateFeeNotEnough, // 0x1793
+    #[msg("Exceeded max reserve")]
+    ReserveMaxExceeded, // 0x1794
+    #[msg("Reserve not enough")]
+    ReserveNotEnough, // 0x1795
 
     #[msg("Woo oracle is not feasible")]
     WooOracleNotFeasible, //0x1794

@@ -1,3 +1,4 @@
+pub const WOOCONFIG_SEED: &str = "wooconfig";
 pub const WOORACLE_SEED: &str = "wooracle";
 pub const WOOPOOL_SEED: &str = "woopool";
 pub const REBATEPOOL_SEED: &str = "rebatepool";
@@ -13,6 +14,3 @@ pub const TENPOW18U128: u128 = 1_000_000_000_000_000_000;
 // Fee amount = total_amount * fee_rate / 100_000.
 // Max fee rate supported is u16::MAX around 65.5%.
 pub const MAX_FEE_RATE: u16 = u16::MAX - 1;
-
-//pub const DEFAULT_PRICE_DECIMALS: u32 = 8;
-pub const DEFAULT_QUOTE_DECIMALS: u32 = 6;

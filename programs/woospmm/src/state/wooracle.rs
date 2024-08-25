@@ -48,8 +48,9 @@ pub struct WOOracle {
     // store pyth oracle maximum age, in seconds, 60 means 60s
     pub maximum_age: u64,   // 8
     pub price_decimals: u8, // 1
+    pub quote_decimals: u8, // 1
     pub base_decimals: u8,  // 1
-    //    pub round: i128,              // 16
+    //    pub round: i128,          // 16
     pub outer_preferred: bool,      // 1
     pub updated_at: i64,            // 8
     pub stale_duration: i64,        // 8
@@ -72,6 +73,7 @@ impl WOOracle {
             + 32
             + 32
             + 8
+            + 1
             + 1
             + 1
 //            + 16

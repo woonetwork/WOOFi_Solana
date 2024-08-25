@@ -34,7 +34,8 @@ pub struct TryQuery<'info> {
         constraint = woopool_to.authority == woopool_from.authority,
         constraint = woopool_to.authority == wooracle_to.authority,
         constraint = woopool_to.quote_token_mint == woopool_from.quote_token_mint,
-        constraint = woopool_to.quote_token_mint == wooracle_to.quote_token_mint
+        constraint = woopool_to.quote_token_mint == wooracle_to.quote_token_mint,
+        constraint = woopool_to.token_mint != woopool_from.token_mint
     )]
     woopool_to: Box<Account<'info, WooPool>>,
     #[account(mut,
@@ -48,7 +49,6 @@ pub struct TryQuery<'info> {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default, Copy)]
 pub struct QueryResult {
     pub to_amount: u128,
-    pub swap_fee_amount: u128,
     pub swap_fee: u128,
 }
 
@@ -76,53 +76,44 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
 
     let decimals_from = Decimals::new(
         wooracle_from.price_decimals as u32,
-        DEFAULT_QUOTE_DECIMALS,
+        wooracle_from.quote_decimals as u32,
         woopool_from.base_decimals as u32,
     );
 
-    let swap_fee_amount = checked_mul_div_round_up(from_amount, fee_rate as u128, TE5U128)?;
-    let swap_fee = checked_mul_div(
-        swap_fee_amount,
-        state_from.price_out,
-        decimals_from.price_dec as u128,
-    )?;
-    let remain_amount = from_amount.checked_sub(swap_fee_amount).unwrap();
+    let mut quote_amount = from_amount;
+    if woopool_from.token_mint != woopool_from.quote_token_mint {
+        let (_quote_amount, _) = swap_math::calc_quote_amount_sell_base(
+            from_amount,
+            woopool_from,
+            &decimals_from,
+            &state_from,
+        )?;
 
-    let (remain_usd_amount, _from_new_price) = swap_math::calc_usd_amount_sell_base(
-        remain_amount,
-        woopool_from,
-        &decimals_from,
-        &state_from,
-    )?;
+        quote_amount = _quote_amount;
+    }
 
-    // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
-    // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
-    //     from_amount,
-    //     woopool_from,
-    //     &decimals_from,
-    //     wooracle_from.coeff,
-    //     spread,
-    //     &price_from)?;
-
-    // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
-    // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
+    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, TE5U128)?;
+    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
         wooracle_to.price_decimals as u32,
-        DEFAULT_QUOTE_DECIMALS,
+        wooracle_to.quote_decimals as u32,
         woopool_to.base_decimals as u32,
     );
 
-    let (to_amount, _to_new_price) = swap_math::calc_base_amount_sell_usd(
-        remain_usd_amount,
-        woopool_to,
-        &decimals_to,
-        &state_to,
-    )?;
+    let mut to_amount = quote_amount;
+    if woopool_to.token_mint != woopool_to.quote_token_mint {
+        let (_to_amount, _) = swap_math::calc_base_amount_sell_quote(
+            quote_amount,
+            woopool_to,
+            &decimals_to,
+            &state_to,
+        )?;
+        to_amount = _to_amount;
+    }
 
     Ok(QueryResult {
         to_amount,
-        swap_fee_amount,
         swap_fee,
     })
 }

@@ -71,7 +71,7 @@ pub struct SwapEvent {
     pub from_amount: u128,
     pub min_to_amount: u128,
     pub to_amount: u128,
-    pub swap_fee_amount: u128,
+    pub swap_fee: u128,
 }
 
 #[event]
@@ -93,7 +93,7 @@ pub struct SwapWithRebateEvent {
     pub from_amount: u128,
     pub min_to_amount: u128,
     pub to_amount: u128,
-    pub swap_fee_amount: u128,
+    pub swap_fee: u128,
     pub swap_fee_after_rebate: u128,
-    pub rebate_fee_amount: u128,
+    pub rebate_fee: u128,
 }

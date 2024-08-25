@@ -1,7 +1,7 @@
 use std::cmp::max;
 
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount};
+use anchor_spl::token::TokenAccount;
 
 use crate::{constants::*, errors::ErrorCode, instructions::*, state::*, util::*};
 
@@ -9,9 +9,6 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct Query<'info> {
-    #[account(address = token::ID)]
-    pub token_program: Program<'info, Token>,
-
     #[account(
         address = woopool_from.wooracle,
         has_one = quote_price_update,
@@ -38,7 +35,8 @@ pub struct Query<'info> {
         constraint = woopool_to.authority == woopool_from.authority,
         constraint = woopool_to.authority == wooracle_to.authority,
         constraint = woopool_to.quote_token_mint == woopool_from.quote_token_mint,
-        constraint = woopool_to.quote_token_mint == wooracle_to.quote_token_mint
+        constraint = woopool_to.quote_token_mint == wooracle_to.quote_token_mint,
+        constraint = woopool_to.token_mint != woopool_from.token_mint
     )]
     woopool_to: Box<Account<'info, WooPool>>,
     #[account(
@@ -50,7 +48,16 @@ pub struct Query<'info> {
     )]
     price_update_to: Account<'info, PriceUpdateV2>,
 
+    #[account(
+        constraint = woopool_quote.token_mint == woopool_from.quote_token_mint,
+        constraint = woopool_quote.authority == woopool_from.authority,
+    )]
+    woopool_quote: Box<Account<'info, WooPool>>,
     quote_price_update: Account<'info, PriceUpdateV2>,
+    #[account(
+        address = woopool_quote.token_vault
+    )]
+    quote_token_vault: Box<Account<'info, TokenAccount>>,
 }
 
 pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> Result<QueryResult> {
@@ -62,6 +69,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     let quote_price_update = &mut ctx.accounts.quote_price_update;
 
     let token_vault_to = &ctx.accounts.token_vault_to;
+    let quote_token_vault = &ctx.accounts.quote_token_vault;
 
     let wooracle_from = &ctx.accounts.wooracle_from;
     let woopool_from = &ctx.accounts.woopool_from;
@@ -82,51 +90,52 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
 
     let decimals_from = Decimals::new(
         wooracle_from.price_decimals as u32,
-        DEFAULT_QUOTE_DECIMALS,
+        wooracle_from.quote_decimals as u32,
         woopool_from.base_decimals as u32,
     );
 
-    let swap_fee_amount = checked_mul_div_round_up(from_amount, fee_rate as u128, TE5U128)?;
-    let swap_fee = checked_mul_div(
-        swap_fee_amount,
-        state_from.price_out,
-        decimals_from.price_dec as u128,
-    )?;
-    let remain_amount = from_amount.checked_sub(swap_fee_amount).unwrap();
+    let mut quote_amount = from_amount;
+    let mut check_swap_fee_vault = true;
+    if woopool_from.token_mint != woopool_from.quote_token_mint {
+        let (_quote_amount, _) = swap_math::calc_quote_amount_sell_base(
+            from_amount,
+            woopool_from,
+            &decimals_from,
+            &state_from,
+        )?;
 
-    let (remain_usd_amount, _from_new_price) = swap_math::calc_usd_amount_sell_base(
-        remain_amount,
-        woopool_from,
-        &decimals_from,
-        &state_from,
-    )?;
+        quote_amount = _quote_amount;
+    } else {
+        check_swap_fee_vault = false;
+    }
 
-    // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
-    // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
-    //     from_amount,
-    //     woopool_from,
-    //     &decimals_from,
-    //     wooracle_from.coeff,
-    //     spread,
-    //     &price_from)?;
+    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, TE5U128)?;
+    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
-    // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
-    // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
+    if check_swap_fee_vault {
+        require!(
+            quote_token_vault.amount as u128 >= swap_fee,
+            ErrorCode::NotEnoughOut
+        );
+    }
 
     let decimals_to = Decimals::new(
         wooracle_to.price_decimals as u32,
-        DEFAULT_QUOTE_DECIMALS,
+        wooracle_to.quote_decimals as u32,
         woopool_to.base_decimals as u32,
     );
 
-    let (to_amount, _to_new_price) = swap_math::calc_base_amount_sell_usd(
-        remain_usd_amount,
-        woopool_to,
-        &decimals_to,
-        &state_to,
-    )?;
+    let mut to_amount = quote_amount;
+    if woopool_to.token_mint != woopool_to.quote_token_mint {
+        let (_to_amount, _) = swap_math::calc_base_amount_sell_quote(
+            quote_amount,
+            woopool_to,
+            &decimals_to,
+            &state_to,
+        )?;
+        to_amount = _to_amount;
+    }
 
-    // TODO Prince: throw exception for now, need check evm logic to see whether send out max to_amount.
     require!(
         token_vault_to.amount as u128 >= to_amount,
         ErrorCode::NotEnoughOut
@@ -136,7 +145,6 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
 
     Ok(QueryResult {
         to_amount,
-        swap_fee_amount,
         swap_fee,
     })
 }

@@ -120,36 +120,8 @@ pub mod woospmm {
         instructions::set_pool_fee_admin_handler(ctx, fee_authority)
     }
 
-    pub fn set_pool_state(
-        ctx: Context<SetPoolState>,
-        fee_rate: u16,
-        cap_balance: u128,
-        tgt_balance: u128,
-        shift_max: u16,
-    ) -> Result<()> {
-        instructions::set_pool_state::set_pool_state_handler(
-            ctx,
-            fee_rate,
-            cap_balance,
-            tgt_balance,
-            shift_max,
-        )
-    }
-
     pub fn set_pool_fee_rate(ctx: Context<SetPoolState>, fee_rate: u16) -> Result<()> {
         instructions::set_pool_state::set_fee_rate_handler(ctx, fee_rate)
-    }
-
-    pub fn set_pool_cap_balance(ctx: Context<SetPoolState>, cap_balance: u128) -> Result<()> {
-        instructions::set_pool_state::set_cap_balance_handler(ctx, cap_balance)
-    }
-
-    pub fn set_pool_tgt_balance(ctx: Context<SetPoolState>, tgt_balance: u128) -> Result<()> {
-        instructions::set_pool_state::set_tgt_balance_handler(ctx, tgt_balance)
-    }
-
-    pub fn set_pool_shift_max(ctx: Context<SetPoolState>, shift_max: u16) -> Result<()> {
-        instructions::set_pool_state::set_shift_max_handler(ctx, shift_max)
     }
 
     pub fn set_pool_max_gamma(ctx: Context<SetPoolState>, max_gamma: u128) -> Result<()> {

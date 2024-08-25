@@ -59,15 +59,6 @@ pub struct WooPool {
     // max volume per swap
     pub max_notional_swap: u128, // 16
 
-    // maximum balance cap in token amount
-    pub cap_balance: u128, // 16
-
-    // decimal = 5; 10 = 1bp = 0.01%; max = 65535
-    pub shift_max: u16, // 2
-
-    // target balance for swap fee
-    pub tgt_balance: u128, // 16
-
     pub protocol_fee_owed: u128, // 16
 
     pub token_mint: Pubkey, // 32
@@ -81,8 +72,7 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN: usize =
-        8 + (1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 2 + 16 + 16 + 32 + 32 + 32 + 1);
+    pub const LEN: usize = 8 + (1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
 
     pub fn seeds(&self) -> [&[u8]; 4] {
         [
@@ -116,9 +106,6 @@ impl WooPool {
         self.reserve = 0;
         self.max_gamma = 0;
         self.max_notional_swap = 0;
-        self.cap_balance = 0;
-        self.tgt_balance = 0;
-        self.shift_max = 0;
 
         self.token_mint = token_mint;
         self.token_vault = token_vault;
@@ -138,25 +125,6 @@ impl WooPool {
 
     pub fn update_fee_authority(&mut self, fee_authority: Pubkey) -> Result<()> {
         self.fee_authority = fee_authority;
-
-        Ok(())
-    }
-
-    pub fn set_pool_state(
-        &mut self,
-        fee_rate: u16,
-        cap_balance: u128,
-        tgt_balance: u128,
-        shift_max: u16,
-    ) -> Result<()> {
-        if 2 * tgt_balance > cap_balance {
-            return Err(ErrorCode::CapBalanceSmallerThanTargetBalance.into());
-        }
-
-        self.fee_rate = fee_rate;
-        self.cap_balance = cap_balance;
-        self.tgt_balance = tgt_balance;
-        self.shift_max = shift_max;
 
         Ok(())
     }
@@ -182,26 +150,24 @@ impl WooPool {
         Ok(())
     }
 
-    pub fn set_cap_balance(&mut self, cap_balance: u128) -> Result<()> {
-        if 2 * self.tgt_balance > cap_balance {
-            return Err(ErrorCode::CapBalanceSmallerThanTargetBalance.into());
-        }
-        self.cap_balance = cap_balance;
+    pub fn add_reserve(&mut self, amount: u128) -> Result<()> {
+        self.reserve = self
+            .reserve
+            .checked_add(amount)
+            .ok_or(ErrorCode::ReserveMaxExceeded)?;
 
         Ok(())
     }
 
-    pub fn set_tgt_balance(&mut self, tgt_balance: u128) -> Result<()> {
-        if 2 * tgt_balance > self.cap_balance {
-            return Err(ErrorCode::CapBalanceSmallerThanTargetBalance.into());
+    pub fn sub_reserve(&mut self, amount: u128) -> Result<()> {
+        if amount > self.reserve {
+            return Err(ErrorCode::ReserveNotEnough.into());
         }
-        self.tgt_balance = tgt_balance;
 
-        Ok(())
-    }
-
-    pub fn set_shift_max(&mut self, shift_max: u16) -> Result<()> {
-        self.shift_max = shift_max;
+        self.reserve = self
+            .reserve
+            .checked_sub(amount)
+            .ok_or(ErrorCode::ReserveNotEnough)?;
 
         Ok(())
     }
