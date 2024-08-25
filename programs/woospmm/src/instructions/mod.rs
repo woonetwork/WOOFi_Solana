@@ -1,6 +1,5 @@
 pub mod claim_fee;
 pub mod claim_rebate_fee;
-pub mod create_config;
 pub mod create_oracle;
 pub mod create_pool;
 pub mod create_rebate_pool;

@@ -142,7 +142,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
 
     if woopool_from.token_mint != woopool_from.quote_token_mint {
         require!(
-            quote_token_vault.amount as u128 >= swap_fee,
+            woopool_quote.reserve >= swap_fee && quote_token_vault.amount as u128 >= swap_fee,
             ErrorCode::NotEnoughOut
         );
     }
@@ -167,18 +167,18 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     }
 
     require!(
-        token_vault_to.amount as u128 >= to_amount,
+        woopool_to.reserve >= to_amount && token_vault_to.amount as u128 >= to_amount,
         ErrorCode::NotEnoughOut
     );
 
     require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
+    woopool_from.add_reserve(from_amount).unwrap();
+    woopool_to.sub_reserve(to_amount).unwrap();
+
     // record fee into account
     woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote.add_protocol_fee(swap_fee).unwrap();
-
-    woopool_from.add_reserve(from_amount).unwrap();
-    woopool_to.sub_reserve(to_amount).unwrap();
 
     transfer_from_owner_to_vault(
         &ctx.accounts.owner,

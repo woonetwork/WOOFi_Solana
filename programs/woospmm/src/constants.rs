@@ -1,4 +1,3 @@
-pub const WOOCONFIG_SEED: &str = "wooconfig";
 pub const WOORACLE_SEED: &str = "wooracle";
 pub const WOOPOOL_SEED: &str = "woopool";
 pub const REBATEPOOL_SEED: &str = "rebatepool";
