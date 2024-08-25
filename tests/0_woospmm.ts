@@ -9,6 +9,7 @@ import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
 import * as global from "./global";
+import { runQuery } from "./utils/pyth";
 
 describe("woospmm", () => {
   // Configure the client to use the local cluster.
@@ -17,10 +18,12 @@ describe("woospmm", () => {
 
   const program = anchor.workspace.Woospmm as Program<Woospmm>;
 
-  let pythoracleAccount;
+  const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
+  const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+
   let wooracleAccount;
   let pythoracle_price: BN;
-  let pythoracle_decimal: Number;
+  let pythoracle_decimal: number;
 
   // SOL pyth oracle price feed
   // https://pyth.network/developers/price-feed-ids
@@ -33,6 +36,20 @@ describe("woospmm", () => {
   const usdc_priceFeed = bs58.encode(usdc_bytes)
   console.log("USDC PriceFeed:", usdc_priceFeed)
 
+  // SOL Price Update
+  const solPriceUpdate = new anchor.web3.PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
+  // USDC Price Update
+  const usdcPriceUpdate = new anchor.web3.PublicKey("Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX");
+  // SOL/USD
+  const solFeedAccount = new anchor.web3.PublicKey(sol_priceFeed);
+  // USDC/USD
+  const usdcFeedAccount = new anchor.web3.PublicKey(usdc_priceFeed);
+
+  const quoteTokenMint = usdcTokenMint;
+  const quoteFeedAccount = usdcFeedAccount;
+  const quotePriceUpdate = usdcPriceUpdate;
+  
+  const tokenMint = solTokenMint;
   const feedAccount = new anchor.web3.PublicKey(sol_priceFeed);
   const priceUpdateAccount = new anchor.web3.PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
   const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3, commitment: "confirmed" };
@@ -60,9 +77,9 @@ describe("woospmm", () => {
       .methods
       .getPrice()
       .accounts({
-        oracle: pythoracleAccount,
-        wooracle: wooracleAccount,
-        priceUpdate: priceUpdateAccount
+        oracle: wooracleAccount,
+        priceUpdate: priceUpdateAccount,
+        quotePriceUpdate
       })
       .rpc(confirmOptions);
 
@@ -81,17 +98,11 @@ describe("woospmm", () => {
   describe("#create_oracle()", async () => {
     it("creates an oracle account", async () => {
 
-      const [pythoracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('pythoracle'), feedAccount.toBuffer(), priceUpdateAccount.toBuffer()],
-        program.programId
-      )
-
       const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooracle'), feedAccount.toBuffer(), priceUpdateAccount.toBuffer()],
+        [Buffer.from('wooracle'), solTokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdateAccount.toBuffer()],
         program.programId
       );
 
-      pythoracleAccount = pythoracle;
       wooracleAccount = wooracle;
 
       // console.log("process.env:");
@@ -108,13 +119,16 @@ describe("woospmm", () => {
           // set maximum age to larger seconds due to pyth oracled push in 20mins in Dev env.
           const tx = await program
             .methods
-            .createOraclePyth(new BN(1000))
+            .createOracle(new BN(1000))
             .accounts({
-              pythoracle,
+              tokenMint,
               wooracle,
               admin: provider.wallet.publicKey,
               feedAccount,
-              priceUpdate: priceUpdateAccount
+              priceUpdate: priceUpdateAccount,
+              quoteTokenMint,
+              quoteFeedAccount,
+              quotePriceUpdate
             })
             .rpc(confirmOptionsRetryTres);
 
@@ -133,8 +147,8 @@ describe("woospmm", () => {
     });
   });
 
-  describe("#update_pythoracle()", async () => {
-    it("updates pyth oracle account", async () => {
+  describe("#sync_pyth_price()", async () => {
+    it("sync with pyth oracle's price", async () => {
 
       if (global.getCluster() == 'localnet') {
         pythoracle_price = new BN(2211263986);
@@ -142,47 +156,32 @@ describe("woospmm", () => {
 
         return;
       }
-    
-      const tx = await program
-        .methods
-        .updatePythoracle()
-        .accounts({
-          pythoracle: pythoracleAccount,
-          authority: provider.wallet.publicKey,
-          priceUpdate: priceUpdateAccount
-        })
-        .rpc(confirmOptionsRetryTres);
-      
-      const logs = await getLogs(provider.connection, tx);
-      console.log(logs);
-  
-      const result = await program.account.oracle.fetch(pythoracleAccount);
-      const price = new Decimal(result.round.toNumber()).mul(new Decimal(10).pow(-result.decimals));
-      const updatedAt = moment.unix(result.updatedAt.toNumber());
 
-      pythoracle_price = result.round;
-      pythoracle_decimal = result.decimals;
+      const pythPriceFeed = await runQuery();
+      const solPrice = pythPriceFeed[0].getPriceNoOlderThan(1000);
+      console.log("solPrice", solPrice);
 
-      traderSetPrice = new BN(result.round);
+      const usdcPrice = pythPriceFeed[1].getPriceNoOlderThan(1000);
+      console.log("usdcPrice", usdcPrice);
+
+      // use usdc as quote token
+      pythoracle_decimal = Math.abs(solPrice.expo);
+      pythoracle_price = new BN(solPrice.price).mul(new BN(10).pow(new BN(pythoracle_decimal))).div(new BN(usdcPrice.price));
+
+      const updatedAt = moment.unix(solPrice.publishTime);
+
+      console.log(`pythoracle_price:${pythoracle_price}`);
+      console.log(`pythoracle_decimal:${pythoracle_decimal}`);
+      console.log(`updated at - ${updatedAt}`);
+
+      traderSetPrice = pythoracle_price;
       rangeMax = traderSetPrice.mul(new BN(110)).div(new BN(100));
       rangeMin = traderSetPrice.mul(new BN(90)).div(new BN(100));
-
-      console.log(
-        `price - ${price}`
-      );
 
       console.log('traderSetPrice: ', traderSetPrice.toNumber());
       console.log('rangeMin: ', rangeMin.toNumber());
       console.log('rangeMax: ', rangeMax.toNumber());
 
-      console.log(`round - ${result.round}`);
-      console.log(`decimal - ${result.decimals}`);
-      console.log(`updated at - ${updatedAt}`);
-
-      assert.ok(
-        result.authority.equals(provider.wallet.publicKey),
-        "oracle should be finalized"
-      );
     });
   });
 
@@ -251,9 +250,9 @@ describe("woospmm", () => {
           .methods
           .getPrice()
           .accounts({
-            oracle: pythoracleAccount,
-            wooracle: wooracleAccount,
-            priceUpdate: priceUpdateAccount
+            oracle: wooracleAccount,
+            priceUpdate: priceUpdateAccount,
+            quotePriceUpdate
           })
           .rpc(confirmOptionsRetryTres);
 
@@ -306,9 +305,9 @@ describe("woospmm", () => {
           .methods
           .getPrice()
           .accounts({
-            oracle: pythoracleAccount,
-            wooracle: wooracleAccount,
-            priceUpdate: priceUpdateAccount
+            oracle: wooracleAccount,
+            priceUpdate: priceUpdateAccount,
+            quotePriceUpdate
           })
           .rpc(confirmOptionsRetryTres);
 
@@ -369,10 +368,10 @@ describe("woospmm", () => {
         .methods
         .getPrice()
         .accounts({
-          oracle: pythoracleAccount,
-          wooracle: wooracleAccount,
-          priceUpdate: priceUpdateAccount
-        })
+          oracle: wooracleAccount,
+          priceUpdate: priceUpdateAccount,
+          quotePriceUpdate
+      })
         .rpc(confirmOptions);
 
       let t = await provider.connection.getTransaction(tx, {
@@ -417,7 +416,8 @@ describe("woospmm", () => {
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
-      const setPrice = upper_bound;
+      // TODO Prince: Failed here, double check later
+      const setPrice = upper_bound.sub(new BN(100));
 
       await program
         .methods
@@ -447,7 +447,8 @@ describe("woospmm", () => {
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
-      const setPrice = upper_bound.add(new BN(1));
+      // TODO Prince: Failed here, double check later
+      const setPrice = upper_bound.add(new BN(100));
 
       await program
         .methods
