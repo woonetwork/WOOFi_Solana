@@ -70,26 +70,6 @@ pub struct SwapWithRebate<'info> {
     )]
     price_update_to: Account<'info, PriceUpdateV2>,
 
-    /// CHECK: safe, the account that will be rebate will link with rebate pool
-    rebate_authority: UncheckedAccount<'info>,
-
-    #[account(
-        seeds = [
-            REBATEPOOL_SEED.as_bytes(),
-            rebate_authority.key().as_ref(),
-            woopool_from.key().as_ref(),
-            woopool_from.token_mint.as_ref(),
-        ],
-        bump,
-        constraint = rebate_pool.enabled,
-    )]
-    rebate_pool: Account<'info, RebatePool>,
-
-    #[account(mut,
-        address = rebate_pool.token_vault
-    )]
-    rebate_vault: Box<Account<'info, TokenAccount>>,
-
     #[account(mut,
         constraint = woopool_quote.token_mint == woopool_from.quote_token_mint,
         constraint = woopool_quote.authority == woopool_from.authority,
@@ -100,6 +80,29 @@ pub struct SwapWithRebate<'info> {
         address = woopool_quote.token_vault
     )]
     quote_token_vault: Box<Account<'info, TokenAccount>>,
+
+    /// CHECK: safe, the account that will be rebate will link with rebate pool
+    rebate_authority: UncheckedAccount<'info>,
+    #[account(mut,
+        has_one = rebate_authority,
+        has_one = woopool_quote,
+        seeds = [
+            REBATEPOOL_SEED.as_bytes(),
+            rebate_authority.key().as_ref(),
+            woopool_quote.key().as_ref(),
+            woopool_quote.token_mint.as_ref(),
+        ],
+        bump,
+        constraint = rebate_pool.enabled,
+        constraint = rebate_pool.token_mint == woopool_quote.token_mint,
+        constraint = rebate_pool.authority == woopool_quote.authority,
+    )]
+    rebate_pool: Account<'info, RebatePool>,
+
+    #[account(mut,
+        address = rebate_pool.token_vault
+    )]
+    rebate_vault: Box<Account<'info, TokenAccount>>,
 }
 
 pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u128) -> Result<()> {

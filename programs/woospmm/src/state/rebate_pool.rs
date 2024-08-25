@@ -40,7 +40,7 @@ pub struct RebatePool {
 
     pub rebate_authority: Pubkey, // 32
 
-    pub woopool: Pubkey, // 32
+    pub woopool_quote: Pubkey, // 32
 
     // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
     // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
@@ -67,7 +67,7 @@ impl RebatePool {
         [
             REBATEPOOL_SEED.as_bytes(),
             self.rebate_authority.as_ref(),
-            self.woopool.as_ref(),
+            self.woopool_quote.as_ref(),
             self.token_mint.as_ref(),
         ]
     }
@@ -76,7 +76,7 @@ impl RebatePool {
         &mut self,
         authority: Pubkey,
         rebate_authority: Pubkey,
-        woopool: Pubkey,
+        woopool_quote: Pubkey,
         token_mint: Pubkey,
         token_vault: Pubkey,
         base_decimals: u8,
@@ -84,7 +84,7 @@ impl RebatePool {
         self.authority = authority;
         self.rebate_authority = rebate_authority;
 
-        self.woopool = woopool;
+        self.woopool_quote = woopool_quote;
 
         self.rebate_rate = 0;
         self.rebate_reserve = 0;

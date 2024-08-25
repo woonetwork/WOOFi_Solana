@@ -21,7 +21,7 @@ pub struct CreateRebatePool<'info> {
         seeds = [
           REBATEPOOL_SEED.as_bytes(),
           rebate_authority.key().as_ref(),
-          woopool.key().as_ref(),
+          woopool_quote.key().as_ref(),
           token_mint.key().as_ref()
         ],
         bump)]
@@ -29,9 +29,10 @@ pub struct CreateRebatePool<'info> {
 
     #[account(
         has_one = authority,
-        constraint = woopool.token_mint == token_mint.key()
+        constraint = woopool_quote.token_mint == token_mint.key(),
+        constraint = woopool_quote.quote_token_mint == token_mint.key(),
     )]
-    woopool: Box<Account<'info, WooPool>>,
+    woopool_quote: Box<Account<'info, WooPool>>,
 
     #[account(
         init,
@@ -53,14 +54,14 @@ pub fn handler(ctx: Context<CreateRebatePool>) -> Result<()> {
     let token_mint = ctx.accounts.token_mint.key();
     let token_vault = ctx.accounts.token_vault.key();
     let base_decimals = ctx.accounts.token_mint.decimals;
-    let woopool = ctx.accounts.woopool.key();
+    let woopool_quote = ctx.accounts.woopool_quote.key();
 
     let rebate_pool = &mut ctx.accounts.rebate_pool;
 
     rebate_pool.initialize(
         authority,
         rebate_authority,
-        woopool,
+        woopool_quote,
         token_mint,
         token_vault,
         base_decimals,

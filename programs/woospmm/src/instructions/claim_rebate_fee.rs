@@ -6,7 +6,6 @@ use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct ClaimRebateFee<'info> {
-    pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,
 
     pub rebate_authority: Signer<'info>,
@@ -14,35 +13,37 @@ pub struct ClaimRebateFee<'info> {
     #[account(
         seeds = [
           WOOPOOL_SEED.as_bytes(),
-          token_mint.key().as_ref(),
+          quote_token_mint.key().as_ref(),
           quote_token_mint.key().as_ref(),
         ],
         bump,
-        constraint = woopool.token_mint == token_mint.key(),
+        constraint = woopool_quote.token_mint == quote_token_mint.key(),
     )]
-    pub woopool: Box<Account<'info, WooPool>>,
+    pub woopool_quote: Box<Account<'info, WooPool>>,
 
-    #[account(
+    #[account(mut,
         has_one = rebate_authority,
+        has_one = woopool_quote,
         seeds = [
           REBATEPOOL_SEED.as_bytes(),
           rebate_authority.key().as_ref(),
-          woopool.key().as_ref(),
-          token_mint.key().as_ref()
+          woopool_quote.key().as_ref(),
+          quote_token_mint.key().as_ref()
         ],
         bump,
-        constraint = rebate_pool.woopool == woopool.key(),
-        constraint = rebate_pool.token_mint == token_mint.key()
+        constraint = rebate_pool.enabled,
+        constraint = rebate_pool.token_mint == quote_token_mint.key(),
+        constraint = rebate_pool.authority == woopool_quote.authority,
     )]
     pub rebate_pool: Account<'info, RebatePool>,
 
     #[account(
         address = rebate_pool.token_vault,
-        constraint = rebate_vault.mint == token_mint.key(),
+        constraint = rebate_vault.mint == quote_token_mint.key(),
       )]
     pub rebate_vault: Box<Account<'info, TokenAccount>>,
 
-    #[account(mut, constraint = claim_fee_to_account.mint == token_mint.key())]
+    #[account(mut, constraint = claim_fee_to_account.mint == quote_token_mint.key())]
     pub claim_fee_to_account: Box<Account<'info, TokenAccount>>,
 
     #[account(address = token::ID)]
@@ -71,7 +72,7 @@ pub fn handler(ctx: Context<ClaimRebateFee>, claim_amount: u128) -> Result<()> {
 
     emit!(ClaimRebateFeeEvent {
         rebate_authority: ctx.accounts.rebate_authority.key(),
-        woopool: ctx.accounts.woopool.key(),
+        woopool: ctx.accounts.woopool_quote.key(),
         rebate_pool: rebate_pool.key(),
         rebate_vault: rebate_vault.key(),
         claim_fee_to_account: claim_fee_to_account.key(),
