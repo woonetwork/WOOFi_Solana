@@ -103,19 +103,10 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     let wooracle_from = &mut ctx.accounts.wooracle_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
 
-    let mut state_from =
-        get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
-
     let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &mut ctx.accounts.woopool_to;
 
-    let mut state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
-
-    let spread = max(state_from.spread, state_to.spread);
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
-
-    state_from.spread = spread;
-    state_to.spread = spread;
 
     let decimals_from = Decimals::new(
         wooracle_from.price_decimals as u32,
@@ -125,6 +116,9 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
 
     let mut quote_amount = from_amount;
     if woopool_from.token_mint != woopool_from.quote_token_mint {
+        let state_from =
+            get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
+
         let (_quote_amount, new_base_price) = swap_math::calc_quote_amount_sell_base(
             from_amount,
             woopool_from,
@@ -155,6 +149,8 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
 
     let mut to_amount = quote_amount;
     if woopool_to.token_mint != woopool_to.quote_token_mint {
+        let state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
+
         let (_to_amount, to_new_price) = swap_math::calc_base_amount_sell_quote(
             quote_amount,
             woopool_to,
