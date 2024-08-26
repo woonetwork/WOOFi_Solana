@@ -1,4 +1,7 @@
 import { PriceFeed, PriceServiceConnection } from "@pythnetwork/price-service-client";
+import { BN } from "@coral-xyz/anchor";
+import moment from "moment";
+
 
 export async function runQuery(): Promise<PriceFeed[]> {
     // Get the Stable Hermes service URL from https://docs.pyth.network/price-feeds/api-instances-and-providers/hermes
@@ -11,4 +14,52 @@ export async function runQuery(): Promise<PriceFeed[]> {
     
     // Get the latest values of the price feeds as JSON objects.
     return connection.getLatestPriceFeeds(priceIds);
+}
+
+export enum PythToken {
+    USDC,
+    SOL
+}
+
+export type PythPrice = {
+    price: BN,
+    decimal: number,
+    updatedAt: moment.Moment,
+    rangeMax: BN,
+    rangeMin: BN,
+}
+
+export async function getPythPrice(token: PythToken): Promise<PythPrice> {
+    const pythPriceFeed = await runQuery();
+    const solPrice = pythPriceFeed[0].getPriceNoOlderThan(1000);
+    console.log("solPrice", solPrice);
+
+    const usdcPrice = pythPriceFeed[1].getPriceNoOlderThan(1000);
+    console.log("usdcPrice", usdcPrice);
+
+    const tokenPrice = token == PythToken.SOL ? solPrice : usdcPrice;
+
+    // use usdc as quote token
+    const decimal = Math.abs(tokenPrice.expo);
+    const price = new BN(tokenPrice.price).mul(new BN(10).pow(new BN(decimal))).div(new BN(usdcPrice.price));
+
+    const updatedAt = moment.unix(tokenPrice.publishTime);
+
+    console.log(`pythoracle_price:${price}`);
+    console.log(`pythoracle_decimal:${decimal}`);
+    console.log(`updated at - ${updatedAt}`);
+
+    const rangeMax = price.mul(new BN(110)).div(new BN(100));
+    const rangeMin = price.mul(new BN(90)).div(new BN(100));
+
+    console.log('rangeMin: ', rangeMin.toNumber());
+    console.log('rangeMax: ', rangeMax.toNumber());
+
+    return {
+        price,
+        decimal,
+        updatedAt,
+        rangeMax,
+        rangeMin,
+    }
 }
