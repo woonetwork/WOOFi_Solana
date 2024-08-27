@@ -1,6 +1,21 @@
 use anchor_lang::prelude::*;
 
 #[event]
+pub struct DepositEvent {
+    pub authority: Pubkey,
+
+    pub woopool: Pubkey,
+
+    pub token_vault: Pubkey,
+
+    pub deposit_amount: u128,
+
+    pub pool_reserve: u128,
+
+    pub vault_balance: u128,
+}
+
+#[event]
 pub struct ClaimFeeEvent {
     pub authority: Pubkey,
 

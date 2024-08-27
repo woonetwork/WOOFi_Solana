@@ -40,6 +40,8 @@ pub enum ErrorCode {
     ReserveMaxExceeded, // 0x177f
     #[msg("Reserve not enough")]
     ReserveNotEnough, // 0x1780
+    #[msg("Reserve less than fee")]
+    ReserveLessThanFee,
 
     #[msg("Woo oracle is not feasible")]
     WooOracleNotFeasible, //0x1781

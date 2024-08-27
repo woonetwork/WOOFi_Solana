@@ -59,7 +59,7 @@ pub struct WooPool {
     // max volume per swap
     pub max_notional_swap: u128, // 16
 
-    pub protocol_fee_owed: u128, // 16
+    pub unclaimed_fee: u128, // 16
 
     pub token_mint: Pubkey, // 32
 
@@ -104,6 +104,7 @@ impl WooPool {
 
         self.fee_rate = 0;
         self.reserve = 0;
+        self.unclaimed_fee = 0;
         self.max_gamma = 0;
         self.max_notional_swap = 0;
 
@@ -172,22 +173,22 @@ impl WooPool {
         Ok(())
     }
 
-    pub fn add_protocol_fee(&mut self, fee: u128) -> Result<()> {
-        self.protocol_fee_owed = self
-            .protocol_fee_owed
+    pub fn add_unclaimed_fee(&mut self, fee: u128) -> Result<()> {
+        self.unclaimed_fee = self
+            .unclaimed_fee
             .checked_add(fee)
             .ok_or(ErrorCode::ProtocolFeeMaxExceeded)?;
 
         Ok(())
     }
 
-    pub fn sub_protocol_fee(&mut self, fee: u128) -> Result<()> {
-        if fee > self.protocol_fee_owed {
+    pub fn sub_unclaimed_fee(&mut self, fee: u128) -> Result<()> {
+        if fee > self.unclaimed_fee {
             return Err(ErrorCode::ProtocolFeeNotEnough.into());
         }
 
-        self.protocol_fee_owed = self
-            .protocol_fee_owed
+        self.unclaimed_fee = self
+            .unclaimed_fee
             .checked_sub(fee)
             .ok_or(ErrorCode::ProtocolFeeNotEnough)?;
 

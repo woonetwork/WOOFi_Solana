@@ -1,7 +1,24 @@
+use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 use crate::{RebatePool, WooPool};
+
+pub fn balance<'info>(
+    woopool: &Account<'info, WooPool>,
+    token_vault: &Account<'info, TokenAccount>,
+) -> Result<u128> {
+    let balance: u128;
+    if woopool.token_mint == woopool.quote_token_mint {
+        balance = (token_vault.amount as u128)
+            .checked_sub(woopool.unclaimed_fee)
+            .ok_or(ErrorCode::ReserveLessThanFee)?;
+    } else {
+        balance = token_vault.amount as u128;
+    }
+
+    Ok(balance)
+}
 
 pub fn transfer_from_owner_to_vault<'info>(
     position_authority: &Signer<'info>,

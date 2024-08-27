@@ -205,7 +205,7 @@ pub fn handler(ctx: Context<SwapWithRebate>, from_amount: u128, min_to_amount: u
     // record fee into account
     woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote
-        .add_protocol_fee(swap_fee_after_rebate)
+        .add_unclaimed_fee(swap_fee_after_rebate)
         .unwrap();
     rebate_pool.add_rebate_fee(rebate_fee).unwrap();
 

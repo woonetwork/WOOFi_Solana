@@ -174,7 +174,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
 
     // record fee into account
     woopool_quote.sub_reserve(swap_fee).unwrap();
-    woopool_quote.add_protocol_fee(swap_fee).unwrap();
+    woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
 
     transfer_from_owner_to_vault(
         &ctx.accounts.owner,

@@ -37,17 +37,49 @@ pub struct ClaimFee<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn handler(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
+pub fn claim_handler(ctx: Context<ClaimFee>) -> Result<()> {
     let token_vault = &ctx.accounts.token_vault;
     let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
     let woopool = &mut ctx.accounts.woopool;
 
     require!(
-        token_vault.amount as u128 >= claim_amount,
+        woopool.unclaimed_fee > 0 && token_vault.amount as u128 > 0,
         ErrorCode::ProtocolFeeNotEnough
     );
 
-    woopool.sub_protocol_fee(claim_amount)?;
+    let claim_amount = woopool.unclaimed_fee;
+    woopool.unclaimed_fee = 0;
+
+    transfer_from_vault_to_owner(
+        woopool,
+        token_vault,
+        claim_fee_to_account,
+        &ctx.accounts.token_program,
+        claim_amount as u64,
+    )?;
+
+    emit!(ClaimFeeEvent {
+        authority: ctx.accounts.authority.key(),
+        woopool: woopool.key(),
+        token_vault: token_vault.key(),
+        claim_fee_to_account: claim_fee_to_account.key(),
+        claim_amount
+    });
+
+    Ok(())
+}
+
+pub fn claim_amount_handler(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
+    let token_vault = &ctx.accounts.token_vault;
+    let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
+    let woopool = &mut ctx.accounts.woopool;
+
+    require!(
+        woopool.unclaimed_fee >= claim_amount && token_vault.amount as u128 >= claim_amount,
+        ErrorCode::ProtocolFeeNotEnough
+    );
+
+    woopool.sub_unclaimed_fee(claim_amount)?;
 
     transfer_from_vault_to_owner(
         woopool,
