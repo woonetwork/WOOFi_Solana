@@ -41,7 +41,7 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, instructions::*, state::*};
 
-declare_id!("2aVRorr3wWPnnwJhNA4pMzpoymieEBCjM5NnfnEm8aqB");
+declare_id!("64FqL4H6SyNyfkxPn2hr9B7cTWpUtijwYHz8GAda9qnD");
 
 #[program]
 pub mod woospmm {
@@ -112,6 +112,10 @@ pub mod woospmm {
         instructions::create_pool::handler(ctx, admin_authority, fee_authority)
     }
 
+    pub fn create_rebate_pool(ctx: Context<CreateRebatePool>) -> Result<()> {
+        instructions::create_rebate_pool::handler(ctx)
+    }
+
     pub fn set_pool_admin(ctx: Context<SetPoolAdmin>, admin_authority: Pubkey) -> Result<()> {
         instructions::set_pool_admin_handler(ctx, admin_authority)
     }
@@ -151,10 +155,6 @@ pub mod woospmm {
         instructions::swap::handler(ctx, from_amount, min_to_amount)
     }
 
-    pub fn create_rebate_pool(ctx: Context<CreateRebatePool>) -> Result<()> {
-        instructions::create_rebate_pool::handler(ctx)
-    }
-
     pub fn swap_with_rebate(
         ctx: Context<SwapWithRebate>,
         from_amount: u128,
@@ -163,8 +163,16 @@ pub mod woospmm {
         instructions::swap_with_rebate::handler(ctx, from_amount, min_to_amount)
     }
 
-    pub fn claim_fee(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
-        instructions::claim_fee::handler(ctx, claim_amount)
+    pub fn deposit(ctx: Context<Deposit>, amount: u128) -> Result<()> {
+        instructions::deposit::handler(ctx, amount)
+    }
+
+    pub fn claim_fee(ctx: Context<ClaimFee>) -> Result<()> {
+        instructions::claim_fee::claim_handler(ctx)
+    }
+
+    pub fn claim_fee_amount(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
+        instructions::claim_fee::claim_amount_handler(ctx, claim_amount)
     }
 
     pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>, claim_amount: u128) -> Result<()> {

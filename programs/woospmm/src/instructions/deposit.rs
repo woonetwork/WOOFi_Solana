@@ -30,7 +30,7 @@ pub struct Deposit<'info> {
     )]
     pub woopool: Box<Account<'info, WooPool>>,
 
-    #[account(
+    #[account(mut,
         address = woopool.token_vault,
         constraint = token_vault.mint == token_mint.key()
       )]
@@ -52,6 +52,8 @@ pub fn handler(ctx: Context<Deposit>, amount: u128) -> Result<()> {
         ErrorCode::NotEnoughBalance
     );
 
+    woopool.reserve += amount;
+
     transfer_from_owner_to_vault(
         &ctx.accounts.authority,
         token_owner_account,
@@ -60,11 +62,11 @@ pub fn handler(ctx: Context<Deposit>, amount: u128) -> Result<()> {
         amount as u64,
     )?;
 
-    let balance_after = balance(woopool, token_vault)?;
-    let amount_received = balance_after - balance_before;
-    require!(amount_received >= amount, ErrorCode::ReserveLessThanFee);
-
-    woopool.reserve += amount;
+    // TODO Prince: currently we cannot get result from above CPI, so we cannot check 
+    // the transfer result in the same call
+    // let balance_after = balance(woopool, token_vault)?;
+    // let amount_received = balance_after - balance_before;
+    // require!(amount_received >= amount, ErrorCode::ReserveLessThanFee);
 
     emit!(DepositEvent {
         authority: ctx.accounts.authority.key(),
@@ -72,7 +74,7 @@ pub fn handler(ctx: Context<Deposit>, amount: u128) -> Result<()> {
         token_vault: token_vault.key(),
         deposit_amount: amount,
         pool_reserve: woopool.reserve,
-        vault_balance: balance_after
+        vault_balance: balance_before
     });
 
     Ok(())

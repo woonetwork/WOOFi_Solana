@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
-import { ConfirmOptions, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
 import { getLogs } from "@solana-developers/helpers";
 import { Woospmm } from "../target/types/woospmm";
@@ -12,279 +12,53 @@ import moment from "moment";
 import * as global from "./global";
 import { createAssociatedTokenAccount, transferToken } from "./utils/token";
 import { getPythPrice, PythToken } from "./utils/pyth";
+import { PoolUtils } from "./utils/pool";
+import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
 
 describe("woospmm_swap", () => {
-  // Configure the client to use the local cluster.
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
+  const poolUtils = new PoolUtils();
+  poolUtils.initEnv();
 
-  const program = anchor.workspace.Woospmm as Program<Woospmm>;
+  const provider = poolUtils.provider;
+  const program = poolUtils.program;
 
-  const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
-  const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
-
-  let wooracleAccount;
-  let pythoracle_price: BN;
-  let pythoracle_decimal: number;
-
-  // SOL pyth oracle price feed
-  // https://pyth.network/developers/price-feed-ids
-  const bs58 = require('bs58')
-  const sol_bytes = Buffer.from('ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d', 'hex')
-  const sol_priceFeed = bs58.encode(sol_bytes)
-  console.log("SOL PriceFeed:", sol_priceFeed)
-
-  const usdc_bytes = Buffer.from('eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a', 'hex')
-  const usdc_priceFeed = bs58.encode(usdc_bytes)
-  console.log("USDC PriceFeed:", usdc_priceFeed)
-
-  // SOL Price Update
-  const solPriceUpdate = new anchor.web3.PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
-  // USDC Price Update
-  const usdcPriceUpdate = new anchor.web3.PublicKey("Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX");
   // SOL/USD
-  const solFeedAccount = new anchor.web3.PublicKey(sol_priceFeed);
+  const solFeedAccount = poolUtils.solFeedAccount;
   // USDC/USD
-  const usdcFeedAccount = new anchor.web3.PublicKey(usdc_priceFeed);
-
-  const quoteTokenMint = usdcTokenMint;
+  const usdcFeedAccount = poolUtils.usdcFeedAccount;
   const quoteFeedAccount = usdcFeedAccount;
-  const quotePriceUpdate = usdcPriceUpdate;
+
+  describe("#create_usdc_pool()", async () => {
+    it("creates usdc pool", async () => {
+      let usdcOracle = await poolUtils.createOracle(PythToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      assert.ok(
+        usdcOracle.authority.equals(provider.wallet.publicKey)
+      );
+
+      let usdcPool = await poolUtils.createPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      assert.ok(
+        usdcPool.authority.equals(provider.wallet.publicKey)
+      );
+    });
+  });
   
-  const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3, commitment: "confirmed" };
-  const tenpow18 = new BN(10).pow(new BN(18));
-  const tenpow16 = new BN(10).pow(new BN(16));
-
-  const getReturnLog = (confirmedTransaction) => {
-    const prefix = "Program return: ";
-    let log = confirmedTransaction.meta.logMessages.find((log) =>
-      log.startsWith(prefix)
-    );
-    log = log.slice(prefix.length);
-    const [key, data] = log.split(" ", 2);
-    const buffer = Buffer.from(data, "base64");
-    return [key, data, buffer];
-  };
-
-  const getOraclePriceResult = async (
-    oracle: anchor.web3.PublicKey,
-    priceUpdate: anchor.web3.PublicKey,
-    quotePriceUpdate: anchor.web3.PublicKey
-  ) => {
-    const confirmOptions: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
-
-    const tx = await program
-      .methods
-      .getPrice()
-      .accounts({
-        oracle,
-        priceUpdate,
-        quotePriceUpdate
-      })
-      .rpc(confirmOptions);
-
-    let t = await provider.connection.getTransaction(tx, {
-      commitment: "confirmed",
-    })
-
-    const [key, data, buffer] = getReturnLog(t);
-    const reader = new borsh.BinaryReader(buffer);
-    const price = reader.readU128().toNumber();
-    const feasible = reader.readU8();
-
-    return [price, feasible];
-  };
-
-  const createOracle = async (token: PythToken, tokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
-    const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
-      program.programId
-    );
-
-    let oracleItemData = null;
-    try {
-      oracleItemData = await program.account.woOracle.fetch(wooracle);
-    } catch (e) {
-      const error = e as Error;
-      if (error.message.indexOf("Account does not exist") >= 0) {
-          // TODO Prince: need notice here
-          // set maximum age to larger seconds due to pyth oracled push in 20mins in Dev env.
-          const tx = await program
-            .methods
-            .createOracle(new BN(1000))
-            .accounts({
-              tokenMint,
-              wooracle,
-              admin: provider.wallet.publicKey,
-              feedAccount,
-              priceUpdate,
-              quoteTokenMint,
-              quoteFeedAccount,
-              quotePriceUpdate
-            })
-            .rpc(confirmOptionsRetryTres);
-
-          const logs = await getLogs(provider.connection, tx);
-          console.log(logs);
-      }
-    }
-
-    if (oracleItemData == null) {
-      oracleItemData = await program.account.woOracle.fetch(wooracle);
-    }
-
-    // init set wooracle range min and max
-    const pythPrice = await getPythPrice(token);
-
-    await program
-      .methods
-      .setWooRange(pythPrice.rangeMin, pythPrice.rangeMax)
-      .accounts({
-        wooracle: wooracle,
-        authority: provider.wallet.publicKey,
-      })
-      .rpc(confirmOptionsRetryTres);
-
-    return oracleItemData;
-  }
-
-  const createPool = async (tokenMint: anchor.web3.PublicKey, quoteTokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
-    const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
-      program.programId
-    );
-  
-    const adminAuthority = provider.wallet.publicKey;
-    const feeAuthority = provider.wallet.publicKey;
-
-    const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
-      program.programId
-    );
-
-    console.log('woopool:' + woopool);
-
-    let woopoolData = null;
-    try {
-      woopoolData = await program.account.wooPool.fetch(woopool);
-    } catch (e) {
-      const error = e as Error;
-      if (error.message.indexOf("Account does not exist") >= 0) {
-        console.log('start create pool:');
-
-        const tokenVaultKeypair = anchor.web3.Keypair.generate();
-        console.log('tokenVault Keypair:' + tokenVaultKeypair.publicKey);
-
-        await program
-        .methods
-        .createPool(adminAuthority, feeAuthority)
-        .accounts({
-          tokenMint,
-          quoteTokenMint,
-          authority: provider.wallet.publicKey,
-          woopool,
-          tokenVault: tokenVaultKeypair.publicKey,
-          wooracle,
-          tokenProgram: token.TOKEN_PROGRAM_ID, 
-          systemProgram: web3.SystemProgram.programId,
-          rent: web3.SYSVAR_RENT_PUBKEY
-        })
-        .signers([tokenVaultKeypair])
-        .rpc(confirmOptionsRetryTres);   
-        console.log('end create pool.');
-      }
-    }
-
-    // init set Pool Max Notional Swap
-    await program
-    .methods
-    .setPoolMaxNotionalSwap(new BN(1000*LAMPORTS_PER_SOL))
-    .accounts({
-      woopool: woopool,
-      authority: provider.wallet.publicKey
-    }).rpc(confirmOptionsRetryTres);
-
-    // init set Pool Max Notional Swap
-    await program
-    .methods
-    .setPoolMaxGamma(new BN(1000))
-    .accounts({
-      woopool: woopool,
-      authority: provider.wallet.publicKey
-    }).rpc(confirmOptionsRetryTres);
-    
-    if (woopoolData == null) {
-      woopoolData = await program.account.wooPool.fetch(woopool);
-    }
-
-    console.log('authority:' + woopoolData.authority);
-    console.log('feeAuthority:' + woopoolData.feeAuthority);
-    console.log('tokenMint:' + woopoolData.tokenMint);
-    console.log('tokenVault:' + woopoolData.tokenVault);
-    console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
-    console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
-
-    return woopoolData;
-  }
-
-  const generatePoolParams = async(
-    tokenMint: anchor.web3.PublicKey,
-    quoteTokenMint: anchor.web3.PublicKey,
-    feedAccount: anchor.web3.PublicKey,
-    priceUpdate: anchor.web3.PublicKey
-  ) => {
-    const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
-      program.programId
-    );
-
-    const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
-      program.programId
-    );
-
-    // woopool data should already be created after init
-    const {tokenVault} = await program.account.wooPool.fetch(woopool);
-
-    return {
-      wooracle,
-      woopool,
-      tokenVault
-    }
-  }
-
   describe("#create_sol_pool()", async () => {
     it("creates sol pool", async () => {
-
-      let solOracle = await createOracle(PythToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
+      let solOracle = await poolUtils.createOracle(PythToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
         solOracle.authority.equals(provider.wallet.publicKey)
       );
   
-      let solPool = await createPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      let solPool = await poolUtils.createPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
         solPool.authority.equals(provider.wallet.publicKey)
       );
     });
   });
 
-  describe("#create_usdc_pool()", async () => {
-    it("creates usdc pool", async () => {
-      let usdcOracle = await createOracle(PythToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      assert.ok(
-        usdcOracle.authority.equals(provider.wallet.publicKey)
-      );
-
-      let usdcPool = await createPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      assert.ok(
-        usdcPool.authority.equals(provider.wallet.publicKey)
-      );
-    });
-  });
-
   describe("#get_price_from_contract", async ()=> {
     it("get_sol_price", async ()=> {
-      const fromPoolParams = await generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      const fromPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
 
       // init set wooracle range min and max
       const oracleItemData = await program.account.woOracle.fetch(fromPoolParams.wooracle);
@@ -292,13 +66,13 @@ describe("woospmm_swap", () => {
       console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
       console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
 
-      const [fromPrice, fromFeasible] = await getOraclePriceResult(fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
+      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
       console.log(`price - ${fromPrice}`);
       console.log(`feasible - ${fromFeasible}`);
     })
 
     it("get_usdc_price", async ()=> {
-      const toPoolParams = await generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      const toPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
       // init set wooracle range min and max
       const oracleItemData = await program.account.woOracle.fetch(toPoolParams.wooracle);
@@ -306,11 +80,52 @@ describe("woospmm_swap", () => {
       console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
       console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
 
-      const [toPrice, toFeasible] = await getOraclePriceResult(toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
+      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
     })
   })
+
+  describe("#check_usdc_pool()", async () => {
+    it("check usdc pool", async () => {
+      let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      assert.ok(
+        checkUsdcPool.authority.equals(provider.wallet.publicKey)
+      );
+    });
+  });
+
+  describe("#deposit_usdc_pool()", async () => {
+    it("deposit usdc pool", async () => {
+
+      const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+      const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+
+      const tx = await program
+      .methods
+      .deposit(new BN(1000000))
+      .accounts({
+        tokenMint: usdcTokenMint,
+        quoteTokenMint: usdcTokenMint,
+        authority: provider.wallet.publicKey,
+        tokenOwnerAccount: providerTokenAccount,
+        woopool: params.woopool,
+        tokenVault: params.tokenVault,
+        tokenProgram: token.TOKEN_PROGRAM_ID,
+      })
+      .rpc(confirmOptionsRetryTres);
+
+      const logs = await getLogs(provider.connection, tx);
+      console.log(logs);
+
+      let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      assert.ok(
+        checkUsdcPool.authority.equals(provider.wallet.publicKey)
+      );
+    });
+  });
+
 
   describe("#swap_between_sol_and_usdc", async ()=> {
     it("swap_from_sol_to_usdc", async ()=> {
@@ -371,14 +186,14 @@ describe("woospmm_swap", () => {
       console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
       console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
     
-      const fromPoolParams = await generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
-      const toPoolParams = await generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      const quotePoolParams = await generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      const [fromPrice, fromFeasible] = await getOraclePriceResult(fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);  
+      const fromPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      const toPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      const quotePoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);  
       console.log(`price - ${fromPrice}`);
       console.log(`feasible - ${fromFeasible}`);
 
-      const [toPrice, toFeasible] = await getOraclePriceResult(toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
+      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
 
@@ -400,7 +215,7 @@ describe("woospmm_swap", () => {
         commitment: "confirmed",
       })
   
-      const [key, data, buffer] = getReturnLog(t);
+      const [key, data, buffer] = poolUtils.getReturnLog(t);
       const reader = new borsh.BinaryReader(buffer);
       const toAmount = reader.readU128().toNumber();
       const swapFee = reader.readU128().toNumber();
@@ -408,28 +223,28 @@ describe("woospmm_swap", () => {
       console.log('swapFee:' + swapFee);
 
             // increase to pool liquidity
-            const providerToTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
-            const beforeProviderToTokenBalance = await provider.connection.getTokenAccountBalance(providerToTokenAccount);
-            console.log("beforeProviderToTokenBalance amount:" + beforeProviderToTokenBalance.value.amount);
-            console.log("beforeProviderToTokenBalance decimals:" + beforeProviderToTokenBalance.value.decimals);
+            // const providerToTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+            // const beforeProviderToTokenBalance = await provider.connection.getTokenAccountBalance(providerToTokenAccount);
+            // console.log("beforeProviderToTokenBalance amount:" + beforeProviderToTokenBalance.value.amount);
+            // console.log("beforeProviderToTokenBalance decimals:" + beforeProviderToTokenBalance.value.decimals);
       
-            const transferToTranscation = new Transaction().add(
-              // trasnfer USDC to to account
-              token.createTransferCheckedInstruction(
-                providerToTokenAccount,
-                usdcTokenMint,
-                toPoolParams.tokenVault,
-                provider.wallet.publicKey,
-                0.2 * Math.pow(10, beforeProviderToTokenBalance.value.decimals),
-                beforeProviderToTokenBalance.value.decimals
-              ),
-            );
+            // const transferToTranscation = new Transaction().add(
+            //   // trasnfer USDC to to account
+            //   token.createTransferCheckedInstruction(
+            //     providerToTokenAccount,
+            //     usdcTokenMint,
+            //     toPoolParams.tokenVault,
+            //     provider.wallet.publicKey,
+            //     0.2 * Math.pow(10, beforeProviderToTokenBalance.value.decimals),
+            //     beforeProviderToTokenBalance.value.decimals
+            //   ),
+            // );
       
-            await provider.sendAndConfirm(transferToTranscation, [], { commitment: "confirmed" });
+            // await provider.sendAndConfirm(transferToTranscation, [], { commitment: "confirmed" });
       
-            const afterToTokenBalance = await provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
-            console.log("afterProviderToTokenBalance amount:" + afterToTokenBalance.value.amount);
-            console.log("afterProviderToTokenBalance decimals:" + afterToTokenBalance.value.decimals);
+            // const afterToTokenBalance = await provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
+            // console.log("afterProviderToTokenBalance amount:" + afterToTokenBalance.value.amount);
+            // console.log("afterProviderToTokenBalance decimals:" + afterToTokenBalance.value.decimals);
       
   
       await program
