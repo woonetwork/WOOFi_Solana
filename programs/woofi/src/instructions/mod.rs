@@ -11,7 +11,6 @@ pub mod set_pool_state;
 pub mod set_woo_admin;
 pub mod set_woo_state;
 pub mod swap;
-pub mod swap_with_rebate;
 pub mod try_query;
 
 pub use claim_fee::*;
@@ -27,5 +26,4 @@ pub use set_pool_state::*;
 pub use set_woo_admin::*;
 pub use set_woo_state::*;
 pub use swap::*;
-pub use swap_with_rebate::*;
 pub use try_query::*;

@@ -155,14 +155,6 @@ pub mod woofi {
         instructions::swap::handler(ctx, from_amount, min_to_amount)
     }
 
-    pub fn swap_with_rebate(
-        ctx: Context<SwapWithRebate>,
-        from_amount: u128,
-        min_to_amount: u128,
-    ) -> Result<()> {
-        instructions::swap_with_rebate::handler(ctx, from_amount, min_to_amount)
-    }
-
     pub fn deposit(ctx: Context<Deposit>, amount: u128) -> Result<()> {
         instructions::deposit::handler(ctx, amount)
     }
