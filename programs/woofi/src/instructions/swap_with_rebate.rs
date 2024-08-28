@@ -81,7 +81,7 @@ pub struct SwapWithRebate<'info> {
     )]
     quote_token_vault: Box<Account<'info, TokenAccount>>,
 
-    /// CHECK: safe, the account that will be rebate will link with rebate pool
+    /// CHECK: safe, the rebated to account, will link to rebate pool
     rebate_authority: UncheckedAccount<'info>,
     #[account(mut,
         has_one = rebate_authority,

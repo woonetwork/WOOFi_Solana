@@ -79,6 +79,9 @@ pub struct Swap<'info> {
         address = woopool_quote.token_vault
     )]
     quote_token_vault: Box<Account<'info, TokenAccount>>,
+
+    /// CHECK: safe, the rebated to account, will calc rebate amount offline
+    rebate_to: UncheckedAccount<'info>,
 }
 
 pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
@@ -105,6 +108,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
 
     let wooracle_to = &mut ctx.accounts.wooracle_to;
     let woopool_to = &mut ctx.accounts.woopool_to;
+    let rebate_to = &ctx.accounts.rebate_to;
 
     let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
 
@@ -208,6 +212,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         min_to_amount,
         to_amount,
         swap_fee,
+        rebate_to: rebate_to.key(),
     });
 
     Ok(())

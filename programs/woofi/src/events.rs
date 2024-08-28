@@ -87,6 +87,7 @@ pub struct SwapEvent {
     pub min_to_amount: u128,
     pub to_amount: u128,
     pub swap_fee: u128,
+    pub rebate_to: Pubkey,
 }
 
 #[event]
