@@ -1,19 +1,8 @@
-import * as anchor from "@coral-xyz/anchor";
-import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
-import { ConfirmOptions, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
-import * as web3 from "@solana/web3.js";
-import { Woofi } from "../target/types/woofi";
 import { assert } from "chai";
-import Decimal from "decimal.js";
-import moment from "moment";
-import * as global from "./global";
-import { createAssociatedTokenAccount, transferToken } from "./utils/token";
-import { getPythPrice, PythToken } from "./utils/pyth";
 import { getLogs } from "@solana-developers/helpers";
 import { PoolUtils } from "./utils/pool";
-import { generatePoolParams } from "../sdk/dist/utils/contract";
 import { usdcTokenMint, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
 
 describe("woofi_swap", () => {
