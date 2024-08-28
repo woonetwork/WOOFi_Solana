@@ -62,7 +62,7 @@ pub fn handler(ctx: Context<Deposit>, amount: u128) -> Result<()> {
         amount as u64,
     )?;
 
-    // TODO Prince: currently we cannot get result from above CPI, so we cannot check 
+    // TODO Prince: currently we cannot get result from above CPI, so we cannot check
     // the transfer result in the same call
     // let balance_after = balance(woopool, token_vault)?;
     // let amount_received = balance_after - balance_before;
