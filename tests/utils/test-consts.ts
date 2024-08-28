@@ -25,4 +25,4 @@ export const usdcPriceUpdate = new anchor.web3.PublicKey("Dpw1EAVrSB1ibxiDQyTAW6
 
 export const quotePriceUpdate = usdcPriceUpdate;
 
-export const confirmOptionsRetryTres: ConfirmOptions = { };
+export const confirmOptionsRetryTres: ConfirmOptions = { commitment: "confirmed" };

@@ -261,7 +261,7 @@ describe("woofi_swap", () => {
           woopoolQuote: quotePoolParams.woopool,
           quotePriceUpdate: usdcPriceUpdate,
           quoteTokenVault: quotePoolParams.tokenVault,
-      
+          rebateTo: fromWallet.publicKey,
         })
         .signers([fromWallet])
         .rpc(confirmOptionsRetryTres);
