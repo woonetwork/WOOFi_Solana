@@ -1,5 +1,5 @@
 {
-  "name": "woospmm-sdk",
+  "name": "woofi-sdk",
   "version": "1.0.0",
   "description": "Typescript SDK to interact with WooSPMM program.",
   "license": "MIT",

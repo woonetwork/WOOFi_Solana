@@ -1,6 +1,6 @@
 import { Program } from "@coral-xyz/anchor";
 import Decimal from "decimal.js";
-import { Woospmm } from "./artifacts/woospmm";
+import { Woofi } from "./artifacts/woofi";
 import * as ix from "./instructions";
 
 export * from "./common";
@@ -15,32 +15,32 @@ export * from "./instructions";
 Decimal.set({ precision: 40, toExpPos: 40, toExpNeg: -20, rounding: 1 });
 
 /**
- * Instruction builders for the Woospmm program.
+ * Instruction builders for the Woofi program.
  *
  * @category Core
  */
-export class WoospmmIx {
+export class WoofiIx {
     /**
-     * Perform a swap in this Woospmm
+     * Perform a swap in this Woofi
      *
      * ### Parameters
      * @param program - program object containing services required to generate the instruction
      * @param params - {@link SwapParams}
      * @returns - Instruction to perform the action.
      */
-    public static tryQueryIx(program: Program<Woospmm>, params: ix.TryQuerySwapParams) {
+    public static tryQueryIx(program: Program<Woofi>, params: ix.TryQuerySwapParams) {
         return ix.tryQuerySwapIx(program, params);
     }
 
     /**
-     * Perform a swap in this Woospmm
+     * Perform a swap in this Woofi
      *
      * ### Parameters
      * @param program - program object containing services required to generate the instruction
      * @param params - {@link SwapParams}
      * @returns - Instruction to perform the action.
      */
-    public static swapIx(program: Program<Woospmm>, params: ix.SwapParams) {
+    public static swapIx(program: Program<Woofi>, params: ix.SwapParams) {
         return ix.swapIx(program, params);
     }
 }

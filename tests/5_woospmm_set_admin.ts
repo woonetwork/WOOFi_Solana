@@ -3,19 +3,19 @@ import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import { ConfirmOptions, Transaction } from "@solana/web3.js";
 import { getLogs } from "@solana-developers/helpers";
-import { Woospmm } from "../target/types/woospmm";
+import { Woofi } from "../target/types/woofi";
 import { Wallet } from "@coral-xyz/anchor";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
 import * as global from "./global";
 
-describe("woospmm", () => {
+describe("woofi", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.Woospmm as Program<Woospmm>;
+  const program = anchor.workspace.Woofi as Program<Woofi>;
 
   let pythoracleAccount;
   let wooracleAccount;

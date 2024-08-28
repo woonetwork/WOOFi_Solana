@@ -1,14 +1,14 @@
 import { AnchorProvider, Idl, Program } from "@coral-xyz/anchor";
 import { Commitment, Connection, PublicKey, SendOptions } from "@solana/web3.js";
 import { Wallet } from "./common";
-import { Woospmm } from "./artifacts/woospmm";
-import WoospmmIDL from "./artifacts/woospmm.json";
+import { Woofi } from "./artifacts/woofi";
+import WoofiIDL from "./artifacts/woofi.json";
 
 /**
  * Default settings used when interacting with transactions.
  * @category Core
  */
-export type WoospmmContextOpts = {
+export type WoofiContextOpts = {
   //userDefaultBuildOptions?: Partial<BuildOptions>;
   userDefaultSendOptions?: Partial<SendOptions>;
   userDefaultConfirmCommitment?: Commitment;
@@ -33,26 +33,26 @@ const DEFAULT_ACCOUNT_RESOLVER_OPTS: AccountResolverOptions = {
  * Context for storing environment classes and objects for usage throughout the SDK
  * @category Core
  */
-export class WoospmmContext {
+export class WoofiContext {
   readonly connection: Connection;
   readonly wallet: Wallet;
-  readonly program: Program<Woospmm>;
+  readonly program: Program<Woofi>;
   readonly provider: AnchorProvider;
-  readonly opts: WoospmmContextOpts;
+  readonly opts: WoofiContextOpts;
   readonly accountResolverOpts: AccountResolverOptions;
 
   public static from(
     connection: Connection,
     wallet: Wallet,
-    programId: PublicKey = new PublicKey(WoospmmIDL.metadata.address),
-    opts: WoospmmContextOpts = {}
-  ): WoospmmContext {
+    programId: PublicKey = new PublicKey(WoofiIDL.metadata.address),
+    opts: WoofiContextOpts = {}
+  ): WoofiContext {
     const anchorProvider = new AnchorProvider(connection, wallet, {
       commitment: opts.userDefaultConfirmCommitment || "confirmed",
       preflightCommitment: opts.userDefaultConfirmCommitment || "confirmed",
     });
-    const program = new Program(WoospmmIDL as Idl, programId, anchorProvider);
-    return new WoospmmContext(
+    const program = new Program(WoofiIDL as Idl, programId, anchorProvider);
+    return new WoofiContext(
       anchorProvider,
       anchorProvider.wallet,
       program,
@@ -63,9 +63,9 @@ export class WoospmmContext {
   public static fromWorkspace(
     provider: AnchorProvider,
     program: Program,
-    opts: WoospmmContextOpts = {}
+    opts: WoofiContextOpts = {}
   ) {
-    return new WoospmmContext(
+    return new WoofiContext(
       provider,
       provider.wallet,
       program,
@@ -76,10 +76,10 @@ export class WoospmmContext {
   public static withProvider(
     provider: AnchorProvider,
     programId: PublicKey,
-    opts: WoospmmContextOpts = {}
-  ): WoospmmContext {
-    const program = new Program(WoospmmIDL as Idl, programId, provider);
-    return new WoospmmContext(
+    opts: WoofiContextOpts = {}
+  ): WoofiContext {
+    const program = new Program(WoofiIDL as Idl, programId, provider);
+    return new WoofiContext(
       provider,
       provider.wallet,
       program,
@@ -91,12 +91,12 @@ export class WoospmmContext {
     provider: AnchorProvider,
     wallet: Wallet,
     program: Program,
-    opts: WoospmmContextOpts = {}
+    opts: WoofiContextOpts = {}
   ) {
     this.connection = provider.connection;
     this.wallet = wallet;
     // It's a hack but it works on Anchor workspace *shrug*
-    this.program = program as unknown as Program<Woospmm>;
+    this.program = program as unknown as Program<Woofi>;
     this.provider = provider;
     this.opts = opts;
     this.accountResolverOpts = opts.accountResolverOptions ?? DEFAULT_ACCOUNT_RESOLVER_OPTS;

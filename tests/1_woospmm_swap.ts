@@ -5,7 +5,7 @@ import * as token from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
 import { getLogs } from "@solana-developers/helpers";
-import { Woospmm } from "../target/types/woospmm";
+import { Woofi } from "../target/types/woofi";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
@@ -15,7 +15,7 @@ import { getPythPrice, PythToken } from "./utils/pyth";
 import { PoolUtils } from "./utils/pool";
 import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
 
-describe("woospmm_swap", () => {
+describe("woofi_swap", () => {
   const poolUtils = new PoolUtils();
   poolUtils.initEnv();
 

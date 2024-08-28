@@ -8,7 +8,7 @@
 //   stSOL: "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
 // };
 
-export const enum WOOSPMM_TOKENS {
+export const enum WOOFI_TOKENS {
   SOL = "SOL",
   USDC = "USDC"
 }

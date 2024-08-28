@@ -3,7 +3,7 @@ import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import { ConfirmOptions } from "@solana/web3.js";
 import { getLogs } from "@solana-developers/helpers";
-import { Woospmm } from "../target/types/woospmm";
+import { Woofi } from "../target/types/woofi";
 import { Wallet } from "@coral-xyz/anchor";
 import { assert } from "chai";
 import Decimal from "decimal.js";
@@ -11,12 +11,12 @@ import moment from "moment";
 import * as global from "./global";
 import { runQuery } from "./utils/pyth";
 
-describe("woospmm", () => {
+describe("woofi", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.Woospmm as Program<Woospmm>;
+  const program = anchor.workspace.Woofi as Program<Woofi>;
 
   const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
   const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");

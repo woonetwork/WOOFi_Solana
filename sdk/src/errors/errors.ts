@@ -29,23 +29,23 @@ export enum RouteQueryErrorCode {
   General = "General",
 }
 
-export type WoospmmErrorCode =
+export type WoofiErrorCode =
   | TokenErrorCode
   | SwapErrorCode
   | MathErrorCode
   | RouteQueryErrorCode;
 
-export class WoospmmError extends Error {
+export class WoofiError extends Error {
   message: string;
-  errorCode?: WoospmmErrorCode;
-  constructor(message: string, errorCode?: WoospmmErrorCode, stack?: string) {
+  errorCode?: WoofiErrorCode;
+  constructor(message: string, errorCode?: WoofiErrorCode, stack?: string) {
     super(message);
     this.message = message;
     this.errorCode = errorCode;
     this.stack = stack;
   }
 
-  public static isWoospmmErrorCode(e: any, code: WoospmmErrorCode): boolean {
-    return e instanceof WoospmmError && e.errorCode === code;
+  public static isWoofiErrorCode(e: any, code: WoofiErrorCode): boolean {
+    return e instanceof WoofiError && e.errorCode === code;
   }
 }

@@ -5,7 +5,7 @@ import * as token from "@solana/spl-token";
 import { ConfirmOptions, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
 import { getLogs } from "@solana-developers/helpers";
-import { Woospmm } from "../../target/types/woospmm";
+import { Woofi } from "../../target/types/woofi";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
@@ -35,7 +35,7 @@ export class PoolUtils {
     // Configure the client to use the local cluster.
     anchor.setProvider(this.provider);
 
-    this.program = anchor.workspace.Woospmm as Program<Woospmm>;
+    this.program = anchor.workspace.Woofi as Program<Woofi>;
 
     // SOL pyth oracle price feed
     // https://pyth.network/developers/price-feed-ids

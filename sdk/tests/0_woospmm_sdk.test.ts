@@ -1,22 +1,22 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
-import { WoospmmClient } from "../src/client";
-import { WoospmmContext } from "../src";
-import { WOOSPMM_TOKENS } from '../src/utils/constants'
+import { WoofiClient } from "../src/client";
+import { WoofiContext } from "../src";
+import { WOOFI_TOKENS } from '../src/utils/constants'
 
-describe("woospmm_sdk", async () => {
+describe("woofi_sdk", async () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const context = WoospmmContext.from(provider.connection, provider.wallet);
+  const context = WoofiContext.from(provider.connection, provider.wallet);
 
   it("try_query", async ()=> {
-    const result = await WoospmmClient.tryQuery(
+    const result = await WoofiClient.tryQuery(
       context,
       new BN(100000),
-      WOOSPMM_TOKENS['SOL'],
-      WOOSPMM_TOKENS['USDC']
+      WOOFI_TOKENS['SOL'],
+      WOOFI_TOKENS['USDC']
     )
 
     console.log('TryQuery to_amount:'+ result.to_amount);
@@ -25,7 +25,7 @@ describe("woospmm_sdk", async () => {
   })
 
   // it("try_query_on_chain", async ()=> {
-  //   const result = await WoospmmClient.tryQueryOnChain(
+  //   const result = await WoofiClient.tryQueryOnChain(
   //     context,
   //     new BN(100),
   //     new anchor.web3.PublicKey(TOKEN_MINTS.SOL),

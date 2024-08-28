@@ -44,7 +44,7 @@ use crate::{constants::*, instructions::*, state::*};
 declare_id!("64FqL4H6SyNyfkxPn2hr9B7cTWpUtijwYHz8GAda9qnD");
 
 #[program]
-pub mod woospmm {
+pub mod woofi {
     use super::*;
 
     pub fn create_oracle(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {

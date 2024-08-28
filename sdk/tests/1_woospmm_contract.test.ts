@@ -1,16 +1,16 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN } from "@coral-xyz/anchor";
-import { WoospmmClient } from "../src/client";
-import { WoospmmContext } from "../src";
+import { WoofiClient } from "../src/client";
+import { WoofiContext } from "../src";
 import { PYTH_FEED_ACCOUNT, PYTH_PRICE_UPDATE_ACCOUNT, TOKEN_MINTS } from '../src/utils/constants'
 import { generatePoolParams, getWooPrice } from "../src/utils/contract";
 
-describe("woospmm_sdk", async () => {
+describe("woofi_sdk", async () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const ctx = WoospmmContext.from(provider.connection, provider.wallet);
+  const ctx = WoofiContext.from(provider.connection, provider.wallet);
 
   it("get_price_sol", async ()=> {
     const poolParams = await generatePoolParams(

@@ -2,12 +2,12 @@ import { BN } from "@coral-xyz/anchor";
 import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createCloseAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import { SwapParams, swapIx } from "./instructions/swap-ix"
-import { WoospmmContext } from "./context";
+import { WoofiContext } from "./context";
 import { TryQuerySwapParams, tryQuerySwapIx } from "./instructions/try-query-swap-ix";
-import { WOOSPMM_TOKENS, TOKEN_MINTS, CHAINLINK_FEED_ACCOUNT, WOOPOOL_VAULTS, PYTH_FEED_ACCOUNT, PYTH_PRICE_UPDATE_ACCOUNT, CHAINLINK_PROGRAM_ACCOUNT } from "./utils/constants";
+import { WOOFI_TOKENS, TOKEN_MINTS, CHAINLINK_FEED_ACCOUNT, WOOPOOL_VAULTS, PYTH_FEED_ACCOUNT, PYTH_PRICE_UPDATE_ACCOUNT, CHAINLINK_PROGRAM_ACCOUNT } from "./utils/constants";
 import { generatePoolParams, QueryResult, tryCalculate } from "./utils/contract";
 
-export class WoospmmClient {
+export class WoofiClient {
   private static autoUnwrapWSOL: boolean = true;
 
   public static isNativeMint(mint: PublicKey) {
@@ -15,18 +15,18 @@ export class WoospmmClient {
   }
 
   public static isAutoUnwrapWSOL(): boolean {
-    return WoospmmClient.autoUnwrapWSOL;
+    return WoofiClient.autoUnwrapWSOL;
   }
 
   public static setAutoUnwrapWSOL(autoUnwrap: boolean) {
-    WoospmmClient.autoUnwrapWSOL = autoUnwrap;
+    WoofiClient.autoUnwrapWSOL = autoUnwrap;
   }
 
   public static async tryQuery(
-    ctx: WoospmmContext,
+    ctx: WoofiContext,
     fromAmount: BN,
-    fromToken: WOOSPMM_TOKENS,
-    toToken: WOOSPMM_TOKENS
+    fromToken: WOOFI_TOKENS,
+    toToken: WOOFI_TOKENS
   ): Promise<QueryResult> {
     return tryCalculate(
       ctx, 
@@ -41,12 +41,12 @@ export class WoospmmClient {
   }
 
   public static async tryQueryOnChain(
-    ctx: WoospmmContext,
+    ctx: WoofiContext,
     fromAmount: BN,
-    fromToken: WOOSPMM_TOKENS,
-    toToken: WOOSPMM_TOKENS
+    fromToken: WOOFI_TOKENS,
+    toToken: WOOFI_TOKENS
   ): Promise<TransactionInstruction> {
-    return WoospmmClient.tryQueryOnChainInner(
+    return WoofiClient.tryQueryOnChainInner(
       ctx, 
       fromAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
@@ -59,12 +59,12 @@ export class WoospmmClient {
   }
 
   public static async tryQueryOnChainChainlink(
-    ctx: WoospmmContext,
+    ctx: WoofiContext,
     fromAmount: BN,
-    fromToken: WOOSPMM_TOKENS,
-    toToken: WOOSPMM_TOKENS
+    fromToken: WOOFI_TOKENS,
+    toToken: WOOFI_TOKENS
   ): Promise<TransactionInstruction> {
-    return WoospmmClient.tryQueryOnChainInner(
+    return WoofiClient.tryQueryOnChainInner(
       ctx, 
       fromAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
@@ -77,7 +77,7 @@ export class WoospmmClient {
   }
 
   private static async tryQueryOnChainInner(
-    ctx: WoospmmContext,
+    ctx: WoofiContext,
     amount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
@@ -106,13 +106,13 @@ export class WoospmmClient {
   }
 
   public static async swap(
-    ctx: WoospmmContext,
+    ctx: WoofiContext,
     fromAmount: BN,
     minToAmount: BN,
-    fromToken: WOOSPMM_TOKENS,
-    toToken: WOOSPMM_TOKENS,
+    fromToken: WOOFI_TOKENS,
+    toToken: WOOFI_TOKENS,
   ): Promise<TransactionInstruction[]> {
-    return WoospmmClient.swapInner(
+    return WoofiClient.swapInner(
       ctx,
       fromAmount,
       minToAmount,
@@ -131,12 +131,12 @@ export class WoospmmClient {
   // TOKEN_MINTS["USDC"], CHAINLINK_FEED_ACCOUNT["USDC"], WOOPOOL_VAULTS["USDC"])
   /**
    * Swap instruction builder method with resolveATA & additional checks.
-   * @param ctx - WoospmmContext object for the current environment.
+   * @param ctx - WoofiContext object for the current environment.
    * @param amount - {@link SwapAsyncParams}
    * @returns
    */
   private static async swapInner(
-    ctx: WoospmmContext,
+    ctx: WoofiContext,
     amount: BN,
     minToAmount: BN,
     fromTokenMint: PublicKey,
@@ -231,7 +231,7 @@ export class WoospmmClient {
     const tx = await swapIx(ctx.program, swapParams);
     instructions.push(tx);
 
-    if (WoospmmClient.isAutoUnwrapWSOL()) {
+    if (WoofiClient.isAutoUnwrapWSOL()) {
       if (toTokenMint.equals(NATIVE_MINT)) {
         instructions.push(
           // close wSol account instruction

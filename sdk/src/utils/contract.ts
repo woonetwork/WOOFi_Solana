@@ -1,8 +1,8 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
-import { Woospmm } from "../artifacts/woospmm";
-import { WoospmmContext } from "../context";
+import { Woofi } from "../artifacts/woofi";
+import { WoofiContext } from "../context";
 import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
 
   export const DEFAULT_PRICE_DECIMALS = 8;
@@ -51,7 +51,7 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     feedAccount: PublicKey,
     tokenMint: PublicKey,
     priceUpdate: PublicKey,
-    program: Program<Woospmm> 
+    program: Program<Woofi> 
   ) => {
     const [oracle] = await PublicKey.findProgramAddressSync(
       [Buffer.from('pythoracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
@@ -238,7 +238,7 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
   }
 
   export const tryCalculate = async(
-    ctx: WoospmmContext,
+    ctx: WoofiContext,
     fromAmount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,

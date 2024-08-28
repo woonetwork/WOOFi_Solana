@@ -4,19 +4,19 @@ import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
 import { ConfirmOptions, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
-import { Woospmm } from "../target/types/woospmm";
+import { Woofi } from "../target/types/woofi";
 import { assert } from "chai";
 import Decimal from "decimal.js";
 import moment from "moment";
 import * as global from "./global";
 import { createAssociatedTokenAccount, transferToken } from "./utils/token";
 
-describe("woospmm_swap", () => {
+describe("woofi_swap", () => {
   // Configure the client to use the local cluster.
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  const program = anchor.workspace.Woospmm as Program<Woospmm>;
+  const program = anchor.workspace.Woofi as Program<Woofi>;
 
   let cloracle_price: BN;
   let cloracle_decimal: Number;

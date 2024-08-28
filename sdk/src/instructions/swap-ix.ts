@@ -2,10 +2,10 @@ import { Program } from "@coral-xyz/anchor";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import BN from "bn.js";
-import { Woospmm } from "../artifacts/woospmm";
+import { Woofi } from "../artifacts/woofi";
 
 /**
- * Raw parameters and accounts to swap on a Woospmm
+ * Raw parameters and accounts to swap on a Woofi
  *
  * @category Instruction Types
  * @param amount - The amount of input token to swap from.
@@ -59,7 +59,7 @@ export type SwapParams = {
  * @param params - {@link SwapParams}
  * @returns - Instruction to perform the action.
  */
-export function swapIx(program: Program<Woospmm>, params: SwapParams): Promise<TransactionInstruction> {
+export function swapIx(program: Program<Woofi>, params: SwapParams): Promise<TransactionInstruction> {
   const {
     amount,
     minToAmount,
