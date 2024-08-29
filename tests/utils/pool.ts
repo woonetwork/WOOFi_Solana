@@ -2,17 +2,12 @@ import * as anchor from "@coral-xyz/anchor";
 import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
-import { ConfirmOptions, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { ConfirmOptions, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
 import { getLogs } from "@solana-developers/helpers";
 import { Woofi } from "../../target/types/woofi";
-import { assert } from "chai";
-import Decimal from "decimal.js";
-import moment from "moment";
-import * as global from "../global";
-import { createAssociatedTokenAccount, transferToken } from "./token";
-import { getPythPrice, PythToken } from "./pyth";
-import { quotePriceUpdate, quoteTokenMint, usdcTokenMint } from "./test-consts";
+import { getPythPrice } from "./pyth";
+import { quotePriceUpdate, quoteTokenMint, SupportedToken } from "./test-consts";
 
 export class PoolUtils {
   public provider;
@@ -95,7 +90,7 @@ export class PoolUtils {
     return [price, feasible];
   };
 
-  public createOracle = async (token: PythToken, tokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
+  public createOracle = async (token: SupportedToken, tokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       this.program.programId

@@ -3,6 +3,10 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { BN } from "bn.js";
 import { ConfirmOptions } from "@solana/web3.js";
 
+export enum SupportedToken {
+    USDC,
+    SOL
+}
 
 export const TEST_TOKEN_PROGRAM_ID = new anchor.web3.PublicKey(TOKEN_PROGRAM_ID.toString());
 

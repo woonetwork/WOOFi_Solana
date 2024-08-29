@@ -6,9 +6,8 @@ import { LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction
 import { getLogs } from "@solana-developers/helpers";
 import { assert } from "chai";
 import { createAssociatedTokenAccount, transferToken } from "./utils/token";
-import { getPythPrice, PythToken } from "./utils/pyth";
 import { PoolUtils } from "./utils/pool";
-import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
+import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres, SupportedToken } from "./utils/test-consts";
 
 describe("woofi_swap", () => {
   const poolUtils = new PoolUtils();
@@ -25,7 +24,7 @@ describe("woofi_swap", () => {
 
   describe("#create_usdc_pool()", async () => {
     it("creates usdc pool", async () => {
-      let usdcOracle = await poolUtils.createOracle(PythToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      let usdcOracle = await poolUtils.createOracle(SupportedToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
       assert.ok(
         usdcOracle.authority.equals(provider.wallet.publicKey)
       );
@@ -39,7 +38,7 @@ describe("woofi_swap", () => {
   
   describe("#create_sol_pool()", async () => {
     it("creates sol pool", async () => {
-      let solOracle = await poolUtils.createOracle(PythToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
+      let solOracle = await poolUtils.createOracle(SupportedToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
         solOracle.authority.equals(provider.wallet.publicKey)
       );

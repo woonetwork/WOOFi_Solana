@@ -1,9 +1,10 @@
 import { PriceFeed, PriceServiceConnection } from "@pythnetwork/price-service-client";
 import { BN } from "@coral-xyz/anchor";
 import moment from "moment";
+import { SupportedToken } from "./test-consts";
 
 
-export async function runQuery(): Promise<PriceFeed[]> {
+export async function runQuery(): Promise<PriceFeed[] | undefined> {
     // Get the Stable Hermes service URL from https://docs.pyth.network/price-feeds/api-instances-and-providers/hermes
     const connection = new PriceServiceConnection("https://hermes.pyth.network");
     
@@ -16,11 +17,6 @@ export async function runQuery(): Promise<PriceFeed[]> {
     return connection.getLatestPriceFeeds(priceIds);
 }
 
-export enum PythToken {
-    USDC,
-    SOL
-}
-
 export type PythPrice = {
     price: BN,
     decimal: number,
@@ -29,15 +25,15 @@ export type PythPrice = {
     rangeMin: BN,
 }
 
-export async function getPythPrice(token: PythToken): Promise<PythPrice> {
-    const pythPriceFeed = await runQuery();
+export async function getPythPrice(token: SupportedToken): Promise<PythPrice> {
+    const pythPriceFeed = await runQuery() ?? [];
     const solPrice = pythPriceFeed[0].getPriceNoOlderThan(1000);
     console.log("solPrice", solPrice);
 
     const usdcPrice = pythPriceFeed[1].getPriceNoOlderThan(1000);
     console.log("usdcPrice", usdcPrice);
 
-    const tokenPrice = token == PythToken.SOL ? solPrice : usdcPrice;
+    const tokenPrice = token == SupportedToken.SOL ? solPrice : usdcPrice;
 
     // use usdc as quote token
     const decimal = Math.abs(tokenPrice.expo);
