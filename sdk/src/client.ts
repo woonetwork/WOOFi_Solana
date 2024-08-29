@@ -4,8 +4,8 @@ import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.j
 import { SwapParams, swapIx } from "./instructions/swap-ix"
 import { WoofiContext } from "./context";
 import { TryQuerySwapParams, tryQuerySwapIx } from "./instructions/try-query-swap-ix";
-import { WOOFI_TOKENS, TOKEN_MINTS, CHAINLINK_FEED_ACCOUNT, WOOPOOL_VAULTS, PYTH_FEED_ACCOUNT, PYTH_PRICE_UPDATE_ACCOUNT, CHAINLINK_PROGRAM_ACCOUNT } from "./utils/constants";
-import { generatePoolParams, QueryResult, tryCalculate } from "./utils/contract";
+import { WOOFI_TOKENS, TOKEN_MINTS, PYTH_FEED_ACCOUNT, PYTH_PRICE_UPDATE_ACCOUNT, QUOTE_TOKEN_MINT, QuoteTokenMint, QuotePriceUpdate } from "./utils/constants";
+import { generatePoolParams, generateQuoteParams, QueryResult, tryCalculate } from "./utils/contract";
 
 export class WoofiClient {
   private static autoUnwrapWSOL: boolean = true;
@@ -31,12 +31,15 @@ export class WoofiClient {
     return tryCalculate(
       ctx, 
       fromAmount,
+      fromToken,
       new PublicKey(TOKEN_MINTS[fromToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[fromToken]),
       new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[fromToken]),
+      toToken,
       new PublicKey(TOKEN_MINTS[toToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[toToken]),
-      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[toToken])
+      new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[toToken]),
+      new PublicKey(QUOTE_TOKEN_MINT)
     )
   }
 
@@ -58,24 +61,6 @@ export class WoofiClient {
     )
   }
 
-  public static async tryQueryOnChainChainlink(
-    ctx: WoofiContext,
-    fromAmount: BN,
-    fromToken: WOOFI_TOKENS,
-    toToken: WOOFI_TOKENS
-  ): Promise<TransactionInstruction> {
-    return WoofiClient.tryQueryOnChainInner(
-      ctx, 
-      fromAmount,
-      new PublicKey(TOKEN_MINTS[fromToken]),
-      new PublicKey(CHAINLINK_FEED_ACCOUNT[fromToken]),
-      new PublicKey(CHAINLINK_PROGRAM_ACCOUNT),
-      new PublicKey(TOKEN_MINTS[toToken]),
-      new PublicKey(CHAINLINK_FEED_ACCOUNT[toToken]),
-      new PublicKey(CHAINLINK_PROGRAM_ACCOUNT)
-    )
-  }
-
   private static async tryQueryOnChainInner(
     ctx: WoofiContext,
     amount: BN,
@@ -86,19 +71,17 @@ export class WoofiClient {
     toOracleFeedAccount: PublicKey,
     toPriceUpdate: PublicKey
   ): Promise<TransactionInstruction> {
-    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, fromPriceUpdate, ctx.program);
-    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, toPriceUpdate, ctx.program);
-
+    const fromPoolParams = await generatePoolParams(fromTokenMint, QuoteTokenMint, fromOracleFeedAccount, fromPriceUpdate, ctx.program);
+    const toPoolParams = await generatePoolParams(toTokenMint, QuoteTokenMint, toOracleFeedAccount, toPriceUpdate, ctx.program);    
     const tryQuerySwapParams: TryQuerySwapParams = {
       amount,
-      oracleFrom: fromPoolParams.oracle,
       wooracleFrom: fromPoolParams.wooracle,
       woopoolFrom: fromPoolParams.woopool,
       priceUpdateFrom: fromPriceUpdate,
-      oracleTo: toPoolParams.oracle,
       wooracleTo: toPoolParams.wooracle,
       woopoolTo: toPoolParams.woopool,
-      priceUpdateTo: toPriceUpdate
+      priceUpdateTo: toPriceUpdate,
+      quotePriceUpdate: QuotePriceUpdate
     }
 
     const tx = tryQuerySwapIx(ctx.program, tryQuerySwapParams);
@@ -118,11 +101,9 @@ export class WoofiClient {
       minToAmount,
       new PublicKey(TOKEN_MINTS[fromToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[fromToken]),
-      new PublicKey(WOOPOOL_VAULTS[fromToken]),
       new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[fromToken]),
       new PublicKey(TOKEN_MINTS[toToken]),
       new PublicKey(PYTH_FEED_ACCOUNT[toToken]),
-      new PublicKey(WOOPOOL_VAULTS[toToken]),
       new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT[toToken])
     )
   }
@@ -141,17 +122,16 @@ export class WoofiClient {
     minToAmount: BN,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
-    fromPoolVault: PublicKey,
     fromPriceUpdate: PublicKey,
     toTokenMint: PublicKey,
     toOracleFeedAccount: PublicKey,
-    toPoolVault: PublicKey,
     toPriceUpdate: PublicKey
   ): Promise<TransactionInstruction[]> {
     const instructions: TransactionInstruction[] = [];
 
-    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, fromPriceUpdate, ctx.program);
-    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, toPriceUpdate, ctx.program);
+    const fromPoolParams = await generatePoolParams(fromTokenMint, QuoteTokenMint, fromOracleFeedAccount, fromPriceUpdate, ctx.program);
+    const toPoolParams = await generatePoolParams(toTokenMint, QuoteTokenMint, toOracleFeedAccount, toPriceUpdate, ctx.program);
+    const quoteParams = await generateQuoteParams(ctx.program);
 
     const tokenOwnerAccountFrom = getAssociatedTokenAddressSync(fromTokenMint, ctx.wallet.publicKey);
     const tokenOwnerAccountTo = getAssociatedTokenAddressSync(toTokenMint, ctx.wallet.publicKey);
@@ -214,18 +194,20 @@ export class WoofiClient {
       amount,
       minToAmount,
       owner: ctx.wallet.publicKey,
-      oracleFrom: fromPoolParams.oracle,
       wooracleFrom: fromPoolParams.wooracle,
       woopoolFrom: fromPoolParams.woopool,
       tokenOwnerAccountFrom,
-      tokenVaultFrom: fromPoolVault,
+      tokenVaultFrom: fromPoolParams.tokenVault,
       priceUpdateFrom: fromPriceUpdate,
-      oracleTo: toPoolParams.oracle,
       wooracleTo: toPoolParams.wooracle,
       woopoolTo: toPoolParams.woopool,
       tokenOwnerAccountTo,
-      tokenVaultTo: toPoolVault,
-      priceUpdateTo: toPriceUpdate
+      tokenVaultTo: toPoolParams.tokenVault,
+      priceUpdateTo: toPriceUpdate,
+      woopoolQuote: quoteParams.woopool,
+      quotePriceUpdate: QuotePriceUpdate,
+      quoteTokenVault: quoteParams.tokenVault,
+      rebateTo: ctx.wallet.publicKey
     }
 
     const tx = await swapIx(ctx.program, swapParams);

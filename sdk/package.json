@@ -1,7 +1,7 @@
 {
   "name": "woofi-sdk",
   "version": "1.0.0",
-  "description": "Typescript SDK to interact with WooSPMM program.",
+  "description": "Typescript SDK to interact with WooFi program.",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,6 +12,7 @@
     "decimal.js": "^10.4.3"
   },
   "dependencies": {
+    "@pythnetwork/price-service-client": "^1.9.0",
     "tiny-invariant": "^1.3.1"
   },
   "devDependencies": {
@@ -56,7 +57,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/woonetwork/WooSPMM_V3_Solana.git"
+    "url": "git+https://github.com/woonetwork/WOOFi_Solana.git"
   },
   "keywords": [
     "solana",

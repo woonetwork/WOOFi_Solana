@@ -11,12 +11,10 @@ import { Woofi } from "../artifacts/woofi";
  * @param amount - The amount of input token to swap from.
  * @param minToAmount - The minimum amount of token swap to.
  * @param owner - PublicKey of the user wallet want to do the swap.
- * @param oracleFrom - PublicKey for the outside oracle account for from woopool.
  * @param wooracleFrom - PublicKey for the wooracle account for from woopool.
  * @param woopoolFrom - PublicKey for the woopool that the swap will occur on from.
  * @param tokenOwnerAccountFrom - PublicKey for the associated token account for token from in the collection wallet.
  * @param tokenVaultFrom - PublicKey for the token vault for from woopool.
- * @param oracleTo - PublicKey for the outside oracle account for to woopool.
  * @param wooracleTo - PublicKey for the wooracle account for to woopool.
  * @param woopoolTo - PublicKey for the woopool that the swap will occur on to.
  * @param tokenOwnerAccountTo - PublicKey for the associated token account for token to in the collection wallet.
@@ -24,21 +22,23 @@ import { Woofi } from "../artifacts/woofi";
  * @param priceUpdate - PublicKey for the pyth oracle update.
  */
 export type SwapParams = {
-  amount: BN;
-  minToAmount: BN;
-  owner: PublicKey;
-  oracleFrom: PublicKey;
-  wooracleFrom: PublicKey;
-  woopoolFrom: PublicKey;
-  tokenOwnerAccountFrom: PublicKey;
-  tokenVaultFrom: PublicKey;
-  priceUpdateFrom: PublicKey;
-  oracleTo: PublicKey;
-  wooracleTo: PublicKey;
-  woopoolTo: PublicKey;
-  tokenOwnerAccountTo: PublicKey;
-  tokenVaultTo: PublicKey;
-  priceUpdateTo: PublicKey;
+  amount: BN,
+  minToAmount: BN,
+  owner: PublicKey,
+  wooracleFrom: PublicKey,
+  woopoolFrom: PublicKey,
+  tokenOwnerAccountFrom: PublicKey,
+  tokenVaultFrom: PublicKey,
+  priceUpdateFrom: PublicKey,
+  wooracleTo: PublicKey,
+  woopoolTo: PublicKey,
+  tokenOwnerAccountTo: PublicKey,
+  tokenVaultTo: PublicKey,
+  priceUpdateTo: PublicKey,
+  woopoolQuote: PublicKey,
+  quotePriceUpdate: PublicKey,
+  quoteTokenVault: PublicKey,
+  rebateTo: PublicKey,
 };
 
 /**
@@ -64,18 +64,20 @@ export function swapIx(program: Program<Woofi>, params: SwapParams): Promise<Tra
     amount,
     minToAmount,
     owner,
-    oracleFrom,
     wooracleFrom,
     woopoolFrom,
     tokenOwnerAccountFrom,
     tokenVaultFrom,
     priceUpdateFrom,
-    oracleTo,
     wooracleTo,
     woopoolTo,
     tokenOwnerAccountTo,
     tokenVaultTo,
-    priceUpdateTo
+    priceUpdateTo,
+    woopoolQuote,
+    quotePriceUpdate,
+    quoteTokenVault,
+    rebateTo,
   } = params;
 
   const ix = program
@@ -84,18 +86,20 @@ export function swapIx(program: Program<Woofi>, params: SwapParams): Promise<Tra
     .accounts({
       tokenProgram: TOKEN_PROGRAM_ID,
       owner,
-      oracleFrom,
       wooracleFrom,
       woopoolFrom,
       tokenOwnerAccountFrom,
       tokenVaultFrom,
       priceUpdateFrom,
-      oracleTo,
       wooracleTo,
       woopoolTo,
       tokenOwnerAccountTo,
       tokenVaultTo,
-      priceUpdateTo
+      priceUpdateTo,
+      woopoolQuote,
+      quotePriceUpdate,
+      quoteTokenVault,
+      rebateTo,
     })
     .instruction();
 

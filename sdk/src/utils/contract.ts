@@ -1,9 +1,9 @@
 import { BN, Program } from "@coral-xyz/anchor";
-import { NATIVE_MINT, createAssociatedTokenAccountInstruction, createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { PublicKey, SystemProgram, TransactionInstruction } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { Woofi } from "../artifacts/woofi";
 import { WoofiContext } from "../context";
-import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
+import { QuoteFeedAccount, QuotePriceUpdate, QuoteTokenMint, WOOFI_TOKENS } from "../utils/constants";
+import { getPythPrice } from "./pyth";
 
   export const DEFAULT_PRICE_DECIMALS = 8;
   export const DEFAULT_QUOTE_DECIMALS = 6;
@@ -47,26 +47,31 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
   const TENPOW18U128 = new BN(10).pow(new BN(18));
   const TE5U128 = new BN(10).pow(new BN(5));
 
-  export const generatePoolParams = async(
-    feedAccount: PublicKey,
-    tokenMint: PublicKey,
-    priceUpdate: PublicKey,
-    program: Program<Woofi> 
+  export const generateQuoteParams = async(
+    program: Program<Woofi>
   ) => {
-    const [oracle] = await PublicKey.findProgramAddressSync(
-      [Buffer.from('pythoracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
-      program.programId
-    );
-  
+    return generatePoolParams(QuoteTokenMint, QuoteTokenMint, QuoteFeedAccount, QuotePriceUpdate, program);
+  }
+
+  export const generatePoolParams = async(
+    tokenMint: PublicKey,
+    quoteTokenMint: PublicKey,
+    feedAccount: PublicKey,
+    priceUpdate: PublicKey,
+    program: Program<Woofi>
+  ) => {
     const [wooracle] = await PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), feedAccount.toBuffer(), priceUpdate.toBuffer()],
+      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
-  
+
     const [woopool] = await PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), tokenMint.toBuffer()],
+      [Buffer.from('woopool'), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
       program.programId
     );
+
+    // woopool data should already be created after init
+    const {tokenVault} = await program.account.wooPool.fetch(woopool);
   
     // woopool data should already be created after init
     // due to anchor 0.29's js wrapper bug, and consider performance
@@ -74,23 +79,25 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     // const {tokenVault} = await program.account.wooPool.fetch(woopool);
   
     return {
-      oracle,
       wooracle,
-      woopool
+      woopool,
+      tokenVault
     }
   }
   
-  export const getWooPrice = (
-    oracle: any,
+  export const getWooPrice = async (
+    token: WOOFI_TOKENS,
     wooracle: any,
-  ) : GetStateResult => {
+  ) : Promise<GetStateResult> => {
     const now = new Date().getTime();
+
+    let pythPrice = await getPythPrice(token);
   
     const wo_price = wooracle.price;
     const wo_timestamp = wooracle.updatedAt;
     const bound = wooracle.bound;
   
-    const clo_price = oracle.round;
+    const clo_price = pythPrice.price;
     const wo_feasible = !clo_price.eq(new BN(0)) && new BN(now).lte(wo_timestamp.add(wooracle.staleDuration));
     const wo_price_in_bound = !clo_price.eq(new BN(0)) &&
     ((clo_price.mul(TENPOW18U128.sub(bound)).div(TENPOW18U128)).lte(wo_price) && wo_price.lte(clo_price.mul(TENPOW18U128.add(bound)).div(TENPOW18U128)));
@@ -102,7 +109,7 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
         price_out = wo_price;
         feasible_out = wo_price_in_bound;
     } else {
-        if (oracle.outerPreferred) {
+        if (wooracle.outerPreferred) {
             price_out = clo_price;
         } else {
             price_out = new BN(0);
@@ -240,25 +247,26 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
   export const tryCalculate = async(
     ctx: WoofiContext,
     fromAmount: BN,
+    fromToken: WOOFI_TOKENS,
     fromTokenMint: PublicKey,
     fromOracleFeedAccount: PublicKey,
     fromPriceUpdate: PublicKey,
+    toToken: WOOFI_TOKENS,
     toTokenMint: PublicKey,
     toOracleFeedAccount: PublicKey,
-    toPriceUpdate: PublicKey
+    toPriceUpdate: PublicKey,
+    quoteTokenMint: PublicKey,
   ): Promise<QueryResult> => {
-    const fromPoolParams = await generatePoolParams(fromOracleFeedAccount, fromTokenMint, fromPriceUpdate, ctx.program);
-    const oracle_from = await ctx.program.account.oracle.fetch(fromPoolParams.oracle);
+    const fromPoolParams = await generatePoolParams(fromTokenMint, quoteTokenMint, fromOracleFeedAccount, fromPriceUpdate, ctx.program);
     const wooracle_from = await ctx.program.account.woOracle.fetch(fromPoolParams.wooracle);
     const woopool_from = await ctx.program.account.wooPool.fetch(fromPoolParams.woopool);
 
-    const toPoolParams = await generatePoolParams(toOracleFeedAccount, toTokenMint, toPriceUpdate, ctx.program);
+    const toPoolParams = await generatePoolParams(toTokenMint, quoteTokenMint, toOracleFeedAccount, toPriceUpdate, ctx.program);
     const wooracle_to = await ctx.program.account.woOracle.fetch(toPoolParams.wooracle);
-    const oracle_to = await ctx.program.account.oracle.fetch(toPoolParams.oracle);
     const woopool_to = await ctx.program.account.wooPool.fetch(toPoolParams.woopool);
 
-    let state_from = getWooPrice(oracle_from, wooracle_from);
-    let state_to = getWooPrice(oracle_to, wooracle_to);
+    let state_from = await getWooPrice(fromToken, wooracle_from);
+    let state_to = await getWooPrice(toToken, wooracle_to);
 
     let spread = state_from.spread.gt(state_to.spread) ? state_from.spread : state_to.spread;
     let fee_rate = woopool_from.feeRate > woopool_to.feeRate ? new BN(woopool_from.feeRate) : new BN(woopool_to.feeRate);
@@ -267,8 +275,8 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     state_to.spread = spread;
 
     let decimals_from = newDecimals(
-        oracle_from.decimals,
-        DEFAULT_QUOTE_DECIMALS, 
+        wooracle_from.priceDecimals,
+        wooracle_from.quoteDecimals,
         woopool_from.baseDecimals
     );
 
@@ -300,8 +308,8 @@ import { CHAINLINK_PROGRAM_ACCOUNT } from "../utils/constants";
     // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = newDecimals(
-        oracle_to.decimals,
-        DEFAULT_QUOTE_DECIMALS, 
+        wooracle_to.priceDecimals,
+        wooracle_to.quoteDecimals,
         woopool_to.baseDecimals
     );
 

@@ -8,24 +8,21 @@ import { Woofi } from "../artifacts/woofi";
  *
  * @category Instruction Types
  * @param amount - The amount of input token to swap from.
- * @param oracleFrom - PublicKey for the outside oracle account for from woopool.
  * @param wooracleFrom - PublicKey for the wooracle account for from woopool.
  * @param woopoolFrom - PublicKey for the woopool that the swap will occur on from.
- * @param oracleTo - PublicKey for the outside oracle account for to woopool.
  * @param wooracleTo - PublicKey for the wooracle account for to woopool.
  * @param woopoolTo - PublicKey for the woopool that the swap will occur on to.
  * @param priceUpdate - PublicKey for the pyth oracle update.
  */
 export type TryQuerySwapParams = {
-  amount: BN;
-  oracleFrom: PublicKey;
-  wooracleFrom: PublicKey;
-  woopoolFrom: PublicKey;
-  priceUpdateFrom: PublicKey;
-  oracleTo: PublicKey;
-  wooracleTo: PublicKey;
-  woopoolTo: PublicKey;
-  priceUpdateTo: PublicKey;
+  amount: BN,
+  wooracleFrom: PublicKey,
+  woopoolFrom: PublicKey,
+  priceUpdateFrom: PublicKey,
+  wooracleTo: PublicKey,
+  woopoolTo: PublicKey,
+  priceUpdateTo: PublicKey,
+  quotePriceUpdate: PublicKey,
 };
 
 /**
@@ -49,28 +46,26 @@ export type TryQuerySwapParams = {
 export function tryQuerySwapIx(program: Program<Woofi>, params: TryQuerySwapParams): Promise<TransactionInstruction> {
   const {
     amount,
-    oracleFrom,
     wooracleFrom,
     woopoolFrom,
     priceUpdateFrom,
-    oracleTo,
     wooracleTo,
     woopoolTo,
-    priceUpdateTo
+    priceUpdateTo,
+    quotePriceUpdate
   } = params;
 
   const ix = program
     .methods
     .tryQuery(amount)
     .accounts({
-      oracleFrom,
       wooracleFrom,
       woopoolFrom,
       priceUpdateFrom,
-      oracleTo,
       wooracleTo,
       woopoolTo,
-      priceUpdateTo
+      priceUpdateTo,
+      quotePriceUpdate
     })
     .instruction();
 

@@ -8,6 +8,8 @@
 //   stSOL: "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
 // };
 
+import { PublicKey } from "@solana/web3.js";
+
 export const enum WOOFI_TOKENS {
   SOL = "SOL",
   USDC = "USDC"
@@ -33,14 +35,14 @@ export const PYTH_FEED_ACCOUNT = {
   USDC: "Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD"
 };
 
+export const QUOTE_TOKEN_MINT = TOKEN_MINTS.USDC;
+export const QuoteTokenMint = new PublicKey(QUOTE_TOKEN_MINT);
+export const QuotePriceUpdate = new PublicKey(PYTH_PRICE_UPDATE_ACCOUNT.USDC);
+export const QuoteFeedAccount = new PublicKey(PYTH_FEED_ACCOUNT.USDC);
+
 export const CHAINLINK_PROGRAM_ACCOUNT = "HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny";
 
 export const CHAINLINK_FEED_ACCOUNT = {
   SOL: "99B2bTijsU6f1GCT73HmdR7HCFFjGMBcPZY6jZ96ynrR",
   USDC: "2EmfL3MqL3YHABudGNmajjCpR13NNEn9Y4LWxbDm6SwR"
 };
-
-export const WOOPOOL_VAULTS = {
-  SOL: "5mCjE2f7UTnxjFfQxvBLa4EPhtD5uSACbT4R9iphz6Yx",
-  USDC: "7ogtsmy2w44dSRTvSQdBFjbKrBazrJvM7wMZJU67z171"
-}
