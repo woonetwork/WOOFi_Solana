@@ -84,6 +84,18 @@ import { getPythPrice } from "./pyth";
       tokenVault
     }
   }
+
+  export const getOraclePrice = async(
+    token: WOOFI_TOKENS,
+  ) : Promise<BN> => {
+    let basePrice = await getPythPrice(token);
+    let quotePrice = await getPythPrice(WOOFI_TOKENS.USDC);
+
+    let price = basePrice.price.mul(new BN(10 ** quotePrice.decimal)).div(quotePrice.price);
+
+    // console.log('pythPrice base after quote:', price.toNumber());
+    return price;
+  }
   
   export const getWooPrice = async (
     token: WOOFI_TOKENS,
@@ -91,13 +103,13 @@ import { getPythPrice } from "./pyth";
   ) : Promise<GetStateResult> => {
     const now = new Date().getTime();
 
-    let pythPrice = await getPythPrice(token);
+    let pythPrice = await getOraclePrice(token);
   
     const wo_price = wooracle.price;
     const wo_timestamp = wooracle.updatedAt;
     const bound = wooracle.bound;
   
-    const clo_price = pythPrice.price;
+    const clo_price = pythPrice;
     const wo_feasible = !clo_price.eq(new BN(0)) && new BN(now).lte(wo_timestamp.add(wooracle.staleDuration));
     const wo_price_in_bound = !clo_price.eq(new BN(0)) &&
     ((clo_price.mul(TENPOW18U128.sub(bound)).div(TENPOW18U128)).lte(wo_price) && wo_price.lte(clo_price.mul(TENPOW18U128.add(bound)).div(TENPOW18U128)));
