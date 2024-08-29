@@ -8,14 +8,13 @@ pub fn balance<'info>(
     woopool: &Account<'info, WooPool>,
     token_vault: &Account<'info, TokenAccount>,
 ) -> Result<u128> {
-    let balance: u128;
-    if woopool.token_mint == woopool.quote_token_mint {
-        balance = (token_vault.amount as u128)
+    let balance: u128 = if woopool.token_mint == woopool.quote_token_mint {
+        (token_vault.amount as u128)
             .checked_sub(woopool.unclaimed_fee)
-            .ok_or(ErrorCode::ReserveLessThanFee)?;
+            .ok_or(ErrorCode::ReserveLessThanFee)?
     } else {
-        balance = token_vault.amount as u128;
-    }
+        token_vault.amount as u128
+    };
 
     Ok(balance)
 }

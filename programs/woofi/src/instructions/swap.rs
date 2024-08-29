@@ -23,6 +23,7 @@ pub struct Swap<'info> {
     )]
     wooracle_from: Account<'info, WOOracle>,
     #[account(mut,
+        constraint = !woopool_from.paused,
         constraint = woopool_from.authority == wooracle_from.authority,
         constraint = woopool_from.quote_token_mint == wooracle_from.quote_token_mint
     )]
@@ -48,6 +49,7 @@ pub struct Swap<'info> {
     )]
     wooracle_to: Account<'info, WOOracle>,
     #[account(mut,
+        constraint = !woopool_to.paused,
         constraint = woopool_to.authority == woopool_from.authority,
         constraint = woopool_to.authority == wooracle_to.authority,
         constraint = woopool_to.quote_token_mint == woopool_from.quote_token_mint,
@@ -70,6 +72,7 @@ pub struct Swap<'info> {
     price_update_to: Account<'info, PriceUpdateV2>,
 
     #[account(mut,
+        constraint = !woopool_quote.paused,
         constraint = woopool_quote.token_mint == woopool_from.quote_token_mint,
         constraint = woopool_quote.authority == woopool_from.authority,
     )]

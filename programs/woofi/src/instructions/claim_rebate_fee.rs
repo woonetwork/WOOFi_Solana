@@ -31,7 +31,7 @@ pub struct ClaimRebateFee<'info> {
           quote_token_mint.key().as_ref()
         ],
         bump,
-        constraint = rebate_pool.enabled,
+        constraint = !rebate_pool.paused,
         constraint = rebate_pool.token_mint == quote_token_mint.key(),
         constraint = rebate_pool.authority == woopool_quote.authority,
     )]

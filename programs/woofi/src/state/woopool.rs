@@ -38,6 +38,8 @@ use anchor_lang::prelude::*;
 pub struct WooPool {
     pub woopool_bump: [u8; 1], // 1
 
+    pub paused: bool, // 1
+
     pub authority: Pubkey, // 32
 
     pub admin_authority: Pubkey, // 32
@@ -72,7 +74,8 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN: usize = 8 + (1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
+    pub const LEN: usize =
+        8 + (1 + 1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
 
     pub fn seeds(&self) -> [&[u8]; 4] {
         [
@@ -102,6 +105,7 @@ impl WooPool {
 
         self.wooracle = wooracle;
 
+        self.paused = false;
         self.fee_rate = 0;
         self.reserve = 0;
         self.unclaimed_fee = 0;
@@ -126,6 +130,12 @@ impl WooPool {
 
     pub fn update_fee_authority(&mut self, fee_authority: Pubkey) -> Result<()> {
         self.fee_authority = fee_authority;
+
+        Ok(())
+    }
+
+    pub fn set_paused(&mut self, paused: bool) -> Result<()> {
+        self.paused = paused;
 
         Ok(())
     }

@@ -57,7 +57,7 @@ pub struct RebatePool {
     /// Number of base 10 digits to the right of the decimal place.
     pub base_decimals: u8, // 1
 
-    pub enabled: bool, // 1
+    pub paused: bool, // 1
 }
 
 impl RebatePool {
@@ -94,7 +94,7 @@ impl RebatePool {
 
         self.base_decimals = base_decimals;
 
-        self.enabled = true;
+        self.paused = false;
 
         Ok(())
     }
@@ -108,8 +108,8 @@ impl RebatePool {
         Ok(())
     }
 
-    pub fn set_enabled(&mut self, enabled: bool) -> Result<()> {
-        self.enabled = enabled;
+    pub fn set_paused(&mut self, paused: bool) -> Result<()> {
+        self.paused = paused;
 
         Ok(())
     }
