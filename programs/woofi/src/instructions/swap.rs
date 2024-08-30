@@ -215,7 +215,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         from_amount,
         min_to_amount,
         to_amount,
-        swap_vol: to_amount + swap_fee,
+        swap_vol: quote_amount + swap_fee,
         swap_fee,
     });
 
