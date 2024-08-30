@@ -211,11 +211,12 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         token_owner_account_to: token_owner_account_to.key(),
         token_vault_to: token_vault_to.key(),
         price_update_to: price_update_to.key(),
+        rebate_to: rebate_to.key(),
         from_amount,
         min_to_amount,
         to_amount,
+        swap_vol: to_amount + swap_fee,
         swap_fee,
-        rebate_to: rebate_to.key(),
     });
 
     Ok(())

@@ -83,11 +83,12 @@ pub struct SwapEvent {
     pub token_owner_account_to: Pubkey,
     pub token_vault_to: Pubkey,
     pub price_update_to: Pubkey,
+    pub rebate_to: Pubkey,
     pub from_amount: u128,
     pub min_to_amount: u128,
     pub to_amount: u128,
+    pub swap_vol: u128,
     pub swap_fee: u128,
-    pub rebate_to: Pubkey,
 }
 
 #[event]
