@@ -18,6 +18,7 @@ pub struct Deposit<'info> {
     token_owner_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut,
+        constraint = !woopool.paused,
         seeds = [
           WOOPOOL_SEED.as_bytes(),
           token_mint.key().as_ref(),

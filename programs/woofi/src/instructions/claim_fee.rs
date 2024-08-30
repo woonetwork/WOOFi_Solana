@@ -12,6 +12,7 @@ pub struct ClaimFee<'info> {
     pub authority: Signer<'info>,
 
     #[account(
+        constraint = !woopool.paused,
         seeds = [
           WOOPOOL_SEED.as_bytes(),
           token_mint.key().as_ref(),

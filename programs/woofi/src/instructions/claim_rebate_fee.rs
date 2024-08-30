@@ -11,6 +11,7 @@ pub struct ClaimRebateFee<'info> {
     pub rebate_authority: Signer<'info>,
 
     #[account(
+        constraint = !woopool_quote.paused,
         has_one = quote_token_mint,
         constraint = woopool_quote.token_mint == quote_token_mint.key(),
     )]
@@ -22,10 +23,10 @@ pub struct ClaimRebateFee<'info> {
     woopool_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(mut,
+        constraint = !rebate_pool.paused,
         has_one = rebate_authority,
         has_one = woopool_quote,
         has_one = quote_token_mint,
-        constraint = !rebate_pool.paused,
         constraint = rebate_pool.authority == woopool_quote.authority
     )]
     pub rebate_pool: Account<'info, RebatePool>,
