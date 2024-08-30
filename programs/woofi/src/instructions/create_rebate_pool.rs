@@ -6,12 +6,12 @@ use crate::constants::*;
 
 #[derive(Accounts)]
 pub struct CreateRebatePool<'info> {
-    pub token_mint: Account<'info, Mint>,
+    pub quote_token_mint: Account<'info, Mint>,
 
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    /// CHECK: Todo
+    /// CHECK: rebate authority which can claim rebate fees in this rebate pool
     pub rebate_authority: UncheckedAccount<'info>,
 
     #[account(
@@ -22,25 +22,22 @@ pub struct CreateRebatePool<'info> {
           REBATEPOOL_SEED.as_bytes(),
           rebate_authority.key().as_ref(),
           woopool_quote.key().as_ref(),
-          token_mint.key().as_ref()
+          quote_token_mint.key().as_ref()
         ],
         bump)]
     pub rebate_pool: Box<Account<'info, RebatePool>>,
 
     #[account(
         has_one = authority,
-        constraint = woopool_quote.token_mint == token_mint.key(),
-        constraint = woopool_quote.quote_token_mint == token_mint.key(),
+        has_one = quote_token_mint,
+        constraint = woopool_quote.token_mint == quote_token_mint.key(),
     )]
     woopool_quote: Box<Account<'info, WooPool>>,
 
-    #[account(
-        init,
-        payer = authority,
-        token::mint = token_mint,
-        token::authority = rebate_pool
-      )]
-    pub token_vault: Box<Account<'info, TokenAccount>>,
+    #[account(mut,
+        address = woopool_quote.token_vault
+    )]
+    woopool_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
@@ -51,19 +48,17 @@ pub struct CreateRebatePool<'info> {
 pub fn handler(ctx: Context<CreateRebatePool>) -> Result<()> {
     let authority = ctx.accounts.authority.key();
     let rebate_authority = ctx.accounts.rebate_authority.key();
-    let token_mint = ctx.accounts.token_mint.key();
-    let token_vault = ctx.accounts.token_vault.key();
-    let base_decimals = ctx.accounts.token_mint.decimals;
+    let quote_token_mint = ctx.accounts.quote_token_mint.key();
     let woopool_quote = ctx.accounts.woopool_quote.key();
+    let woopool_vault = ctx.accounts.woopool_vault.key();
 
     let rebate_pool = &mut ctx.accounts.rebate_pool;
 
     rebate_pool.initialize(
         authority,
         rebate_authority,
+        quote_token_mint,
         woopool_quote,
-        token_mint,
-        token_vault,
-        base_decimals,
+        woopool_vault,
     )
 }

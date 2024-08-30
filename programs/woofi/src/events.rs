@@ -32,11 +32,11 @@ pub struct ClaimFeeEvent {
 pub struct ClaimRebateFeeEvent {
     pub rebate_authority: Pubkey,
 
-    pub woopool: Pubkey,
+    pub woopool_quote: Pubkey,
+
+    pub woopool_vault: Pubkey,
 
     pub rebate_pool: Pubkey,
-
-    pub rebate_vault: Pubkey,
 
     pub claim_fee_to_account: Pubkey,
 
