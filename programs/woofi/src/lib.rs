@@ -72,15 +72,15 @@ pub mod woofi {
     }
 
     pub fn set_woo_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
-        instructions::set_woo_state::set_price_handler(ctx, price, true)
+        instructions::set_woo_state::set_price_handler(ctx, price)
     }
 
     pub fn set_woo_coeff(ctx: Context<SetWooState>, coeff: u64) -> Result<()> {
-        instructions::set_woo_state::set_coeff_handler(ctx, coeff, true)
+        instructions::set_woo_state::set_coeff_handler(ctx, coeff)
     }
 
     pub fn set_woo_spread(ctx: Context<SetWooState>, spread: u64) -> Result<()> {
-        instructions::set_woo_state::set_spread_handler(ctx, spread, true)
+        instructions::set_woo_state::set_spread_handler(ctx, spread)
     }
 
     pub fn set_out_preferred(ctx: Context<SetWooState>, out_preferred: bool) -> Result<()> {

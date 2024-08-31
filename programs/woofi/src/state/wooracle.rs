@@ -33,9 +33,9 @@
 
 use std::cmp::{max, min};
 
-use anchor_lang::prelude::*;
-
+use crate::errors::ErrorCode;
 use crate::{util::checked_mul_div, TENPOW18U128, TENPOW18U64};
+use anchor_lang::prelude::*;
 
 #[account]
 pub struct WOOracle {
@@ -166,27 +166,60 @@ impl WOOracle {
     }
 
     pub fn update_spread_for_new_price(&mut self, price: u128) -> Result<()> {
-        let pre_s: u64 = self.spread;
-        let pre_p: u128 = self.price;
+        let pre_s = self.spread;
+        let pre_p = self.price;
         if pre_p == 0 || price == 0 || pre_s >= TENPOW18U64 {
             // previous price or current price is 0, no action is needed
-        } else {
-            let max_p: u128 = max(price, pre_p);
-            let min_p: u128 = min(price, pre_p);
-            let calc_a: u128 = checked_mul_div(TENPOW18U128, min_p, max_p)?;
-            let anti_s: u128 = checked_mul_div(
-                calc_a,
-                TENPOW18U128,
-                TENPOW18U128.checked_sub(pre_s as u128).unwrap(),
-            )?;
-            if anti_s < TENPOW18U128 {
-                let new_s: u64 = TENPOW18U128.checked_sub(anti_s).unwrap() as u64;
-                if new_s > pre_s {
-                    self.spread = new_s;
-                }
+            return Ok(());
+        }
+
+        let max_p = max(price, pre_p);
+        let min_p = min(price, pre_p);
+        // let anti_spread = (TENPOW18U128 * TENPOW18U128 * min_price) / max_price / (TENPOW18U128 - pre_spread as u128);
+        let calc_a = checked_mul_div(TENPOW18U128, min_p, max_p)?;
+        let anti_s = checked_mul_div(
+            TENPOW18U128,
+            calc_a,
+            TENPOW18U128.checked_sub(pre_s as u128).unwrap(),
+        )?;
+        if anti_s < TENPOW18U128 {
+            let new_s = TENPOW18U128.checked_sub(anti_s).unwrap() as u64;
+            if new_s > pre_s {
+                self.update_spread(new_s)?;
             }
         }
 
         Ok(())
+    }
+
+    pub fn update_spread_for_new_price_and_spread(
+        &mut self,
+        price: u128,
+        spread: u64,
+    ) -> Result<()> {
+        //require(spread < 1e18, "!_spread");
+        require!(spread < TENPOW18U64, ErrorCode::WooOracleSpreadExceed);
+
+        let pre_s = self.spread;
+        let pre_p = self.price;
+        if pre_p == 0 || price == 0 || pre_s >= TENPOW18U64 {
+            // previous price or current price is 0, just use spread
+            return self.update_spread(spread);
+        }
+
+        let max_p = max(price, pre_p);
+        let min_p = min(price, pre_p);
+        let calc_a = checked_mul_div(TENPOW18U128, min_p, max_p)?;
+        let anti_s = checked_mul_div(
+            TENPOW18U128,
+            calc_a,
+            TENPOW18U128.checked_sub(pre_s as u128).unwrap(),
+        )?;
+        if anti_s < TENPOW18U128 {
+            let new_s = TENPOW18U128.checked_sub(anti_s).unwrap() as u64;
+            self.update_spread(max(new_s, spread))
+        } else {
+            self.update_spread(spread)
+        }
     }
 }
