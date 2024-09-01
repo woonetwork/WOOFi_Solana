@@ -43,6 +43,9 @@ pub enum ErrorCode {
     #[msg("Reserve less than fee")]
     ReserveLessThanFee,
 
+    #[msg("Too Many Authorities")]
+    TooManyAuthorities,
+
     #[msg("Woo oracle is not feasible")]
     WooOracleNotFeasible, //0x1781
     #[msg("Woo oracle price is not valid")]

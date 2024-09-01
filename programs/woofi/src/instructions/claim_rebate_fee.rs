@@ -2,6 +2,7 @@ use crate::{events::ClaimRebateFeeEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
+use crate::errors::ErrorCode;
 use crate::util::*;
 
 #[derive(Accounts)]
@@ -44,10 +45,10 @@ pub fn handler(ctx: Context<ClaimRebateFee>) -> Result<()> {
     let rebate_pool = &mut ctx.accounts.rebate_pool;
     let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
 
-    // require!(
-    //     rebate_pool.pending_rebate >= claim_amount,
-    //     ErrorCode::RebateFeeNotEnough
-    // );
+    require!(
+        rebate_pool.pending_rebate > 0,
+        ErrorCode::RebateFeeNotEnough
+    );
 
     let claim_amount = rebate_pool.pending_rebate;
     rebate_pool.clear_pending_rebate()?;

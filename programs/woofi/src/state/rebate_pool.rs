@@ -35,6 +35,7 @@ use crate::{constants::*, errors::ErrorCode};
 use anchor_lang::prelude::*;
 
 #[account]
+#[derive(InitSpace)]
 pub struct RebatePool {
     pub paused: bool, // 1
 

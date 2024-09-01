@@ -14,8 +14,8 @@ pub struct SetPoolState<'info> {
     pub authority: Signer<'info>,
 }
 
-pub fn set_pool_paused(ctx: Context<SetPoolState>, paused: bool) -> Result<()> {
-    ctx.accounts.woopool.set_paused(paused)
+pub fn unpause_pool(ctx: Context<SetPoolState>) -> Result<()> {
+    ctx.accounts.woopool.set_paused(false)
 }
 
 pub fn set_fee_rate_handler(ctx: Context<SetPoolState>, fee_rate: u16) -> Result<()> {

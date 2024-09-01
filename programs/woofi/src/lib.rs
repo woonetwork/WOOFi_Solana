@@ -124,8 +124,12 @@ pub mod woofi {
         instructions::set_pool_fee_admin_handler(ctx, fee_authority)
     }
 
-    pub fn set_pool_paused(ctx: Context<SetPoolState>, paused: bool) -> Result<()> {
-        instructions::set_pool_paused(ctx, paused)
+    pub fn pause_pool(ctx: Context<PausePool>) -> Result<()> {
+        instructions::pause_pool(ctx)
+    }
+
+    pub fn unpause_pool(ctx: Context<SetPoolState>) -> Result<()> {
+        instructions::unpause_pool(ctx)
     }
 
     pub fn set_rebate_pool_paused(ctx: Context<SetRebatePoolState>, paused: bool) -> Result<()> {

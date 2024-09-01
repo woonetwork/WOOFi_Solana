@@ -34,7 +34,10 @@
 use crate::{constants::*, errors::ErrorCode};
 use anchor_lang::prelude::*;
 
+pub const PAUSE_AUTH_MAX_LEN: usize = 5;
+
 #[account]
+#[derive(InitSpace)]
 pub struct WooPool {
     pub woopool_bump: [u8; 1], // 1
 
@@ -45,6 +48,9 @@ pub struct WooPool {
     pub admin_authority: Pubkey, // 32
 
     pub fee_authority: Pubkey, // 32
+
+    #[max_len(PAUSE_AUTH_MAX_LEN)]
+    pub pause_authority: Vec<Pubkey>,
 
     pub wooracle: Pubkey, // 32
     // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
@@ -74,8 +80,22 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN: usize =
-        8 + (1 + 1 + 32 + 32 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
+    pub const LEN: usize = 8
+        + (1 + 1
+            + 32
+            + 32
+            + 32
+            + (24 + PAUSE_AUTH_MAX_LEN * 32)
+            + 32
+            + 2
+            + 16
+            + 16
+            + 16
+            + 16
+            + 32
+            + 32
+            + 32
+            + 1);
 
     pub fn seeds(&self) -> [&[u8]; 4] {
         [
@@ -130,6 +150,16 @@ impl WooPool {
 
     pub fn update_fee_authority(&mut self, fee_authority: Pubkey) -> Result<()> {
         self.fee_authority = fee_authority;
+
+        Ok(())
+    }
+
+    pub fn set_pause_authority(&mut self, pause_authority: Vec<Pubkey>) -> Result<()> {
+        require!(
+            pause_authority.len() <= PAUSE_AUTH_MAX_LEN,
+            ErrorCode::TooManyAuthorities
+        );
+        self.pause_authority = pause_authority;
 
         Ok(())
     }

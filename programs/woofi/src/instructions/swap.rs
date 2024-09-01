@@ -58,7 +58,6 @@ pub struct Swap<'info> {
     )]
     woopool_to: Box<Account<'info, WooPool>>,
     #[account(mut,
-        has_one = owner,
         constraint = token_owner_account_to.mint == woopool_to.token_mint
     )]
     token_owner_account_to: Box<Account<'info, TokenAccount>>,
@@ -113,7 +112,13 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     let woopool_to = &mut ctx.accounts.woopool_to;
     let rebate_to = &ctx.accounts.rebate_to;
 
-    let fee_rate = max(woopool_from.fee_rate, woopool_to.fee_rate);
+    let fee_rate: u16 = if woopool_from.token_mint == woopool_from.quote_token_mint {
+        woopool_to.fee_rate
+    } else if woopool_to.token_mint == woopool_to.quote_token_mint {
+        woopool_from.fee_rate
+    } else {
+        max(woopool_from.fee_rate, woopool_to.fee_rate)
+    };
 
     let decimals_from = Decimals::new(
         wooracle_from.price_decimals as u32,
@@ -133,7 +138,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
             &state_from,
         )?;
 
-        let _ = wooracle_from.post_price(new_base_price);
+        wooracle_from.post_price(new_base_price)?;
 
         quote_amount = _quote_amount;
     }
@@ -164,7 +169,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
             &decimals_to,
             &state_to,
         )?;
-        let _ = wooracle_to.post_price(to_new_price);
+        wooracle_to.post_price(to_new_price)?;
 
         to_amount = _to_amount;
     }

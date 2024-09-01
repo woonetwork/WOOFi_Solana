@@ -38,6 +38,7 @@ use crate::{util::checked_mul_div, TENPOW18U128, TENPOW18U64};
 use anchor_lang::prelude::*;
 
 #[account]
+#[derive(InitSpace)]
 pub struct WOOracle {
     pub authority: Pubkey,       // 32
     pub admin_authority: Pubkey, // 32

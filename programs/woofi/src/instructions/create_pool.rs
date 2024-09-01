@@ -16,7 +16,7 @@ pub struct CreatePool<'info> {
     #[account(
         init,
         payer = authority,
-        space = WooPool::LEN,
+        space = WooPool::INIT_SPACE,
         seeds = [
           WOOPOOL_SEED.as_bytes(),
           token_mint.key().as_ref(),
