@@ -124,6 +124,13 @@ pub mod woofi {
         instructions::set_pool_fee_admin_handler(ctx, fee_authority)
     }
 
+    pub fn set_pool_pause_auth(
+        ctx: Context<SetPoolAdmin>,
+        pause_authority: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_pool_pause_auth_handler(ctx, pause_authority)
+    }
+
     pub fn pause_pool(ctx: Context<PausePool>) -> Result<()> {
         instructions::pause_pool(ctx)
     }
@@ -167,8 +174,12 @@ pub mod woofi {
         instructions::swap::handler(ctx, from_amount, min_to_amount)
     }
 
-    pub fn deposit(ctx: Context<Deposit>, amount: u128) -> Result<()> {
-        instructions::deposit::handler(ctx, amount)
+    pub fn deposit(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
+        instructions::deposit_withdraw::deposit(ctx, amount)
+    }
+
+    pub fn withdraw(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
+        instructions::deposit_withdraw::withdraw(ctx, amount)
     }
 
     pub fn claim_fee(ctx: Context<ClaimFee>) -> Result<()> {

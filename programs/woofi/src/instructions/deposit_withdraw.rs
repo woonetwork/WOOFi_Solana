@@ -1,11 +1,11 @@
-use crate::{events::DepositEvent, state::*};
+use crate::{events::DepositEvent, events::WithdrawEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
 use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
-pub struct Deposit<'info> {
+pub struct Deposit_Withdraw<'info> {
     pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,
 
@@ -41,12 +41,12 @@ pub struct Deposit<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn handler(ctx: Context<Deposit>, amount: u128) -> Result<()> {
+pub fn deposit(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
     let token_owner_account = &ctx.accounts.token_owner_account;
     let token_vault = &ctx.accounts.token_vault;
     let woopool = &mut ctx.accounts.woopool;
 
-    let balance_before = balance(woopool, token_vault)?;
+    let _balance_before = balance(woopool, token_vault)?;
 
     require!(
         token_owner_account.amount as u128 >= amount,
@@ -71,11 +71,42 @@ pub fn handler(ctx: Context<Deposit>, amount: u128) -> Result<()> {
 
     emit!(DepositEvent {
         authority: ctx.accounts.authority.key(),
-        woopool: woopool.key(),
-        token_vault: token_vault.key(),
+        token_mint: woopool.token_mint,
         deposit_amount: amount,
-        pool_reserve: woopool.reserve,
-        vault_balance: balance_before
+    });
+
+    Ok(())
+}
+
+pub fn withdraw(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
+    let token_owner_account = &ctx.accounts.token_owner_account;
+    let token_vault = &ctx.accounts.token_vault;
+    let woopool = &mut ctx.accounts.woopool;
+
+    let _balance_before = balance(woopool, token_vault)?;
+
+    require!(
+        woopool.reserve >= amount && token_vault.amount as u128 >= amount,
+        ErrorCode::NotEnoughBalance
+    );
+
+    woopool
+        .reserve
+        .checked_sub(amount)
+        .ok_or(ErrorCode::NotEnoughBalance)?;
+
+    transfer_from_vault_to_owner(
+        woopool,
+        token_vault,
+        token_owner_account,
+        &ctx.accounts.token_program,
+        amount as u64,
+    )?;
+
+    emit!(WithdrawEvent {
+        authority: ctx.accounts.authority.key(),
+        token_mint: woopool.token_mint,
+        withdraw_amount: amount,
     });
 
     Ok(())

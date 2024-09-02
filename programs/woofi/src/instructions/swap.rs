@@ -205,21 +205,14 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     )?;
 
     emit!(SwapEvent {
-        owner: ctx.accounts.owner.key(),
-        wooracle_from: wooracle_from.key(),
-        woopool_from: woopool_from.key(),
-        token_owner_account_from: token_owner_account_from.key(),
-        token_vault_from: token_vault_from.key(),
-        price_update_from: price_update_from.key(),
-        wooracle_to: wooracle_to.key(),
-        woopool_to: woopool_to.key(),
-        token_owner_account_to: token_owner_account_to.key(),
-        token_vault_to: token_vault_to.key(),
-        price_update_to: price_update_to.key(),
-        rebate_to: rebate_to.key(),
+        sender: ctx.accounts.owner.key(),
+        from_token_mint: woopool_from.token_mint,
+        to_token_mint: woopool_to.token_mint,
         from_amount,
-        min_to_amount,
         to_amount,
+        from_account: token_owner_account_from.key(),
+        to_account: token_owner_account_to.key(),
+        rebate_to: rebate_to.key(),
         swap_vol: quote_amount + swap_fee,
         swap_fee,
     });

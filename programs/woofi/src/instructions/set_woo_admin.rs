@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{events::SetWooracleAdminEvent, state::wooracle::*};
+use crate::{events::WooracleAdminUpdatedEvent, state::wooracle::*};
 
 #[derive(Accounts)]
 pub struct SetWooAdmin<'info> {
@@ -15,7 +15,7 @@ pub fn set_woo_admin_handler(ctx: Context<SetWooAdmin>, admin_authority: Pubkey)
         .wooracle
         .update_admin_authority(admin_authority)?;
 
-    emit!(SetWooracleAdminEvent {
+    emit!(WooracleAdminUpdatedEvent {
         wooracle: ctx.accounts.wooracle.key(),
         authority: ctx.accounts.authority.key(),
         admin_authority,

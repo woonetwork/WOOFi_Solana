@@ -62,10 +62,8 @@ pub fn handler(ctx: Context<ClaimRebateFee>) -> Result<()> {
     )?;
 
     emit!(ClaimRebateFeeEvent {
+        quote_token_mint: woopool_quote.quote_token_mint,
         rebate_authority: ctx.accounts.rebate_authority.key(),
-        woopool_quote: woopool_quote.key(),
-        woopool_vault: woopool_vault.key(),
-        rebate_pool: rebate_pool.key(),
         claim_fee_to_account: claim_fee_to_account.key(),
         claim_amount,
     });

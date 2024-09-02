@@ -60,9 +60,8 @@ pub fn claim_handler(ctx: Context<ClaimFee>) -> Result<()> {
     )?;
 
     emit!(ClaimFeeEvent {
+        quote_token_mint: woopool.quote_token_mint,
         authority: ctx.accounts.authority.key(),
-        woopool: woopool.key(),
-        token_vault: token_vault.key(),
         claim_fee_to_account: claim_fee_to_account.key(),
         claim_amount
     });
@@ -91,9 +90,8 @@ pub fn claim_amount_handler(ctx: Context<ClaimFee>, claim_amount: u128) -> Resul
     )?;
 
     emit!(ClaimFeeEvent {
+        quote_token_mint: woopool.quote_token_mint,
         authority: ctx.accounts.authority.key(),
-        woopool: woopool.key(),
-        token_vault: token_vault.key(),
         claim_fee_to_account: claim_fee_to_account.key(),
         claim_amount
     });

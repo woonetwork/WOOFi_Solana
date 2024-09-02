@@ -126,7 +126,7 @@ describe("woofi_swap", () => {
 
       const tx = await program
       .methods
-      .setPoolFeeRate(30000)
+      .setPoolFeeRate(3000)
       .accounts({
         authority: provider.wallet.publicKey,
         woopool: poolParams.woopool
@@ -147,7 +147,8 @@ describe("woofi_swap", () => {
       console.log('feeRate', woopoolData.feeRate);
 
       assert.ok(
-        woopoolData.feeRate == 30000
+        // 3%
+        woopoolData.feeRate == 3000
       );
   
     })
