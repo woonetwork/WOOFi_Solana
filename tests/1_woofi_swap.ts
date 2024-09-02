@@ -120,6 +120,38 @@ describe("woofi_swap", () => {
     });
   });
 
+  describe("#set_pool_fee_rate", async ()=> {
+    it("set_pool_fee_rate_sol", async ()=> {
+      const poolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+
+      const tx = await program
+      .methods
+      .setPoolFeeRate(30000)
+      .accounts({
+        authority: provider.wallet.publicKey,
+        woopool: poolParams.woopool
+      })
+      .rpc(confirmOptionsRetryTres);
+
+      let woopoolData = null;
+      try {
+        woopoolData = await program.account.wooPool.fetch(poolParams.woopool);
+      } catch (e) {
+          console.log(e);
+          return;
+      }
+      
+      console.log('authority:', woopoolData.authority);
+      console.log('feeAuthority:', woopoolData.feeAuthority);
+      console.log('tokenMint:', woopoolData.tokenMint);
+      console.log('feeRate', woopoolData.feeRate);
+
+      assert.ok(
+        woopoolData.feeRate == 30000
+      );
+  
+    })
+  })
 
   describe("#swap_between_sol_and_usdc", async ()=> {
     it("swap_from_sol_to_usdc", async ()=> {

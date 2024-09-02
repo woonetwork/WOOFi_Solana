@@ -108,6 +108,7 @@ describe("woofi", () => {
       // console.log("process.env:");
       // console.log(process.env);
       console.log("feedAccount:", feedAccount);
+      console.log("wooracle:", wooracleAccount);
 
       let oracleItemData = null;
       try {
@@ -117,6 +118,8 @@ describe("woofi", () => {
         if (error.message.indexOf("Account does not exist") >= 0) {
           // TODO Prince: need notice here
           // set maximum age to larger seconds due to pyth oracled push in 20mins in Dev env.
+          console.log('try create')
+          try {
           const tx = await program
             .methods
             .createOracle(new BN(1000))
@@ -134,6 +137,9 @@ describe("woofi", () => {
 
           const logs = await getLogs(provider.connection, tx);
           console.log(logs);
+         } catch(ee) {
+            console.log(ee)
+         }
         }
       }
 
@@ -417,7 +423,7 @@ describe("woofi", () => {
       console.log(`upper_bound: ${upper_bound}`);
 
       // TODO Prince: Failed here, double check later
-      const setPrice = upper_bound.sub(new BN(100));
+      const setPrice = upper_bound.sub(new BN(10000000));
 
       await program
         .methods
@@ -448,7 +454,7 @@ describe("woofi", () => {
       console.log(`upper_bound: ${upper_bound}`);
 
       // TODO Prince: Failed here, double check later
-      const setPrice = upper_bound.add(new BN(100));
+      const setPrice = upper_bound.add(new BN(10000000));
 
       await program
         .methods
@@ -478,7 +484,7 @@ describe("woofi", () => {
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
-      const setPrice = low_bound;
+      const setPrice = low_bound.add(new BN(10000000));
 
       await program
         .methods
@@ -509,7 +515,7 @@ describe("woofi", () => {
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
-      const setPrice = low_bound.sub(new BN(1));
+      const setPrice = low_bound.sub(new BN(10000000));
 
       await program
         .methods

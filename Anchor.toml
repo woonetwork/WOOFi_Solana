@@ -5,10 +5,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-woofi = "5dvaMKBFqkSpnPxQVLoGGgeDNWPp4Cc29FRt289mkfpu"
+woofi = "2LPBFtMbYFqBrR9ZUBu543v8rREoNZriGFodKtbkbaiv"
 
 [programs.devnet]
-woofi = "5dvaMKBFqkSpnPxQVLoGGgeDNWPp4Cc29FRt289mkfpu"
+woofi = "2LPBFtMbYFqBrR9ZUBu543v8rREoNZriGFodKtbkbaiv"
 
 [registry]
 url = "https://api.apr.dev"

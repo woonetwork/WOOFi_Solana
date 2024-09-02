@@ -17,7 +17,7 @@ pub struct CreateRebatePool<'info> {
     #[account(
         init,
         payer = authority,
-        space = RebatePool::INIT_SPACE,
+        space = 8 + RebatePool::INIT_SPACE,
         seeds = [
           REBATEPOOL_SEED.as_bytes(),
           rebate_authority.key().as_ref(),

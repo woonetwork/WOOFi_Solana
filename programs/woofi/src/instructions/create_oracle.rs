@@ -46,7 +46,7 @@ pub struct CreateOracle<'info> {
     #[account(
         init,
         payer = admin,
-        space = WOOracle::INIT_SPACE,
+        space = 8 + WOOracle::INIT_SPACE,
         seeds = [
             WOORACLE_SEED.as_bytes(),
             token_mint.key().as_ref(),

@@ -11,7 +11,7 @@ import { quotePriceUpdate, quoteTokenMint, SupportedToken } from "./test-consts"
 
 export class PoolUtils {
   public provider;
-  public program;
+  public program: Program<Woofi>;
   public sol_priceFeed;
   public usdc_priceFeed;
 
