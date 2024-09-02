@@ -1,8 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN, Program } from "@coral-xyz/anchor";
 import { assert } from "chai";
 import { PoolUtils } from "./utils/pool";
-import { solTokenMint, solPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
+import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
+
 
 describe("woofi", () => {
   const poolUtils = new PoolUtils();
@@ -17,33 +17,23 @@ describe("woofi", () => {
   const usdcFeedAccount = poolUtils.usdcFeedAccount;
   const quoteFeedAccount = usdcFeedAccount;
 
-  let wooracleAccount: anchor.web3.PublicKey;
+  const adminPublicKey = new anchor.web3.PublicKey("EW4E3yBnijzDjoyBpDkgQkJ48Yd6cmponxRsuUT2Cinn");
 
-  describe("#set_woo_admin()", async () => {
-    it("set woo oracle admin", async () => {
+  describe("#set_sol_woo_admin()", async () => {
+    it("set sol woo oracle admin", async () => {
 
-      const setSpread = new BN(800);
-
-      const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooracle'), solTokenMint.toBuffer(), solFeedAccount.toBuffer(), solPriceUpdate.toBuffer()],
-        program.programId
-      );
-
-      wooracleAccount = wooracle;
-
-      const adminPublicKey = new anchor.web3.PublicKey("EW4E3yBnijzDjoyBpDkgQkJ48Yd6cmponxRsuUT2Cinn");
-
-      console.log('Set admin authority to:', adminPublicKey);
+      const solPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      console.log('Set sol wooracle admin authority to:', adminPublicKey);
       await program
         .methods
         .setWooAdmin(adminPublicKey)
         .accounts({
-          wooracle: wooracleAccount,
+          wooracle: solPoolParams.wooracle,
           authority: provider.wallet.publicKey,
         })
         .rpc(confirmOptionsRetryTres);
       
-      const result = await program.account.woOracle.fetch(wooracleAccount);
+      const result = await program.account.woOracle.fetch(solPoolParams.wooracle);
       console.log(`admin authority: ${result.adminAuthority}`);
       assert.ok(
         result.adminAuthority.equals(adminPublicKey), "wooracle admin authority should be the same with setted"
@@ -51,5 +41,77 @@ describe("woofi", () => {
 
     });
   });
-  
+
+  describe("#set_usdc_woo_admin()", async () => {
+    it("set usdc woo oracle admin", async () => {
+
+      const usdcPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+      console.log('Set usdc wooracle admin authority to:', adminPublicKey);
+      await program
+        .methods
+        .setWooAdmin(adminPublicKey)
+        .accounts({
+          wooracle: usdcPoolParams.wooracle,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+      
+      const result = await program.account.woOracle.fetch(usdcPoolParams.wooracle);
+      console.log(`admin authority: ${result.adminAuthority}`);
+      assert.ok(
+        result.adminAuthority.equals(adminPublicKey), "wooracle admin authority should be the same with setted"
+      );
+
+    });
+  });
+
+  describe("#set_sol_pool_admin()", async () => {
+    it("set sol pool admin", async () => {
+
+      const usdcPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+      console.log('Set sol pol admin authority to:', adminPublicKey);
+      await program
+        .methods
+        .setPoolAdmin(adminPublicKey)
+        .accounts({
+          woopool: usdcPoolParams.woopool,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+      
+      const result = await program.account.wooPool.fetch(usdcPoolParams.woopool);
+      console.log(`admin authority: ${result.adminAuthority}`);
+      assert.ok(
+        result.adminAuthority.equals(adminPublicKey), "woopool admin authority should be the same with setted"
+      );
+
+    });
+  });
+
+  describe("#set_usdc_pool_admin()", async () => {
+    it("set usdc pool admin", async () => {
+
+      const solPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+
+      console.log('Set sol pol admin authority to:', adminPublicKey);
+      await program
+        .methods
+        .setPoolAdmin(adminPublicKey)
+        .accounts({
+          woopool: solPoolParams.woopool,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+      
+      const result = await program.account.wooPool.fetch(solPoolParams.woopool);
+      console.log(`admin authority: ${result.adminAuthority}`);
+      assert.ok(
+        result.adminAuthority.equals(adminPublicKey), "woopool admin authority should be the same with setted"
+      );
+
+    });
+  });
+
 });
