@@ -368,7 +368,7 @@ export type Woofi = {
       "name": "createRebatePool",
       "accounts": [
         {
-          "name": "tokenMint",
+          "name": "quoteTokenMint",
           "isMut": false,
           "isSigner": false
         },
@@ -393,9 +393,9 @@ export type Woofi = {
           "isSigner": false
         },
         {
-          "name": "tokenVault",
+          "name": "woopoolVault",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
@@ -454,6 +454,82 @@ export type Woofi = {
         {
           "name": "feeAuthority",
           "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolPauseAuth",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "pauseAuthority",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pausePool",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unpausePool",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "setRebatePoolPaused",
+      "accounts": [
+        {
+          "name": "rebatePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
         }
       ]
     },
@@ -779,6 +855,52 @@ export type Woofi = {
       ]
     },
     {
+      "name": "withdraw",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
       "name": "claimFee",
       "accounts": [
         {
@@ -884,13 +1006,13 @@ export type Woofi = {
           "isSigner": false
         },
         {
-          "name": "rebatePool",
+          "name": "woopoolVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "rebateVault",
-          "isMut": false,
+          "name": "rebatePool",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -904,12 +1026,7 @@ export type Woofi = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "claimAmount",
-          "type": "u128"
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
@@ -919,6 +1036,10 @@ export type Woofi = {
         "kind": "struct",
         "fields": [
           {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
             "name": "authority",
             "type": "publicKey"
           },
@@ -927,35 +1048,20 @@ export type Woofi = {
             "type": "publicKey"
           },
           {
+            "name": "quoteTokenMint",
+            "type": "publicKey"
+          },
+          {
             "name": "woopoolQuote",
             "type": "publicKey"
           },
           {
-            "name": "rebateRate",
-            "type": "u16"
+            "name": "woopoolVault",
+            "type": "publicKey"
           },
           {
-            "name": "rebateReserve",
+            "name": "pendingRebate",
             "type": "u128"
-          },
-          {
-            "name": "tokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "tokenVault",
-            "type": "publicKey"
-          },
-          {
-            "name": "baseDecimals",
-            "docs": [
-              "Number of base 10 digits to the right of the decimal place."
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "enabled",
-            "type": "bool"
           }
         ]
       }
@@ -975,6 +1081,10 @@ export type Woofi = {
             }
           },
           {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
             "name": "authority",
             "type": "publicKey"
           },
@@ -985,6 +1095,12 @@ export type Woofi = {
           {
             "name": "feeAuthority",
             "type": "publicKey"
+          },
+          {
+            "name": "pauseAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
             "name": "wooracle",
@@ -1188,17 +1304,12 @@ export type Woofi = {
       "name": "DepositEvent",
       "fields": [
         {
+          "name": "tokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVault",
           "type": "publicKey",
           "index": false
         },
@@ -1206,14 +1317,24 @@ export type Woofi = {
           "name": "depositAmount",
           "type": "u128",
           "index": false
-        },
+        }
+      ]
+    },
+    {
+      "name": "WithdrawEvent",
+      "fields": [
         {
-          "name": "poolReserve",
-          "type": "u128",
+          "name": "tokenMint",
+          "type": "publicKey",
           "index": false
         },
         {
-          "name": "vaultBalance",
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawAmount",
           "type": "u128",
           "index": false
         }
@@ -1223,17 +1344,12 @@ export type Woofi = {
       "name": "ClaimFeeEvent",
       "fields": [
         {
+          "name": "quoteTokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVault",
           "type": "publicKey",
           "index": false
         },
@@ -1253,22 +1369,12 @@ export type Woofi = {
       "name": "ClaimRebateFeeEvent",
       "fields": [
         {
+          "name": "quoteTokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "rebateAuthority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebatePool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateVault",
           "type": "publicKey",
           "index": false
         },
@@ -1285,7 +1391,7 @@ export type Woofi = {
       ]
     },
     {
-      "name": "SetPoolAdminEvent",
+      "name": "AdminUpdatedEvent",
       "fields": [
         {
           "name": "woopool",
@@ -1305,7 +1411,7 @@ export type Woofi = {
       ]
     },
     {
-      "name": "SetPoolFeeAdminEvent",
+      "name": "FeeAdminUpdatedEvent",
       "fields": [
         {
           "name": "woopool",
@@ -1325,7 +1431,29 @@ export type Woofi = {
       ]
     },
     {
-      "name": "SetWooracleAdminEvent",
+      "name": "PauseRoleUpdatedEvent",
+      "fields": [
+        {
+          "name": "woopool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pauseAuthority",
+          "type": {
+            "vec": "publicKey"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "WooracleAdminUpdatedEvent",
       "fields": [
         {
           "name": "wooracle",
@@ -1348,57 +1476,17 @@ export type Woofi = {
       "name": "SwapEvent",
       "fields": [
         {
-          "name": "owner",
+          "name": "sender",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "wooracleFrom",
+          "name": "fromTokenMint",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "woopoolFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "wooracleTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopoolTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateTo",
+          "name": "toTokenMint",
           "type": "publicKey",
           "index": false
         },
@@ -1408,127 +1496,32 @@ export type Woofi = {
           "index": false
         },
         {
-          "name": "minToAmount",
-          "type": "u128",
-          "index": false
-        },
-        {
           "name": "toAmount",
           "type": "u128",
           "index": false
         },
         {
-          "name": "swapFee",
-          "type": "u128",
+          "name": "fromAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "toAccount",
+          "type": "publicKey",
           "index": false
         },
         {
           "name": "rebateTo",
           "type": "publicKey",
           "index": false
-        }
-      ]
-    },
-    {
-      "name": "SwapWithRebateEvent",
-      "fields": [
-        {
-          "name": "owner",
-          "type": "publicKey",
-          "index": false
         },
         {
-          "name": "wooracleFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopoolFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "wooracleTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopoolTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateAuthority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebatePool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateVault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "fromAmount",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "minToAmount",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "toAmount",
+          "name": "swapVol",
           "type": "u128",
           "index": false
         },
         {
           "name": "swapFee",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "swapFeeAfterRebate",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "rebateFee",
           "type": "u128",
           "index": false
         }
@@ -1628,61 +1621,66 @@ export type Woofi = {
     },
     {
       "code": 6018,
+      "name": "TooManyAuthorities",
+      "msg": "Too Many Authorities"
+    },
+    {
+      "code": 6019,
       "name": "WooOracleNotFeasible",
       "msg": "Woo oracle is not feasible"
     },
     {
-      "code": 6019,
+      "code": 6020,
       "name": "WooOraclePriceNotValid",
       "msg": "Woo oracle price is not valid"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "WooOraclePriceRangeMin",
       "msg": "Woo oracle price below range MIN"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "WooOraclePriceRangeMax",
       "msg": "Woo oracle price exceed range MAX"
     },
     {
-      "code": 6022,
+      "code": 6023,
       "name": "WooOracleSpreadExceed",
       "msg": "Woo oracle spread exceed 1E18"
     },
     {
-      "code": 6023,
+      "code": 6024,
       "name": "WooPoolExceedMaxNotionalValue",
       "msg": "Woo pp exceed max notional value"
     },
     {
-      "code": 6024,
+      "code": 6025,
       "name": "WooPoolExceedMaxGamma",
       "msg": "Woo pp exceed max gamma"
     },
     {
-      "code": 6025,
+      "code": 6026,
       "name": "NotEnoughBalance",
       "msg": "Src Balance < LP Deposit Amount."
     },
     {
-      "code": 6026,
+      "code": 6027,
       "name": "NoPoolMintOutput",
       "msg": "Pool Mint Amount < 0 on LP Deposit"
     },
     {
-      "code": 6027,
+      "code": 6028,
       "name": "BurnTooMuch",
       "msg": "Trying to burn too much"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
     }
@@ -2059,7 +2057,7 @@ export const IDL: Woofi = {
       "name": "createRebatePool",
       "accounts": [
         {
-          "name": "tokenMint",
+          "name": "quoteTokenMint",
           "isMut": false,
           "isSigner": false
         },
@@ -2084,9 +2082,9 @@ export const IDL: Woofi = {
           "isSigner": false
         },
         {
-          "name": "tokenVault",
+          "name": "woopoolVault",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "tokenProgram",
@@ -2145,6 +2143,82 @@ export const IDL: Woofi = {
         {
           "name": "feeAuthority",
           "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "setPoolPauseAuth",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "pauseAuthority",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pausePool",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unpausePool",
+      "accounts": [
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "setRebatePoolPaused",
+      "accounts": [
+        {
+          "name": "rebatePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
         }
       ]
     },
@@ -2470,6 +2544,52 @@ export const IDL: Woofi = {
       ]
     },
     {
+      "name": "withdraw",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "quoteTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenOwnerAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
       "name": "claimFee",
       "accounts": [
         {
@@ -2575,13 +2695,13 @@ export const IDL: Woofi = {
           "isSigner": false
         },
         {
-          "name": "rebatePool",
+          "name": "woopoolVault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "rebateVault",
-          "isMut": false,
+          "name": "rebatePool",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2595,12 +2715,7 @@ export const IDL: Woofi = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "claimAmount",
-          "type": "u128"
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
@@ -2610,6 +2725,10 @@ export const IDL: Woofi = {
         "kind": "struct",
         "fields": [
           {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
             "name": "authority",
             "type": "publicKey"
           },
@@ -2618,35 +2737,20 @@ export const IDL: Woofi = {
             "type": "publicKey"
           },
           {
+            "name": "quoteTokenMint",
+            "type": "publicKey"
+          },
+          {
             "name": "woopoolQuote",
             "type": "publicKey"
           },
           {
-            "name": "rebateRate",
-            "type": "u16"
+            "name": "woopoolVault",
+            "type": "publicKey"
           },
           {
-            "name": "rebateReserve",
+            "name": "pendingRebate",
             "type": "u128"
-          },
-          {
-            "name": "tokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "tokenVault",
-            "type": "publicKey"
-          },
-          {
-            "name": "baseDecimals",
-            "docs": [
-              "Number of base 10 digits to the right of the decimal place."
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "enabled",
-            "type": "bool"
           }
         ]
       }
@@ -2666,6 +2770,10 @@ export const IDL: Woofi = {
             }
           },
           {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
             "name": "authority",
             "type": "publicKey"
           },
@@ -2676,6 +2784,12 @@ export const IDL: Woofi = {
           {
             "name": "feeAuthority",
             "type": "publicKey"
+          },
+          {
+            "name": "pauseAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
             "name": "wooracle",
@@ -2879,17 +2993,12 @@ export const IDL: Woofi = {
       "name": "DepositEvent",
       "fields": [
         {
+          "name": "tokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVault",
           "type": "publicKey",
           "index": false
         },
@@ -2897,14 +3006,24 @@ export const IDL: Woofi = {
           "name": "depositAmount",
           "type": "u128",
           "index": false
-        },
+        }
+      ]
+    },
+    {
+      "name": "WithdrawEvent",
+      "fields": [
         {
-          "name": "poolReserve",
-          "type": "u128",
+          "name": "tokenMint",
+          "type": "publicKey",
           "index": false
         },
         {
-          "name": "vaultBalance",
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "withdrawAmount",
           "type": "u128",
           "index": false
         }
@@ -2914,17 +3033,12 @@ export const IDL: Woofi = {
       "name": "ClaimFeeEvent",
       "fields": [
         {
+          "name": "quoteTokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVault",
           "type": "publicKey",
           "index": false
         },
@@ -2944,22 +3058,12 @@ export const IDL: Woofi = {
       "name": "ClaimRebateFeeEvent",
       "fields": [
         {
+          "name": "quoteTokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
           "name": "rebateAuthority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebatePool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateVault",
           "type": "publicKey",
           "index": false
         },
@@ -2976,7 +3080,7 @@ export const IDL: Woofi = {
       ]
     },
     {
-      "name": "SetPoolAdminEvent",
+      "name": "AdminUpdatedEvent",
       "fields": [
         {
           "name": "woopool",
@@ -2996,7 +3100,7 @@ export const IDL: Woofi = {
       ]
     },
     {
-      "name": "SetPoolFeeAdminEvent",
+      "name": "FeeAdminUpdatedEvent",
       "fields": [
         {
           "name": "woopool",
@@ -3016,7 +3120,29 @@ export const IDL: Woofi = {
       ]
     },
     {
-      "name": "SetWooracleAdminEvent",
+      "name": "PauseRoleUpdatedEvent",
+      "fields": [
+        {
+          "name": "woopool",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pauseAuthority",
+          "type": {
+            "vec": "publicKey"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "WooracleAdminUpdatedEvent",
       "fields": [
         {
           "name": "wooracle",
@@ -3039,57 +3165,17 @@ export const IDL: Woofi = {
       "name": "SwapEvent",
       "fields": [
         {
-          "name": "owner",
+          "name": "sender",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "wooracleFrom",
+          "name": "fromTokenMint",
           "type": "publicKey",
           "index": false
         },
         {
-          "name": "woopoolFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "wooracleTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopoolTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateTo",
+          "name": "toTokenMint",
           "type": "publicKey",
           "index": false
         },
@@ -3099,127 +3185,32 @@ export const IDL: Woofi = {
           "index": false
         },
         {
-          "name": "minToAmount",
-          "type": "u128",
-          "index": false
-        },
-        {
           "name": "toAmount",
           "type": "u128",
           "index": false
         },
         {
-          "name": "swapFee",
-          "type": "u128",
+          "name": "fromAccount",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "toAccount",
+          "type": "publicKey",
           "index": false
         },
         {
           "name": "rebateTo",
           "type": "publicKey",
           "index": false
-        }
-      ]
-    },
-    {
-      "name": "SwapWithRebateEvent",
-      "fields": [
-        {
-          "name": "owner",
-          "type": "publicKey",
-          "index": false
         },
         {
-          "name": "wooracleFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopoolFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateFrom",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "wooracleTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "woopoolTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenOwnerAccountTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "tokenVaultTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "priceUpdateTo",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateAuthority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebatePool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateVault",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "fromAmount",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "minToAmount",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "toAmount",
+          "name": "swapVol",
           "type": "u128",
           "index": false
         },
         {
           "name": "swapFee",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "swapFeeAfterRebate",
-          "type": "u128",
-          "index": false
-        },
-        {
-          "name": "rebateFee",
           "type": "u128",
           "index": false
         }
@@ -3319,61 +3310,66 @@ export const IDL: Woofi = {
     },
     {
       "code": 6018,
+      "name": "TooManyAuthorities",
+      "msg": "Too Many Authorities"
+    },
+    {
+      "code": 6019,
       "name": "WooOracleNotFeasible",
       "msg": "Woo oracle is not feasible"
     },
     {
-      "code": 6019,
+      "code": 6020,
       "name": "WooOraclePriceNotValid",
       "msg": "Woo oracle price is not valid"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "WooOraclePriceRangeMin",
       "msg": "Woo oracle price below range MIN"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "WooOraclePriceRangeMax",
       "msg": "Woo oracle price exceed range MAX"
     },
     {
-      "code": 6022,
+      "code": 6023,
       "name": "WooOracleSpreadExceed",
       "msg": "Woo oracle spread exceed 1E18"
     },
     {
-      "code": 6023,
+      "code": 6024,
       "name": "WooPoolExceedMaxNotionalValue",
       "msg": "Woo pp exceed max notional value"
     },
     {
-      "code": 6024,
+      "code": 6025,
       "name": "WooPoolExceedMaxGamma",
       "msg": "Woo pp exceed max gamma"
     },
     {
-      "code": 6025,
+      "code": 6026,
       "name": "NotEnoughBalance",
       "msg": "Src Balance < LP Deposit Amount."
     },
     {
-      "code": 6026,
+      "code": 6027,
       "name": "NoPoolMintOutput",
       "msg": "Pool Mint Amount < 0 on LP Deposit"
     },
     {
-      "code": 6027,
+      "code": 6028,
       "name": "BurnTooMuch",
       "msg": "Trying to burn too much"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
     }
