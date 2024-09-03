@@ -5,7 +5,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount};
 use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
-pub struct Deposit_Withdraw<'info> {
+pub struct DepositWithdraw<'info> {
     pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,
 
@@ -41,7 +41,7 @@ pub struct Deposit_Withdraw<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn deposit(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
+pub fn deposit(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
     let token_owner_account = &ctx.accounts.token_owner_account;
     let token_vault = &ctx.accounts.token_vault;
     let woopool = &mut ctx.accounts.woopool;
@@ -78,7 +78,7 @@ pub fn deposit(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
     Ok(())
 }
 
-pub fn withdraw(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
+pub fn withdraw(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
     let token_owner_account = &ctx.accounts.token_owner_account;
     let token_vault = &ctx.accounts.token_vault;
     let woopool = &mut ctx.accounts.woopool;
