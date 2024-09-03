@@ -40,10 +40,10 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(InitSpace)]
 pub struct WOOracle {
-    pub authority: Pubkey,       // 32
-    pub admin_authority: Pubkey, // 32
-    pub token_mint: Pubkey,      // 32
-    pub feed_account: Pubkey,    // 32
+    pub wooconfig: Pubkey,    // 32
+    pub authority: Pubkey,    // 32
+    pub token_mint: Pubkey,   // 32
+    pub feed_account: Pubkey, // 32
     // store pyth price update account
     pub price_update: Pubkey, // 32
     // store pyth oracle maximum age, in seconds, 60 means 60s
@@ -90,12 +90,6 @@ impl WOOracle {
             + 32
             + 32
             + 32);
-
-    pub fn update_admin_authority(&mut self, admin_authority: Pubkey) -> Result<()> {
-        self.admin_authority = admin_authority;
-
-        Ok(())
-    }
 
     pub fn update_now(&mut self) -> Result<()> {
         let timestamp = Clock::get()?.unix_timestamp;

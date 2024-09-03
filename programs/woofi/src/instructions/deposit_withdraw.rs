@@ -6,6 +6,10 @@ use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct DepositWithdraw<'info> {
+    #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,
 
@@ -18,15 +22,16 @@ pub struct DepositWithdraw<'info> {
     token_owner_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut,
-        constraint = !woopool.paused,
+        has_one = wooconfig,
         seeds = [
           WOOPOOL_SEED.as_bytes(),
+          wooconfig.key().as_ref(),
           token_mint.key().as_ref(),
           quote_token_mint.key().as_ref()
         ],
         bump,
         constraint = woopool.authority == authority.key()
-                  || woopool.fee_authority == authority.key(),
+                  || wooconfig.woopool_admin_authority.contains(authority.key),
         constraint = woopool.token_mint == token_mint.key()
     )]
     pub woopool: Box<Account<'info, WooPool>>,

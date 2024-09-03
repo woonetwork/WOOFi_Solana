@@ -11,19 +11,24 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct Swap<'info> {
+    #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
 
     pub owner: Signer<'info>,
 
     #[account(mut,
+        has_one = wooconfig,
         address = woopool_from.wooracle,
         has_one = quote_price_update,
         constraint = wooracle_from.price_update == price_update_from.key()
     )]
     wooracle_from: Account<'info, WOOracle>,
     #[account(mut,
-        constraint = !woopool_from.paused,
+        has_one = wooconfig,
         constraint = woopool_from.authority == wooracle_from.authority,
         constraint = woopool_from.quote_token_mint == wooracle_from.quote_token_mint
     )]
@@ -43,13 +48,14 @@ pub struct Swap<'info> {
     price_update_from: Account<'info, PriceUpdateV2>,
 
     #[account(mut,
+        has_one = wooconfig,
         address = woopool_to.wooracle,
         has_one = quote_price_update,
         constraint = wooracle_to.price_update == price_update_to.key()
     )]
     wooracle_to: Account<'info, WOOracle>,
     #[account(mut,
-        constraint = !woopool_to.paused,
+        has_one = wooconfig,
         constraint = woopool_to.authority == woopool_from.authority,
         constraint = woopool_to.authority == wooracle_to.authority,
         constraint = woopool_to.quote_token_mint == woopool_from.quote_token_mint,
@@ -71,11 +77,12 @@ pub struct Swap<'info> {
     price_update_to: Account<'info, PriceUpdateV2>,
 
     #[account(mut,
-        constraint = !woopool_quote.paused,
+        has_one = wooconfig,
         constraint = woopool_quote.token_mint == woopool_from.quote_token_mint,
         constraint = woopool_quote.authority == woopool_from.authority,
     )]
     woopool_quote: Box<Account<'info, WooPool>>,
+    // has_one = quote_price_update above twice
     quote_price_update: Account<'info, PriceUpdateV2>,
     #[account(mut,
         address = woopool_quote.token_vault

@@ -1,21 +1,22 @@
 use anchor_lang::prelude::*;
 
-use crate::state::woopool::*;
+use crate::{state::woopool::*, WooConfig};
 
 #[derive(Accounts)]
 pub struct SetPoolState<'info> {
+    #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
     #[account(mut,
+        has_one = wooconfig,
         constraint =
             woopool.authority == authority.key() ||
-            woopool.admin_authority == authority.key()
+            wooconfig.woopool_admin_authority.contains(authority.key)
     )]
     pub woopool: Account<'info, WooPool>,
 
     pub authority: Signer<'info>,
-}
-
-pub fn unpause_pool(ctx: Context<SetPoolState>) -> Result<()> {
-    ctx.accounts.woopool.set_paused(false)
 }
 
 pub fn set_fee_rate_handler(ctx: Context<SetPoolState>, fee_rate: u16) -> Result<()> {

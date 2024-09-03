@@ -1,12 +1,17 @@
 use anchor_lang::prelude::*;
 
-use crate::{constants::*, errors::ErrorCode, state::wooracle::*};
+use crate::{constants::*, errors::ErrorCode, state::wooracle::*, WooConfig};
 
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct GetPrice<'info> {
     #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
+    #[account(
+        has_one = wooconfig,
         has_one = price_update,
         has_one = quote_price_update,
     )]

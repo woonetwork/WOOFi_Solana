@@ -41,6 +41,10 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct CreateOracle<'info> {
+    #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
 
     #[account(
@@ -49,6 +53,7 @@ pub struct CreateOracle<'info> {
         space = 8 + WOOracle::INIT_SPACE,
         seeds = [
             WOORACLE_SEED.as_bytes(),
+            wooconfig.key().as_ref(),
             token_mint.key().as_ref(),
             feed_account.key().as_ref(),
             price_update.key().as_ref()
@@ -80,8 +85,8 @@ pub struct CreateOracle<'info> {
 }
 
 pub fn handler(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
+    ctx.accounts.wooracle.wooconfig = ctx.accounts.wooconfig.key();
     ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
-    ctx.accounts.wooracle.admin_authority = ctx.accounts.admin.key();
     ctx.accounts.wooracle.token_mint = ctx.accounts.token_mint.key();
     ctx.accounts.wooracle.feed_account = ctx.accounts.feed_account.key();
     ctx.accounts.wooracle.price_update = ctx.accounts.price_update.key();

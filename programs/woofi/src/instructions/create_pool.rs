@@ -5,8 +5,11 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount};
 use crate::constants::*;
 
 #[derive(Accounts)]
-#[instruction(fee_authority: Pubkey)]
 pub struct CreatePool<'info> {
+    #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,
 
@@ -19,6 +22,7 @@ pub struct CreatePool<'info> {
         space = 8 + WooPool::INIT_SPACE,
         seeds = [
           WOOPOOL_SEED.as_bytes(),
+          wooconfig.key().as_ref(),
           token_mint.key().as_ref(),
           quote_token_mint.key().as_ref()
         ],
@@ -34,6 +38,7 @@ pub struct CreatePool<'info> {
     pub token_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
+        has_one = wooconfig,
         has_one = authority,
         has_one = token_mint,
         has_one = quote_token_mint
@@ -43,14 +48,10 @@ pub struct CreatePool<'info> {
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
 }
 
-pub fn handler(
-    ctx: Context<CreatePool>,
-    admin_authority: Pubkey,
-    fee_authority: Pubkey,
-) -> Result<()> {
+pub fn handler(ctx: Context<CreatePool>) -> Result<()> {
+    let wooconfig = ctx.accounts.wooconfig.key();
     let authority = ctx.accounts.authority.key();
     let token_mint = ctx.accounts.token_mint.key();
     let quote_token_mint = ctx.accounts.quote_token_mint.key();
@@ -63,9 +64,8 @@ pub fn handler(
 
     woopool.initialize(
         bump,
+        wooconfig,
         authority,
-        admin_authority,
-        fee_authority,
         wooracle,
         token_mint,
         token_vault,

@@ -34,72 +34,38 @@
 use crate::{constants::*, errors::ErrorCode};
 use anchor_lang::prelude::*;
 
-pub const PAUSE_AUTH_MAX_LEN: usize = 5;
-
 #[account]
 #[derive(InitSpace)]
 pub struct WooPool {
+    pub wooconfig: Pubkey,     // 32
     pub woopool_bump: [u8; 1], // 1
-
-    pub paused: bool, // 1
-
-    pub authority: Pubkey, // 32
-
-    pub admin_authority: Pubkey, // 32
-
-    pub fee_authority: Pubkey, // 32
-
-    #[max_len(PAUSE_AUTH_MAX_LEN)]
-    pub pause_authority: Vec<Pubkey>,
-
-    pub wooracle: Pubkey, // 32
+    pub authority: Pubkey,     // 32
+    pub wooracle: Pubkey,      // 32
     // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
     // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
     // Max fee rate supported is u16::MAX around 65.5%.
     pub fee_rate: u16, // 2
-
     // balance reserve
     pub reserve: u128, // 16
-
     // max range of `balance * k`
     pub max_gamma: u128, // 16
-
     // max volume per swap
-    pub max_notional_swap: u128, // 16
-
-    pub unclaimed_fee: u128, // 16
-
-    pub token_mint: Pubkey, // 32
-
-    pub token_vault: Pubkey, // 32
-
+    pub max_notional_swap: u128,  // 16
+    pub unclaimed_fee: u128,      // 16
+    pub token_mint: Pubkey,       // 32
+    pub token_vault: Pubkey,      // 32
     pub quote_token_mint: Pubkey, // 32
-
     /// Number of base 10 digits to the right of the decimal place.
     pub base_decimals: u8, // 1
 }
 
 impl WooPool {
-    pub const LEN: usize = 8
-        + (1 + 1
-            + 32
-            + 32
-            + 32
-            + (24 + PAUSE_AUTH_MAX_LEN * 32)
-            + 32
-            + 2
-            + 16
-            + 16
-            + 16
-            + 16
-            + 32
-            + 32
-            + 32
-            + 1);
+    pub const LEN: usize = 8 + (32 + 1 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
 
-    pub fn seeds(&self) -> [&[u8]; 4] {
+    pub fn seeds(&self) -> [&[u8]; 5] {
         [
             WOOPOOL_SEED.as_bytes(),
+            self.wooconfig.as_ref(),
             self.token_mint.as_ref(),
             self.quote_token_mint.as_ref(),
             self.woopool_bump.as_ref(),
@@ -109,9 +75,8 @@ impl WooPool {
     pub fn initialize(
         &mut self,
         bump: u8,
+        wooconfig: Pubkey,
         authority: Pubkey,
-        admin_authority: Pubkey,
-        fee_authority: Pubkey,
         wooracle: Pubkey,
         token_mint: Pubkey,
         token_vault: Pubkey,
@@ -119,13 +84,11 @@ impl WooPool {
         base_decimals: u8,
     ) -> Result<()> {
         self.woopool_bump = [bump];
+        self.wooconfig = wooconfig;
         self.authority = authority;
-        self.admin_authority = admin_authority;
-        self.fee_authority = fee_authority;
 
         self.wooracle = wooracle;
 
-        self.paused = false;
         self.fee_rate = 0;
         self.reserve = 0;
         self.unclaimed_fee = 0;
@@ -138,34 +101,6 @@ impl WooPool {
         self.quote_token_mint = quote_token_mint;
 
         self.base_decimals = base_decimals;
-
-        Ok(())
-    }
-
-    pub fn update_admin_authority(&mut self, admin_authority: Pubkey) -> Result<()> {
-        self.admin_authority = admin_authority;
-
-        Ok(())
-    }
-
-    pub fn update_fee_authority(&mut self, fee_authority: Pubkey) -> Result<()> {
-        self.fee_authority = fee_authority;
-
-        Ok(())
-    }
-
-    pub fn set_pause_authority(&mut self, pause_authority: Vec<Pubkey>) -> Result<()> {
-        require!(
-            pause_authority.len() <= PAUSE_AUTH_MAX_LEN,
-            ErrorCode::TooManyAuthorities
-        );
-        self.pause_authority = pause_authority;
-
-        Ok(())
-    }
-
-    pub fn set_paused(&mut self, paused: bool) -> Result<()> {
-        self.paused = paused;
 
         Ok(())
     }
