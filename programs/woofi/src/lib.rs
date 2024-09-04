@@ -112,10 +112,6 @@ pub mod woofi {
         instructions::create_pool::handler(ctx, admin_authority, fee_authority)
     }
 
-    pub fn create_rebate_pool(ctx: Context<CreateRebatePool>) -> Result<()> {
-        instructions::create_rebate_pool::handler(ctx)
-    }
-
     pub fn set_pool_admin(ctx: Context<SetPoolAdmin>, admin_authority: Pubkey) -> Result<()> {
         instructions::set_pool_admin_handler(ctx, admin_authority)
     }
@@ -137,10 +133,6 @@ pub mod woofi {
 
     pub fn unpause_pool(ctx: Context<SetPoolState>) -> Result<()> {
         instructions::unpause_pool(ctx)
-    }
-
-    pub fn set_rebate_pool_paused(ctx: Context<SetRebatePoolState>, paused: bool) -> Result<()> {
-        instructions::set_rebate_pool_paused(ctx, paused)
     }
 
     pub fn set_pool_fee_rate(ctx: Context<SetPoolState>, fee_rate: u16) -> Result<()> {
@@ -174,11 +166,11 @@ pub mod woofi {
         instructions::swap::handler(ctx, from_amount, min_to_amount)
     }
 
-    pub fn deposit(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
+    pub fn deposit(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
         instructions::deposit_withdraw::deposit(ctx, amount)
     }
 
-    pub fn withdraw(ctx: Context<Deposit_Withdraw>, amount: u128) -> Result<()> {
+    pub fn withdraw(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
         instructions::deposit_withdraw::withdraw(ctx, amount)
     }
 
@@ -188,9 +180,5 @@ pub mod woofi {
 
     pub fn claim_fee_amount(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
         instructions::claim_fee::claim_amount_handler(ctx, claim_amount)
-    }
-
-    pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>) -> Result<()> {
-        instructions::claim_rebate_fee::handler(ctx)
     }
 }
