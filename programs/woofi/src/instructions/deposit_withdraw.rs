@@ -6,9 +6,6 @@ use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct DepositWithdraw<'info> {
-    #[account(
-        constraint = !wooconfig.paused
-    )]
     pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,

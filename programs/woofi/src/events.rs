@@ -34,21 +34,21 @@ pub struct ClaimRebateFeeEvent {
 pub struct WooPoolAdminUpdatedEvent {
     pub wooconfig: Pubkey,
     pub authority: Pubkey,
-    pub admin_authority: Vec<Pubkey>,
+    pub admins: Vec<Pubkey>,
 }
 
 #[event]
 pub struct FeeAdminUpdatedEvent {
     pub wooconfig: Pubkey,
     pub authority: Pubkey,
-    pub fee_authority: Vec<Pubkey>,
+    pub fee_admins: Vec<Pubkey>,
 }
 
 #[event]
 pub struct PauseRoleUpdatedEvent {
     pub wooconfig: Pubkey,
     pub authority: Pubkey,
-    pub pause_authority: Vec<Pubkey>,
+    pub pause_roles: Vec<Pubkey>,
 }
 
 #[event]

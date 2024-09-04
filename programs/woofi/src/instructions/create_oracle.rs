@@ -41,9 +41,6 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
 pub struct CreateOracle<'info> {
-    #[account(
-        constraint = !wooconfig.paused
-    )]
     pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
 

@@ -4,10 +4,6 @@ use crate::WooConfig;
 
 #[derive(Accounts)]
 pub struct SetWooAuthOnlyOwner<'info> {
-    // TODO Prince: may set admin when pool is paused
-    // #[account(
-    //     constraint = !wooconfig.paused
-    // )]
     #[account(mut,
         has_one = authority,
     )]
