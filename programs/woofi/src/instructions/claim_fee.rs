@@ -6,13 +6,17 @@ use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct ClaimFee<'info> {
+    #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,
 
     pub authority: Signer<'info>,
 
     #[account(
-        constraint = !woopool.paused,
+        has_one = wooconfig,
         seeds = [
           WOOPOOL_SEED.as_bytes(),
           token_mint.key().as_ref(),
@@ -20,7 +24,7 @@ pub struct ClaimFee<'info> {
         ],
         bump,
         constraint = woopool.authority == authority.key()
-                  || woopool.fee_authority == authority.key(),
+                  || wooconfig.fee_authority.contains(authority.key),
         constraint = woopool.token_mint == token_mint.key()
     )]
     pub woopool: Box<Account<'info, WooPool>>,

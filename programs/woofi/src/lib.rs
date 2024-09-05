@@ -47,52 +47,75 @@ declare_id!("6a3go9PJoiQRcmXLvtWDzp1SkTheeT6D3NnpHZ7f6M6X");
 pub mod woofi {
     use super::*;
 
+    pub fn create_config(ctx: Context<CreateConfig>) -> Result<()> {
+        instructions::create_config::handler(ctx)
+    }
+
     pub fn create_oracle(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
         instructions::create_oracle::handler(ctx, maximum_age)
     }
 
-    pub fn set_oracle_maximum_age(ctx: Context<SetWooState>, maximum_age: u64) -> Result<()> {
+    pub fn set_oracle_maximum_age(
+        ctx: Context<SetWooStateOnlyAdmin>,
+        maximum_age: u64,
+    ) -> Result<()> {
         instructions::set_woo_state::set_maximum_age_handler(ctx, maximum_age)
     }
 
-    pub fn set_stale_duration(ctx: Context<SetWooState>, stale_duration: i64) -> Result<()> {
+    pub fn set_stale_duration(
+        ctx: Context<SetWooStateOnlyAdmin>,
+        stale_duration: i64,
+    ) -> Result<()> {
         instructions::set_woo_state::set_stale_duration_handler(ctx, stale_duration)
     }
 
-    pub fn set_woo_bound(ctx: Context<SetWooState>, bound: u64) -> Result<()> {
+    pub fn set_woo_bound(ctx: Context<SetWooStateOnlyOwner>, bound: u64) -> Result<()> {
         instructions::set_woo_state::set_bound_handler(ctx, bound)
     }
 
     pub fn set_woo_range(
-        ctx: Context<SetWooState>,
+        ctx: Context<SetWooStateOnlyGuardian>,
         range_min: u128,
         range_max: u128,
     ) -> Result<()> {
         instructions::set_woo_state::set_range_handler(ctx, range_min, range_max)
     }
 
-    pub fn set_woo_price(ctx: Context<SetWooState>, price: u128) -> Result<()> {
+    pub fn set_woo_price(ctx: Context<SetWooStateOnlyAdmin>, price: u128) -> Result<()> {
         instructions::set_woo_state::set_price_handler(ctx, price)
     }
 
-    pub fn set_woo_coeff(ctx: Context<SetWooState>, coeff: u64) -> Result<()> {
+    pub fn set_woo_coeff(ctx: Context<SetWooStateOnlyAdmin>, coeff: u64) -> Result<()> {
         instructions::set_woo_state::set_coeff_handler(ctx, coeff)
     }
 
-    pub fn set_woo_spread(ctx: Context<SetWooState>, spread: u64) -> Result<()> {
+    pub fn set_woo_spread(ctx: Context<SetWooStateOnlyAdmin>, spread: u64) -> Result<()> {
         instructions::set_woo_state::set_spread_handler(ctx, spread)
     }
 
-    pub fn set_out_preferred(ctx: Context<SetWooState>, out_preferred: bool) -> Result<()> {
+    pub fn set_out_preferred(
+        ctx: Context<SetWooStateOnlyAdmin>,
+        out_preferred: bool,
+    ) -> Result<()> {
         instructions::set_woo_state::set_outer_preferred_handler(ctx, out_preferred)
     }
 
-    pub fn set_woo_admin(ctx: Context<SetWooAdmin>, admin_authority: Pubkey) -> Result<()> {
-        instructions::set_woo_admin_handler(ctx, admin_authority)
+    pub fn set_woo_admin(
+        ctx: Context<SetWooAuthOnlyOwner>,
+        admin_authority: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_wooracle_admin_handler(ctx, admin_authority)
+    }
+
+    pub fn set_guardian_admin(
+        ctx: Context<SetWooAuthOnlyOwner>,
+        guardian_authority: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_guardian_handler(ctx, guardian_authority)
     }
 
     pub fn set_woo_state(
-        ctx: Context<SetWooState>,
+        ctx: Context<SetWooStateOnlyAdmin>,
         price: u128,
         coeff: u64,
         spread: u64,
@@ -104,35 +127,37 @@ pub mod woofi {
         instructions::get_price::handler(ctx)
     }
 
-    pub fn create_pool(
-        ctx: Context<CreatePool>,
-        admin_authority: Pubkey,
-        fee_authority: Pubkey,
-    ) -> Result<()> {
-        instructions::create_pool::handler(ctx, admin_authority, fee_authority)
+    pub fn create_pool(ctx: Context<CreatePool>) -> Result<()> {
+        instructions::create_pool::handler(ctx)
     }
 
-    pub fn set_pool_admin(ctx: Context<SetPoolAdmin>, admin_authority: Pubkey) -> Result<()> {
+    pub fn set_pool_admin(
+        ctx: Context<SetPoolAuthOnlyAdmin>,
+        admin_authority: Vec<Pubkey>,
+    ) -> Result<()> {
         instructions::set_pool_admin_handler(ctx, admin_authority)
     }
 
-    pub fn set_pool_fee_admin(ctx: Context<SetPoolAdmin>, fee_authority: Pubkey) -> Result<()> {
-        instructions::set_pool_fee_admin_handler(ctx, fee_authority)
+    pub fn set_fee_admin(
+        ctx: Context<SetPoolAuthOnlyAdmin>,
+        fee_authority: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_fee_admin_handler(ctx, fee_authority)
     }
 
-    pub fn set_pool_pause_auth(
-        ctx: Context<SetPoolAdmin>,
+    pub fn set_pause_role(
+        ctx: Context<SetPoolAuthOnlyAdmin>,
         pause_authority: Vec<Pubkey>,
     ) -> Result<()> {
-        instructions::set_pool_pause_auth_handler(ctx, pause_authority)
+        instructions::set_pause_role_handler(ctx, pause_authority)
     }
 
-    pub fn pause_pool(ctx: Context<PausePool>) -> Result<()> {
-        instructions::pause_pool(ctx)
+    pub fn pause(ctx: Context<Pause>) -> Result<()> {
+        instructions::pause(ctx)
     }
 
-    pub fn unpause_pool(ctx: Context<SetPoolState>) -> Result<()> {
-        instructions::unpause_pool(ctx)
+    pub fn unpause(ctx: Context<UnPause>) -> Result<()> {
+        instructions::unpause(ctx)
     }
 
     pub fn set_pool_fee_rate(ctx: Context<SetPoolState>, fee_rate: u16) -> Result<()> {

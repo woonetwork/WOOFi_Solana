@@ -1,6 +1,6 @@
 pub const WOORACLE_SEED: &str = "wooracle";
 pub const WOOPOOL_SEED: &str = "woopool";
-pub const REBATEPOOL_SEED: &str = "rebatepool";
+pub const WOOCONFIG_SEED: &str = "wooconfig";
 
 // unix timestamp in seconds
 pub const DEFAULT_STALE_DURATION: i64 = 300; // Default to 300s

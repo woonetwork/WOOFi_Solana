@@ -10,12 +10,18 @@ use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 #[derive(Accounts)]
 pub struct Query<'info> {
     #[account(
+        constraint = !wooconfig.paused
+    )]
+    pub wooconfig: Box<Account<'info, WooConfig>>,
+    #[account(
+        has_one = wooconfig,
         address = woopool_from.wooracle,
         has_one = quote_price_update,
         constraint = wooracle_from.price_update == price_update_from.key()
     )]
     wooracle_from: Account<'info, WOOracle>,
     #[account(
+        has_one = wooconfig,
         constraint = woopool_from.authority == wooracle_from.authority,
         constraint = woopool_from.quote_token_mint == wooracle_from.quote_token_mint
     )]
@@ -26,12 +32,14 @@ pub struct Query<'info> {
     price_update_from: Account<'info, PriceUpdateV2>,
 
     #[account(
+        has_one = wooconfig,
         address = woopool_to.wooracle,
         has_one = quote_price_update,
         constraint = wooracle_to.price_update == price_update_to.key()
     )]
     wooracle_to: Account<'info, WOOracle>,
     #[account(
+        has_one = wooconfig,
         constraint = woopool_to.authority == woopool_from.authority,
         constraint = woopool_to.authority == wooracle_to.authority,
         constraint = woopool_to.quote_token_mint == woopool_from.quote_token_mint,

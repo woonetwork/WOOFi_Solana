@@ -31,31 +31,24 @@ pub struct ClaimRebateFeeEvent {
 }
 
 #[event]
-pub struct AdminUpdatedEvent {
-    pub woopool: Pubkey,
+pub struct WooPoolAdminUpdatedEvent {
+    pub wooconfig: Pubkey,
     pub authority: Pubkey,
-    pub admin_authority: Pubkey,
+    pub admins: Vec<Pubkey>,
 }
 
 #[event]
 pub struct FeeAdminUpdatedEvent {
-    pub woopool: Pubkey,
+    pub wooconfig: Pubkey,
     pub authority: Pubkey,
-    pub fee_authority: Pubkey,
+    pub fee_admins: Vec<Pubkey>,
 }
 
 #[event]
 pub struct PauseRoleUpdatedEvent {
-    pub woopool: Pubkey,
+    pub wooconfig: Pubkey,
     pub authority: Pubkey,
-    pub pause_authority: Vec<Pubkey>,
-}
-
-#[event]
-pub struct WooracleAdminUpdatedEvent {
-    pub wooracle: Pubkey,
-    pub authority: Pubkey,
-    pub admin_authority: Pubkey,
+    pub pause_roles: Vec<Pubkey>,
 }
 
 #[event]
