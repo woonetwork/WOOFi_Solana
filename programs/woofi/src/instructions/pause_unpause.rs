@@ -23,9 +23,8 @@ pub fn pause(ctx: Context<Pause>) -> Result<()> {
 pub struct UnPause<'info> {
     #[account(mut,
         constraint =
-            wooconfig.paused &&
-            (wooconfig.authority == authority.key() ||
-            wooconfig.woopool_admin_authority.contains(authority.key))
+            wooconfig.authority == authority.key() ||
+            wooconfig.woopool_admin_authority.contains(authority.key)
     )]
     pub wooconfig: Account<'info, WooConfig>,
 
