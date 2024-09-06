@@ -11,7 +11,7 @@ import { Woofi } from "../artifacts/woofi";
  * @param wooconfig - The config account for the program
  * @param amount - The amount of input token to swap from.
  * @param minToAmount - The minimum amount of token swap to.
- * @param owner - PublicKey of the user wallet want to do the swap.
+ * @param payer - PublicKey of the user wallet want to do the swap.
  * @param wooracleFrom - PublicKey for the wooracle account for from woopool.
  * @param woopoolFrom - PublicKey for the woopool that the swap will occur on from.
  * @param tokenOwnerAccountFrom - PublicKey for the associated token account for token from in the collection wallet.
@@ -31,7 +31,7 @@ export type SwapParams = {
   wooconfig: PublicKey,
   amount: BN,
   minToAmount: BN,
-  owner: PublicKey,
+  payer: PublicKey,
   wooracleFrom: PublicKey,
   woopoolFrom: PublicKey,
   tokenOwnerAccountFrom: PublicKey,
@@ -71,7 +71,7 @@ export function swapIx(program: Program<Woofi>, params: SwapParams): Promise<Tra
     wooconfig,
     amount,
     minToAmount,
-    owner,
+    payer,
     wooracleFrom,
     woopoolFrom,
     tokenOwnerAccountFrom,
@@ -94,7 +94,7 @@ export function swapIx(program: Program<Woofi>, params: SwapParams): Promise<Tra
     .accounts({
       wooconfig,
       tokenProgram: TOKEN_PROGRAM_ID,
-      owner,
+      payer,
       wooracleFrom,
       woopoolFrom,
       tokenOwnerAccountFrom,

@@ -35,7 +35,6 @@ describe("woofi_sdk", async () => {
 
     console.log('TryQuery to_amount:'+ result.to_amount);
     console.log('TryQuery swap_fee:'+ result.swap_fee);
-    console.log('TryQuery swap_fee_amount:'+ result.swap_fee_amount);
   })
 
   it("try_query_on_chain", async ()=> {

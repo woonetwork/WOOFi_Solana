@@ -55,7 +55,7 @@ pub fn deposit(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
         ErrorCode::NotEnoughBalance
     );
 
-    woopool.reserve += amount;
+    woopool.add_reserve(amount)?;
 
     transfer_from_owner_to_vault(
         &ctx.accounts.authority,
@@ -92,10 +92,7 @@ pub fn withdraw(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
         ErrorCode::NotEnoughBalance
     );
 
-    woopool
-        .reserve
-        .checked_sub(amount)
-        .ok_or(ErrorCode::NotEnoughBalance)?;
+    woopool.sub_reserve(amount)?;
 
     transfer_from_vault_to_owner(
         woopool,

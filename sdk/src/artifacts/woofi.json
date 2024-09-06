@@ -776,7 +776,7 @@
           "isSigner": false
         },
         {
-          "name": "owner",
+          "name": "payer",
           "isMut": false,
           "isSigner": true
         },
