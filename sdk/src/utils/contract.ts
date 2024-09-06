@@ -40,7 +40,6 @@ import { getPythPrice } from "./pyth";
 
   export type QueryResult = {
     to_amount: BN,
-    swap_fee_amount: BN,
     swap_fee: BN,
   }
 
@@ -60,13 +59,18 @@ import { getPythPrice } from "./pyth";
     priceUpdate: PublicKey,
     program: Program<Woofi>
   ) => {
+    const [wooconfig] = await PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      program.programId
+    );
+
     const [wooracle] = await PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
+      [Buffer.from('wooracle'), wooconfig.toBuffer(), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       program.programId
     );
 
     const [woopool] = await PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
+      [Buffer.from('woopool'), wooconfig.toBuffer(), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
       program.programId
     );
 
@@ -79,6 +83,7 @@ import { getPythPrice } from "./pyth";
     // const {tokenVault} = await program.account.wooPool.fetch(woopool);
   
     return {
+      wooconfig,
       wooracle,
       woopool,
       tokenVault
@@ -158,98 +163,126 @@ import { getPythPrice } from "./pyth";
     return a.mul(b).divRound(c)
   }
 
-  // TODO Prince: use checked mul div muldiv to do the calc
-  export const calc_usd_amount_sell_base = (
+
+  export const calc_quote_amount_sell_base = (
     base_amount: BN,
     woopool: any,
     decimals: Decimals,
     state: GetStateResult
   ) : CalcResult => {
     if (!state.feasible_out) {
-        throw new Error("Woo oracle is not feasible");
+      throw new Error("Woo oracle is not feasible");
     }
     if (state.price_out.lte(new BN(0))) {
-        throw new Error("Woo oracle price is not valid");
+      throw new Error("Woo oracle price is not valid");
     }
 
     //let notionalSwap : u128 = (base_amount * state.price_out * decimals.quote_dec) / decimals.base_dec / decimals.price_dec;
-    let notion_calc_a: BN = checked_mul_div(base_amount, state.price_out, decimals.price_dec);
-    let notional_swap: BN = checked_mul_div(notion_calc_a, decimals.quote_dec, decimals.base_dec);
+    let notion_calc_a: BN =
+        checked_mul_div(base_amount, state.price_out, decimals.price_dec);
+    let notional_swap: BN = checked_mul_div(
+        notion_calc_a,
+        decimals.quote_dec,
+        decimals.base_dec,
+    );
     if (notional_swap.gt(woopool.maxNotionalSwap)) {
-        throw new Error("Woo pp exceed max notional value");
+      throw new Error("Woo pp exceed max notional value");
     }
-
-    // gamma = k * price * base_amount; and decimal 18
-    let gamma_calc_a: BN = checked_mul_div(base_amount, state.price_out, decimals.price_dec);
-    let gamma: BN = checked_mul_div(gamma_calc_a, state.coeff, decimals.base_dec);
-    if (gamma.gt(woopool.maxGamma)) {
-        throw new Error("Woo pp exceed max gamma");
-    }
-
-    // Formula: quoteAmount = baseAmount * oracle.price * (1 - oracle.k * baseAmount * oracle.price - oracle.spread)
-    // amount = 100000, price = 1
-    // 1e5 * 1e18 * 1e6 = 1e29
-    // amount = 10,000,000, price = 10
-    // 1e7*1e18 * 1e2*1e8 * 1e6 / 1e8 1e33
-
-    // so change the position of priceDec and baseDec
     
-    // let calcA: u128 = checked_mul_div(base_amount, state.price_out, decimals.price_dec as u128)?
-    //                  .checked_mul(decimals.quote_dec as u128).ok_or(ErrorCode::MulDivOverflow)?;
-    // let calcB: u128 = TENPOW18U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
-    //                  .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
-    // let usd_amount: u128 = checked_mul_div(calcA, calcB, TENPOW18U128)?
-    //                  .checked_div(decimals.base_dec as u128).ok_or(ErrorCode::MathOverflow)?;
-    let calc_a: BN = checked_mul_div(base_amount, state.price_out, decimals.base_dec)
-                     .mul(decimals.quote_dec);
-    let calc_b: BN = TENPOW18U128.sub(gamma)
-                     .sub(state.spread);
-    let usd_amount: BN = checked_mul_div(calc_a, calc_b, TENPOW18U128)
-                     .div(decimals.price_dec);
+    // gamma = k * price * base_amount; and decimal 18
+    let gamma_calc_a: BN =
+        checked_mul_div(base_amount, state.price_out, decimals.price_dec);
+    let gamma: BN =
+        checked_mul_div(gamma_calc_a, state.coeff, decimals.base_dec);
+    if (gamma.gt(woopool.maxGamma)) {
+          throw new Error("Woo pp exceed max gamma");
+    }
+  
+    // Formula: quoteAmount = baseAmount * oracle.price * (1 - oracle.k * baseAmount * oracle.price - oracle.spread)
+    // quoteAmount =
+    // (((baseAmount * state.price * decs.quoteDec) / decs.priceDec) *
+    //     (uint256(1e18) - gamma - state.spread)) /
+    // 1e18 /
+    // decs.baseDec;
+    // ====>
+    // quoteAmount =
+    // (((baseAmount * state.price / decs.priceDec) * decs.quoteDec) * (uint256(1e18) - gamma - state.spread)) /
+    // 1e18 /
+    // decs.baseDec;
+    // ====>
+    // a = (baseAmount * state.price / decs.priceDec)
+    // b = (uint256(1e18) - gamma - state.spread)
+    // quoteAmount = ((a * decs.quoteDec) * b) / 1e18 / decs.baseDec;
+    //             = ((a * b) / 1e18) * decs.quoteDec / decs.baseDec
+
+    let calc_a: BN = checked_mul_div(base_amount, state.price_out, decimals.price_dec);
+    let calc_b: BN = TENPOW18U128
+        .sub(gamma)
+        .sub(state.spread)
+    let calc_c = checked_mul_div(calc_a, calc_b, TENPOW18U128);
+    let quote_amount = checked_mul_div(
+        calc_c,
+        decimals.quote_dec,
+        decimals.base_dec,
+    );
 
     // newPrice = oracle.price * (1 - k * oracle.price * baseAmount)
-    let new_price: BN = checked_mul_div(TENPOW18U128.sub(gamma), state.price_out, TENPOW18U128);
+    let new_price = checked_mul_div(
+        TENPOW18U128.sub(gamma),
+        state.price_out,
+        TENPOW18U128,
+    );
 
     return {
-      amount: usd_amount,
+      amount: quote_amount,
       new_price
     }
   }
 
-  export const calc_base_amount_sell_usd = (
-    usd_amount: BN,
+  export const calc_base_amount_sell_quote = (
+    quote_amount: BN,
     woopool: any, 
     decimals: Decimals, 
     state: GetStateResult
   ): CalcResult => {
     if (!state.feasible_out) {
-        throw new Error("Woo oracle is not feasible");
+      throw new Error("Woo oracle is not feasible");
     }
     if (state.price_out.lte(new BN(0)) ){
         throw new Error("Woo oracle price is not valid");
     }
-    
-    if (usd_amount.gt(woopool.maxNotionalSwap)) {
+  
+    if (quote_amount.gt(woopool.maxNotionalSwap)) {
         throw new Error("Woo pp exceed max notional value");
     }
 
     // gamma = k * quote_amount; and decimal 18
-    let gamma: BN = checked_mul_div(usd_amount, state.coeff, decimals.quote_dec);
+    let gamma: BN = checked_mul_div(
+        quote_amount,
+        state.coeff,
+        decimals.quote_dec,
+    );
     if (gamma.gt(woopool.maxGamma)) {
-        throw new Error("Woo pp exceed max gamma");
+      throw new Error("Woo pp exceed max gamma");
     }
-    
+
     // Formula: baseAmount = quoteAmount / oracle.price * (1 - oracle.k * quoteAmount - oracle.spread)
-    let calc_a: BN = usd_amount.mul(decimals.base_dec);
+    let calc_a: BN = quote_amount
+        .mul(decimals.base_dec);
     let calc_b: BN = checked_mul_div(calc_a, decimals.price_dec, state.price_out);
-    let calc_c: BN = TENPOW18U128.sub(gamma)
-                      .sub(state.spread);
+    let calc_c: BN = TENPOW18U128
+        .sub(gamma)
+        .sub(state.spread);
     let calc_d: BN = checked_mul_div(calc_b, calc_c, TENPOW18U128);
     let base_amount = calc_d.div(decimals.quote_dec);
 
     // new_price = oracle.price / (1 - k * quoteAmount)
-    let new_price: BN = checked_mul_div(TENPOW18U128, state.price_out, TENPOW18U128.sub(gamma));
-       
+    let new_price: BN = checked_mul_div(
+        TENPOW18U128,
+        state.price_out,
+        TENPOW18U128.sub(gamma),
+    );
+
     return {
       amount: base_amount,
       new_price
@@ -277,64 +310,51 @@ import { getPythPrice } from "./pyth";
     const wooracle_to = await ctx.program.account.woOracle.fetch(toPoolParams.wooracle);
     const woopool_to = await ctx.program.account.wooPool.fetch(toPoolParams.woopool);
 
-    let state_from = await getWooPrice(fromToken, wooracle_from);
-    let state_to = await getWooPrice(toToken, wooracle_to);
-
-    let spread = state_from.spread.gt(state_to.spread) ? state_from.spread : state_to.spread;
     let fee_rate = woopool_from.feeRate > woopool_to.feeRate ? new BN(woopool_from.feeRate) : new BN(woopool_to.feeRate);
 
-    state_from.spread = spread;
-    state_to.spread = spread;
-
     let decimals_from = newDecimals(
-        wooracle_from.priceDecimals,
-        wooracle_from.quoteDecimals,
-        woopool_from.baseDecimals
+      wooracle_from.priceDecimals,
+      wooracle_from.quoteDecimals,
+      woopool_from.baseDecimals
     );
 
-    let swap_fee_amount = checked_mul_div_round(fromAmount, fee_rate, TE5U128);
-    let swap_fee = checked_mul_div(swap_fee_amount, state_from.price_out, decimals_from.price_dec);
-    let remain_amount = fromAmount.sub(swap_fee_amount);
+    let quote_amount = fromAmount;
+    if (woopool_from.tokenMint != woopool_from.quoteTokenMint) {
+      let state_from = await getWooPrice(fromToken, wooracle_from);
 
-    // console.log('state_from: ', state_from.price_out, state_from.feasible_out);
-    // console.log('state_to: ', state_to.price_out, state_to.feasible_out);
-    // console.log('woopool_from: ', JSON.stringify(woopool_from));
-    
-    let from_result = calc_usd_amount_sell_base(
-        remain_amount, 
+      let {amount, new_price} = calc_quote_amount_sell_base(
+        fromAmount, 
         woopool_from, 
         decimals_from, 
         state_from);
-    let remain_usd_amount = from_result.amount;
-    
-    // TODO Prince: we currently subtract fee on coin, can enable below when we have base usd
-    // let (usd_amount, _) = swap_math::calc_usd_amount_sell_base(
-    //     from_amount, 
-    //     woopool_from, 
-    //     &decimals_from, 
-    //     wooracle_from.coeff, 
-    //     spread, 
-    //     &price_from)?;
-    
-    // let swap_fee = checked_mul_div(usd_amount, fee_rate as u128, TE5U128)?;
-    // let remain_amount = usd_amount.checked_sub(swap_fee).unwrap();
+
+      quote_amount = amount;
+    }
+
+    let swap_fee = checked_mul_div_round(quote_amount, fee_rate, TE5U128);
+    quote_amount = quote_amount.sub(swap_fee);
 
     let decimals_to = newDecimals(
-        wooracle_to.priceDecimals,
-        wooracle_to.quoteDecimals,
-        woopool_to.baseDecimals
+      wooracle_to.priceDecimals,
+      wooracle_to.quoteDecimals,
+      woopool_to.baseDecimals,
     );
 
-    let to_result = calc_base_amount_sell_usd(
-        remain_usd_amount, 
-        woopool_to, 
-        decimals_to, 
-        state_to);
-    let to_amount = to_result.amount;
+    let to_amount = quote_amount;
+    if (woopool_to.tokenMint != woopool_to.quoteTokenMint) {
+      let state_to = await getWooPrice(toToken, wooracle_to);
+
+      let {amount, new_price} = calc_base_amount_sell_quote(
+        quote_amount,
+        woopool_to,
+        decimals_to,
+        state_to,
+      );
+      to_amount = amount;
+    }
 
     return {
       to_amount,
-      swap_fee_amount,
       swap_fee
     }
   }

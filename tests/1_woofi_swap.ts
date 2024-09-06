@@ -60,7 +60,7 @@ describe("woofi_swap", () => {
       console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
       console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
 
-      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
+      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooconfig, fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
       console.log(`price - ${fromPrice}`);
       console.log(`feasible - ${fromFeasible}`);
     })
@@ -74,7 +74,7 @@ describe("woofi_swap", () => {
       console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
       console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
 
-      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
+      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
     })
@@ -100,6 +100,7 @@ describe("woofi_swap", () => {
       .methods
       .deposit(new BN(1000000))
       .accounts({
+        wooconfig: params.wooconfig,
         tokenMint: usdcTokenMint,
         quoteTokenMint: usdcTokenMint,
         authority: provider.wallet.publicKey,
@@ -128,6 +129,7 @@ describe("woofi_swap", () => {
       .methods
       .setPoolFeeRate(3000)
       .accounts({
+        wooconfig: poolParams.wooconfig,
         authority: provider.wallet.publicKey,
         woopool: poolParams.woopool
       })
@@ -216,11 +218,11 @@ describe("woofi_swap", () => {
       const fromPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       const toPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
       const quotePoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);  
+      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooconfig, fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);  
       console.log(`price - ${fromPrice}`);
       console.log(`feasible - ${fromFeasible}`);
 
-      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
+      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
 
@@ -228,6 +230,7 @@ describe("woofi_swap", () => {
         .methods
         .tryQuery(new BN(fromAmount))
         .accounts({
+          wooconfig: fromPoolParams.wooconfig,  
           wooracleFrom: fromPoolParams.wooracle,
           woopoolFrom: fromPoolParams.woopool,
           priceUpdateFrom: solPriceUpdate,
@@ -278,6 +281,7 @@ describe("woofi_swap", () => {
         .methods
         .swap(new BN(fromAmount), new BN(0))
         .accounts({
+          wooconfig: fromPoolParams.wooconfig,
           tokenProgram: token.TOKEN_PROGRAM_ID,
           owner: fromWallet.publicKey,  // is the user want to do swap
           wooracleFrom: fromPoolParams.wooracle,

@@ -1,11 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
-import { BN, Program } from "@coral-xyz/anchor";
-import { ConfirmOptions, Transaction } from "@solana/web3.js";
 import { assert } from "chai";
 import { PoolUtils } from "./utils/pool";
-import { confirmOptionsRetryTres, solPriceUpdate, solTokenMint } from "./utils/test-consts";
+import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
 
-describe("woofi", () => {
+
+describe("woofi", async () => {
   const poolUtils = new PoolUtils();
   poolUtils.initEnv();
 
@@ -18,61 +17,224 @@ describe("woofi", () => {
   const usdcFeedAccount = poolUtils.usdcFeedAccount;
   const quoteFeedAccount = usdcFeedAccount;
 
-  let wooracleAccount: anchor.web3.PublicKey;
+  const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from('wooconfig')],
+    program.programId
+  );
 
-  describe("#set_woo_state()", async () => {
-    it("set woo oracle state", async () => {
+  const oracleKeys: anchor.web3.Keypair[] = [];
+  for (let i = 0; i < 5; ++i) {
+    const key = anchor.web3.Keypair.generate();
+    console.log('Oracle Keypair:' + i + ':' + key.publicKey);
+    oracleKeys.push(key);
+  }
 
-      const setSpread = new BN(800);
+  const poolKeys: anchor.web3.Keypair[] = [];
+  for (let i = 0; i < 5; ++i) {
+    const key = anchor.web3.Keypair.generate();
+    console.log('WooPool Keypair:' + i + ':' + key.publicKey);
+    poolKeys.push(key);
+  }
 
-      const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooracle'), solTokenMint.toBuffer(), solFeedAccount.toBuffer(), solPriceUpdate.toBuffer()],
-        program.programId
-      );
+  const guardianKeys: anchor.web3.Keypair[] = [];
+  for (let i = 0; i < 5; ++i) {
+    const key = anchor.web3.Keypair.generate();
+    console.log('Guardian Keypair:' + i + ':' + key.publicKey);
+    guardianKeys.push(key);
+  }
 
-      wooracleAccount = wooracle;
+  const pauseKeys: anchor.web3.Keypair[] = [];
+  for (let i = 0; i < 5; ++i) {
+    const key = anchor.web3.Keypair.generate();
+    console.log('Pause Keypair:' + i + ':' + key.publicKey);
+    pauseKeys.push(key);
+  }
 
-      const adminWallet = anchor.web3.Keypair.generate();
+  const feeKeys: anchor.web3.Keypair[] = [];
+  for (let i = 0; i < 5; ++i) {
+    const key = anchor.web3.Keypair.generate();
+    console.log('Fee Keypair:' + i + ':' + key.publicKey);
+    feeKeys.push(key);
+  }
 
-      console.log('Set admin authority to:', adminWallet.publicKey);
-      await program
-        .methods
-        .setWooAdmin(adminWallet.publicKey)
-        .accounts({
-          wooracle: wooracleAccount,
-          authority: provider.wallet.publicKey,
-        })
-        .rpc(confirmOptionsRetryTres);
+  const adminPublicKey = new anchor.web3.PublicKey("EW4E3yBnijzDjoyBpDkgQkJ48Yd6cmponxRsuUT2Cinn");
 
-      const adminSetTranscation = new Transaction().add(
+  describe("#set_woo_admin()", async () => {
+    it("set woo oracle admin", async () => {
+        console.log('Set wooracle admin authority to:', adminPublicKey);
         await program
-          .methods
-          .setWooSpread(setSpread)
-          .accounts({
-            wooracle: wooracleAccount,
-            authority: adminWallet.publicKey
-          }).instruction()
-      );
+            .methods
+            .setWooAdmin(oracleKeys.map(key => key.publicKey))
+            .accounts({
+                wooconfig,
+                authority: provider.wallet.publicKey,
+            })
+            .rpc(confirmOptionsRetryTres);
 
-      await provider.sendAndConfirm(adminSetTranscation, [adminWallet], { commitment: "confirmed" });
-      
-      const result = await program.account.woOracle.fetch(wooracleAccount);
-      console.log(`spread - ${result.spread}`);
-      assert.ok(
-        result.spread.eq(setSpread), "wooracle spread should be the same with setted"
-      );
+        await program
+            .methods
+            .setPoolAdmin(poolKeys.map(key => key.publicKey))
+            .accounts({
+                wooconfig,
+                authority: provider.wallet.publicKey,
+            })
+            .rpc(confirmOptionsRetryTres);
 
-      console.log('Set admin authority to:', provider.wallet.publicKey);
-      await program
-        .methods
-        .setWooAdmin(provider.wallet.publicKey)
-        .accounts({
-          wooracle: wooracleAccount,
-          authority: provider.wallet.publicKey,
-        })
-        .rpc(confirmOptionsRetryTres);
+        await program
+            .methods
+            .setGuardianAdmin(guardianKeys.map(key => key.publicKey))
+            .accounts({
+                wooconfig,
+                authority: provider.wallet.publicKey,
+            })
+            .rpc(confirmOptionsRetryTres);
 
+        await program
+            .methods
+            .setPauseRole(pauseKeys.map(key => key.publicKey))
+            .accounts({
+                wooconfig,
+                authority: provider.wallet.publicKey,
+            })
+            .rpc(confirmOptionsRetryTres);
+
+        await program
+            .methods
+            .setFeeAdmin(feeKeys.map(key => key.publicKey))
+            .accounts({
+                wooconfig,
+                authority: provider.wallet.publicKey,
+            })
+            .rpc(confirmOptionsRetryTres);
+
+        poolUtils.checkAdmins();
     });
   });
-  
+
+  describe("#set_woopool_admin_using_admin_authority()", async () => {
+    it("set woopool admin", async () => {
+        //console.log('Set wooracle admin authority to:', adminPublicKey);
+        await program
+            .methods
+            .setPoolAdmin([poolKeys[1].publicKey])
+            .accounts({
+                wooconfig,
+                authority: poolKeys[0].publicKey,
+            })
+            .signers([poolKeys[0]])
+            .rpc(confirmOptionsRetryTres);
+
+        try {
+            await program
+                .methods
+                .setPoolAdmin([poolKeys[1].publicKey])
+                .accounts({
+                    wooconfig,
+                    authority: poolKeys[0].publicKey,
+                })
+                .signers([poolKeys[0]])
+                .rpc(confirmOptionsRetryTres);
+
+            assert.fail(
+                "should fail no auth"
+            );
+        } catch (e) {
+            const error = e as Error;
+            console.log("----------------------name----------------------------")
+            console.log(error.name);
+            console.log("----------------------message-------------------------")
+            console.log(error.message);
+            console.log("----------------------stack---------------------------")
+            console.log(error.stack);
+            console.log("----------------------end-----------------------------")
+
+            assert.match(error.message, /A raw constraint was violated./);
+        }
+
+        await program
+            .methods
+            .setPoolAdmin([poolKeys[0].publicKey])
+            .accounts({
+                wooconfig,
+                authority: provider.wallet.publicKey,
+            })
+            .rpc(confirmOptionsRetryTres);
+
+        poolUtils.checkAdmins();
+    });
+  });
+
+
+//   describe("#set_usdc_woo_admin()", async () => {
+//     it("set usdc woo oracle admin", async () => {
+
+//       const usdcPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+//       console.log('Set usdc wooracle admin authority to:', adminPublicKey);
+//       await program
+//         .methods
+//         .setWooAdmin(adminPublicKey)
+//         .accounts({
+//           wooracle: usdcPoolParams.wooracle,
+//           authority: provider.wallet.publicKey,
+//         })
+//         .rpc(confirmOptionsRetryTres);
+      
+//       const result = await program.account.woOracle.fetch(usdcPoolParams.wooracle);
+//       console.log(`admin authority: ${result.adminAuthority}`);
+//       assert.ok(
+//         result.adminAuthority.equals(adminPublicKey), "wooracle admin authority should be the same with setted"
+//       );
+
+//     });
+//   });
+
+//   describe("#set_sol_pool_admin()", async () => {
+//     it("set sol pool admin", async () => {
+
+//       const usdcPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+//       console.log('Set sol pol admin authority to:', adminPublicKey);
+//       await program
+//         .methods
+//         .setPoolAdmin(adminPublicKey)
+//         .accounts({
+//           woopool: usdcPoolParams.woopool,
+//           authority: provider.wallet.publicKey,
+//         })
+//         .rpc(confirmOptionsRetryTres);
+      
+//       const result = await program.account.wooPool.fetch(usdcPoolParams.woopool);
+//       console.log(`admin authority: ${result.adminAuthority}`);
+//       assert.ok(
+//         result.adminAuthority.equals(adminPublicKey), "woopool admin authority should be the same with setted"
+//       );
+
+//     });
+//   });
+
+//   describe("#set_usdc_pool_admin()", async () => {
+//     it("set usdc pool admin", async () => {
+
+//       const solPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+
+//       console.log('Set sol pol admin authority to:', adminPublicKey);
+//       await program
+//         .methods
+//         .setPoolAdmin(adminPublicKey)
+//         .accounts({
+//           woopool: solPoolParams.woopool,
+//           authority: provider.wallet.publicKey,
+//         })
+//         .rpc(confirmOptionsRetryTres);
+      
+//       const result = await program.account.wooPool.fetch(solPoolParams.woopool);
+//       console.log(`admin authority: ${result.adminAuthority}`);
+//       assert.ok(
+//         result.adminAuthority.equals(adminPublicKey), "woopool admin authority should be the same with setted"
+//       );
+
+//     });
+//   });
+
 });

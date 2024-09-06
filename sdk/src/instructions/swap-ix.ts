@@ -8,6 +8,7 @@ import { Woofi } from "../artifacts/woofi";
  * Raw parameters and accounts to swap on a Woofi
  *
  * @category Instruction Types
+ * @param wooconfig - The config account for the program
  * @param amount - The amount of input token to swap from.
  * @param minToAmount - The minimum amount of token swap to.
  * @param owner - PublicKey of the user wallet want to do the swap.
@@ -15,13 +16,19 @@ import { Woofi } from "../artifacts/woofi";
  * @param woopoolFrom - PublicKey for the woopool that the swap will occur on from.
  * @param tokenOwnerAccountFrom - PublicKey for the associated token account for token from in the collection wallet.
  * @param tokenVaultFrom - PublicKey for the token vault for from woopool.
+ * @param priceUpdateFrom - PublicKey for the pyth oracle update for from token.
  * @param wooracleTo - PublicKey for the wooracle account for to woopool.
  * @param woopoolTo - PublicKey for the woopool that the swap will occur on to.
  * @param tokenOwnerAccountTo - PublicKey for the associated token account for token to in the collection wallet.
  * @param tokenVaultTo - PublicKey for the token vault for to woopool.
- * @param priceUpdate - PublicKey for the pyth oracle update.
+ * @param priceUpdateTo - PublicKey for the pyth oracle update for to token.
+ * @param woopoolQuote - PublicKey for the woopool for quote token.
+ * @param quotePriceUpdate - PublicKey for the pyth oracle update for quote token.
+ * @param quoteTokenVault - PublicKey for the token vault for quote woopool.
+ * @param rebateTo - PublicKey for rebate addres.
  */
 export type SwapParams = {
+  wooconfig: PublicKey,
   amount: BN,
   minToAmount: BN,
   owner: PublicKey,
@@ -61,6 +68,7 @@ export type SwapParams = {
  */
 export function swapIx(program: Program<Woofi>, params: SwapParams): Promise<TransactionInstruction> {
   const {
+    wooconfig,
     amount,
     minToAmount,
     owner,
@@ -84,6 +92,7 @@ export function swapIx(program: Program<Woofi>, params: SwapParams): Promise<Tra
     .methods
     .swap(amount, minToAmount)
     .accounts({
+      wooconfig,
       tokenProgram: TOKEN_PROGRAM_ID,
       owner,
       wooracleFrom,

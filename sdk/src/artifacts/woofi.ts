@@ -3,8 +3,34 @@ export type Woofi = {
   "name": "woofi",
   "instructions": [
     {
+      "name": "createConfig",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "createOracle",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -62,6 +88,11 @@ export type Woofi = {
       "name": "setOracleMaximumAge",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -82,6 +113,11 @@ export type Woofi = {
     {
       "name": "setStaleDuration",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -104,6 +140,11 @@ export type Woofi = {
       "name": "setWooBound",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -124,6 +165,11 @@ export type Woofi = {
     {
       "name": "setWooRange",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -150,6 +196,11 @@ export type Woofi = {
       "name": "setWooPrice",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -170,6 +221,11 @@ export type Woofi = {
     {
       "name": "setWooCoeff",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -192,6 +248,11 @@ export type Woofi = {
       "name": "setWooSpread",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -212,6 +273,11 @@ export type Woofi = {
     {
       "name": "setOutPreferred",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -234,7 +300,7 @@ export type Woofi = {
       "name": "setWooAdmin",
       "accounts": [
         {
-          "name": "wooracle",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -247,13 +313,43 @@ export type Woofi = {
       "args": [
         {
           "name": "adminAuthority",
-          "type": "publicKey"
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "setGuardianAdmin",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "guardianAuthority",
+          "type": {
+            "vec": "publicKey"
+          }
         }
       ]
     },
     {
       "name": "setWooState",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -284,6 +380,11 @@ export type Woofi = {
       "name": "getPrice",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracle",
           "isMut": false,
           "isSigner": false
@@ -307,6 +408,11 @@ export type Woofi = {
     {
       "name": "createPool",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -346,71 +452,6 @@ export type Woofi = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "adminAuthority",
-          "type": "publicKey"
-        },
-        {
-          "name": "feeAuthority",
-          "type": "publicKey"
-        }
-      ]
-    },
-    {
-      "name": "createRebatePool",
-      "accounts": [
-        {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "rebateAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rebatePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "woopoolQuote",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "woopoolVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -419,7 +460,7 @@ export type Woofi = {
       "name": "setPoolAdmin",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -432,15 +473,17 @@ export type Woofi = {
       "args": [
         {
           "name": "adminAuthority",
-          "type": "publicKey"
+          "type": {
+            "vec": "publicKey"
+          }
         }
       ]
     },
     {
-      "name": "setPoolFeeAdmin",
+      "name": "setFeeAdmin",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -453,15 +496,17 @@ export type Woofi = {
       "args": [
         {
           "name": "feeAuthority",
-          "type": "publicKey"
+          "type": {
+            "vec": "publicKey"
+          }
         }
       ]
     },
     {
-      "name": "setPoolPauseAuth",
+      "name": "setPauseRole",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -481,10 +526,10 @@ export type Woofi = {
       ]
     },
     {
-      "name": "pausePool",
+      "name": "pause",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -497,10 +542,10 @@ export type Woofi = {
       "args": []
     },
     {
-      "name": "unpausePool",
+      "name": "unpause",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -511,31 +556,15 @@ export type Woofi = {
         }
       ],
       "args": []
-    },
-    {
-      "name": "setRebatePoolPaused",
-      "accounts": [
-        {
-          "name": "rebatePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "paused",
-          "type": "bool"
-        }
-      ]
     },
     {
       "name": "setPoolFeeRate",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "woopool",
           "isMut": true,
@@ -558,6 +587,11 @@ export type Woofi = {
       "name": "setPoolMaxGamma",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "woopool",
           "isMut": true,
           "isSigner": false
@@ -579,6 +613,11 @@ export type Woofi = {
       "name": "setPoolMaxNotionalSwap",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "woopool",
           "isMut": true,
           "isSigner": false
@@ -599,6 +638,11 @@ export type Woofi = {
     {
       "name": "tryQuery",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracleFrom",
           "isMut": false,
@@ -648,6 +692,11 @@ export type Woofi = {
     {
       "name": "query",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracleFrom",
           "isMut": false,
@@ -716,6 +765,11 @@ export type Woofi = {
     {
       "name": "swap",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenProgram",
           "isMut": false,
@@ -812,6 +866,11 @@ export type Woofi = {
       "name": "deposit",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenMint",
           "isMut": false,
           "isSigner": false
@@ -857,6 +916,11 @@ export type Woofi = {
     {
       "name": "withdraw",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -904,6 +968,11 @@ export type Woofi = {
       "name": "claimFee",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenMint",
           "isMut": false,
           "isSigner": false
@@ -944,6 +1013,11 @@ export type Woofi = {
     {
       "name": "claimFeeAmount",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -986,82 +1060,51 @@ export type Woofi = {
           "type": "u128"
         }
       ]
-    },
-    {
-      "name": "claimRebateFee",
-      "accounts": [
-        {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rebateAuthority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "woopoolQuote",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "woopoolVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "rebatePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "claimFeeToAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
     }
   ],
   "accounts": [
     {
-      "name": "rebatePool",
+      "name": "wooConfig",
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "paused",
-            "type": "bool"
-          },
           {
             "name": "authority",
             "type": "publicKey"
           },
           {
-            "name": "rebateAuthority",
-            "type": "publicKey"
+            "name": "paused",
+            "type": "bool"
           },
           {
-            "name": "quoteTokenMint",
-            "type": "publicKey"
+            "name": "woopoolAdminAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
-            "name": "woopoolQuote",
-            "type": "publicKey"
+            "name": "wooracleAdminAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
-            "name": "woopoolVault",
-            "type": "publicKey"
+            "name": "feeAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
-            "name": "pendingRebate",
-            "type": "u128"
+            "name": "guardianAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "pauseAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -1072,6 +1115,10 @@ export type Woofi = {
         "kind": "struct",
         "fields": [
           {
+            "name": "wooconfig",
+            "type": "publicKey"
+          },
+          {
             "name": "woopoolBump",
             "type": {
               "array": [
@@ -1081,26 +1128,8 @@ export type Woofi = {
             }
           },
           {
-            "name": "paused",
-            "type": "bool"
-          },
-          {
             "name": "authority",
             "type": "publicKey"
-          },
-          {
-            "name": "adminAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feeAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "pauseAuthority",
-            "type": {
-              "vec": "publicKey"
-            }
           },
           {
             "name": "wooracle",
@@ -1154,11 +1183,11 @@ export type Woofi = {
         "kind": "struct",
         "fields": [
           {
-            "name": "authority",
+            "name": "wooconfig",
             "type": "publicKey"
           },
           {
-            "name": "adminAuthority",
+            "name": "authority",
             "type": "publicKey"
           },
           {
@@ -1391,10 +1420,10 @@ export type Woofi = {
       ]
     },
     {
-      "name": "AdminUpdatedEvent",
+      "name": "WooPoolAdminUpdatedEvent",
       "fields": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "type": "publicKey",
           "index": false
         },
@@ -1404,47 +1433,7 @@ export type Woofi = {
           "index": false
         },
         {
-          "name": "adminAuthority",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "FeeAdminUpdatedEvent",
-      "fields": [
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "feeAuthority",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "PauseRoleUpdatedEvent",
-      "fields": [
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "pauseAuthority",
+          "name": "admins",
           "type": {
             "vec": "publicKey"
           },
@@ -1453,10 +1442,10 @@ export type Woofi = {
       ]
     },
     {
-      "name": "WooracleAdminUpdatedEvent",
+      "name": "FeeAdminUpdatedEvent",
       "fields": [
         {
-          "name": "wooracle",
+          "name": "wooconfig",
           "type": "publicKey",
           "index": false
         },
@@ -1466,8 +1455,32 @@ export type Woofi = {
           "index": false
         },
         {
-          "name": "adminAuthority",
+          "name": "feeAdmins",
+          "type": {
+            "vec": "publicKey"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PauseRoleUpdatedEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
           "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pauseRoles",
+          "type": {
+            "vec": "publicKey"
+          },
           "index": false
         }
       ]
@@ -1692,8 +1705,34 @@ export const IDL: Woofi = {
   "name": "woofi",
   "instructions": [
     {
+      "name": "createConfig",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "createOracle",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -1751,6 +1790,11 @@ export const IDL: Woofi = {
       "name": "setOracleMaximumAge",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -1771,6 +1815,11 @@ export const IDL: Woofi = {
     {
       "name": "setStaleDuration",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -1793,6 +1842,11 @@ export const IDL: Woofi = {
       "name": "setWooBound",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -1813,6 +1867,11 @@ export const IDL: Woofi = {
     {
       "name": "setWooRange",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -1839,6 +1898,11 @@ export const IDL: Woofi = {
       "name": "setWooPrice",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -1859,6 +1923,11 @@ export const IDL: Woofi = {
     {
       "name": "setWooCoeff",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -1881,6 +1950,11 @@ export const IDL: Woofi = {
       "name": "setWooSpread",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "wooracle",
           "isMut": true,
           "isSigner": false
@@ -1901,6 +1975,11 @@ export const IDL: Woofi = {
     {
       "name": "setOutPreferred",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -1923,7 +2002,7 @@ export const IDL: Woofi = {
       "name": "setWooAdmin",
       "accounts": [
         {
-          "name": "wooracle",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -1936,13 +2015,43 @@ export const IDL: Woofi = {
       "args": [
         {
           "name": "adminAuthority",
-          "type": "publicKey"
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "setGuardianAdmin",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "guardianAuthority",
+          "type": {
+            "vec": "publicKey"
+          }
         }
       ]
     },
     {
       "name": "setWooState",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracle",
           "isMut": true,
@@ -1973,6 +2082,11 @@ export const IDL: Woofi = {
       "name": "getPrice",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "oracle",
           "isMut": false,
           "isSigner": false
@@ -1996,6 +2110,11 @@ export const IDL: Woofi = {
     {
       "name": "createPool",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -2035,71 +2154,6 @@ export const IDL: Woofi = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "adminAuthority",
-          "type": "publicKey"
-        },
-        {
-          "name": "feeAuthority",
-          "type": "publicKey"
-        }
-      ]
-    },
-    {
-      "name": "createRebatePool",
-      "accounts": [
-        {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "rebateAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rebatePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "woopoolQuote",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "woopoolVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
         }
       ],
       "args": []
@@ -2108,7 +2162,7 @@ export const IDL: Woofi = {
       "name": "setPoolAdmin",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -2121,15 +2175,17 @@ export const IDL: Woofi = {
       "args": [
         {
           "name": "adminAuthority",
-          "type": "publicKey"
+          "type": {
+            "vec": "publicKey"
+          }
         }
       ]
     },
     {
-      "name": "setPoolFeeAdmin",
+      "name": "setFeeAdmin",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -2142,15 +2198,17 @@ export const IDL: Woofi = {
       "args": [
         {
           "name": "feeAuthority",
-          "type": "publicKey"
+          "type": {
+            "vec": "publicKey"
+          }
         }
       ]
     },
     {
-      "name": "setPoolPauseAuth",
+      "name": "setPauseRole",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -2170,10 +2228,10 @@ export const IDL: Woofi = {
       ]
     },
     {
-      "name": "pausePool",
+      "name": "pause",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -2186,10 +2244,10 @@ export const IDL: Woofi = {
       "args": []
     },
     {
-      "name": "unpausePool",
+      "name": "unpause",
       "accounts": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "isMut": true,
           "isSigner": false
         },
@@ -2200,31 +2258,15 @@ export const IDL: Woofi = {
         }
       ],
       "args": []
-    },
-    {
-      "name": "setRebatePoolPaused",
-      "accounts": [
-        {
-          "name": "rebatePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "paused",
-          "type": "bool"
-        }
-      ]
     },
     {
       "name": "setPoolFeeRate",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "woopool",
           "isMut": true,
@@ -2247,6 +2289,11 @@ export const IDL: Woofi = {
       "name": "setPoolMaxGamma",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "woopool",
           "isMut": true,
           "isSigner": false
@@ -2268,6 +2315,11 @@ export const IDL: Woofi = {
       "name": "setPoolMaxNotionalSwap",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "woopool",
           "isMut": true,
           "isSigner": false
@@ -2288,6 +2340,11 @@ export const IDL: Woofi = {
     {
       "name": "tryQuery",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracleFrom",
           "isMut": false,
@@ -2337,6 +2394,11 @@ export const IDL: Woofi = {
     {
       "name": "query",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "wooracleFrom",
           "isMut": false,
@@ -2405,6 +2467,11 @@ export const IDL: Woofi = {
     {
       "name": "swap",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenProgram",
           "isMut": false,
@@ -2501,6 +2568,11 @@ export const IDL: Woofi = {
       "name": "deposit",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenMint",
           "isMut": false,
           "isSigner": false
@@ -2546,6 +2618,11 @@ export const IDL: Woofi = {
     {
       "name": "withdraw",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -2593,6 +2670,11 @@ export const IDL: Woofi = {
       "name": "claimFee",
       "accounts": [
         {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenMint",
           "isMut": false,
           "isSigner": false
@@ -2633,6 +2715,11 @@ export const IDL: Woofi = {
     {
       "name": "claimFeeAmount",
       "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
         {
           "name": "tokenMint",
           "isMut": false,
@@ -2675,82 +2762,51 @@ export const IDL: Woofi = {
           "type": "u128"
         }
       ]
-    },
-    {
-      "name": "claimRebateFee",
-      "accounts": [
-        {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rebateAuthority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "woopoolQuote",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "woopoolVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "rebatePool",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "claimFeeToAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
     }
   ],
   "accounts": [
     {
-      "name": "rebatePool",
+      "name": "wooConfig",
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "paused",
-            "type": "bool"
-          },
           {
             "name": "authority",
             "type": "publicKey"
           },
           {
-            "name": "rebateAuthority",
-            "type": "publicKey"
+            "name": "paused",
+            "type": "bool"
           },
           {
-            "name": "quoteTokenMint",
-            "type": "publicKey"
+            "name": "woopoolAdminAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
-            "name": "woopoolQuote",
-            "type": "publicKey"
+            "name": "wooracleAdminAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
-            "name": "woopoolVault",
-            "type": "publicKey"
+            "name": "feeAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           },
           {
-            "name": "pendingRebate",
-            "type": "u128"
+            "name": "guardianAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "pauseAuthority",
+            "type": {
+              "vec": "publicKey"
+            }
           }
         ]
       }
@@ -2761,6 +2817,10 @@ export const IDL: Woofi = {
         "kind": "struct",
         "fields": [
           {
+            "name": "wooconfig",
+            "type": "publicKey"
+          },
+          {
             "name": "woopoolBump",
             "type": {
               "array": [
@@ -2770,26 +2830,8 @@ export const IDL: Woofi = {
             }
           },
           {
-            "name": "paused",
-            "type": "bool"
-          },
-          {
             "name": "authority",
             "type": "publicKey"
-          },
-          {
-            "name": "adminAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "feeAuthority",
-            "type": "publicKey"
-          },
-          {
-            "name": "pauseAuthority",
-            "type": {
-              "vec": "publicKey"
-            }
           },
           {
             "name": "wooracle",
@@ -2843,11 +2885,11 @@ export const IDL: Woofi = {
         "kind": "struct",
         "fields": [
           {
-            "name": "authority",
+            "name": "wooconfig",
             "type": "publicKey"
           },
           {
-            "name": "adminAuthority",
+            "name": "authority",
             "type": "publicKey"
           },
           {
@@ -3080,10 +3122,10 @@ export const IDL: Woofi = {
       ]
     },
     {
-      "name": "AdminUpdatedEvent",
+      "name": "WooPoolAdminUpdatedEvent",
       "fields": [
         {
-          "name": "woopool",
+          "name": "wooconfig",
           "type": "publicKey",
           "index": false
         },
@@ -3093,47 +3135,7 @@ export const IDL: Woofi = {
           "index": false
         },
         {
-          "name": "adminAuthority",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "FeeAdminUpdatedEvent",
-      "fields": [
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "feeAuthority",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "PauseRoleUpdatedEvent",
-      "fields": [
-        {
-          "name": "woopool",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "pauseAuthority",
+          "name": "admins",
           "type": {
             "vec": "publicKey"
           },
@@ -3142,10 +3144,10 @@ export const IDL: Woofi = {
       ]
     },
     {
-      "name": "WooracleAdminUpdatedEvent",
+      "name": "FeeAdminUpdatedEvent",
       "fields": [
         {
-          "name": "wooracle",
+          "name": "wooconfig",
           "type": "publicKey",
           "index": false
         },
@@ -3155,8 +3157,32 @@ export const IDL: Woofi = {
           "index": false
         },
         {
-          "name": "adminAuthority",
+          "name": "feeAdmins",
+          "type": {
+            "vec": "publicKey"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PauseRoleUpdatedEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
           "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "pauseRoles",
+          "type": {
+            "vec": "publicKey"
+          },
           "index": false
         }
       ]

@@ -74,6 +74,7 @@ export class WoofiClient {
     const fromPoolParams = await generatePoolParams(fromTokenMint, QuoteTokenMint, fromOracleFeedAccount, fromPriceUpdate, ctx.program);
     const toPoolParams = await generatePoolParams(toTokenMint, QuoteTokenMint, toOracleFeedAccount, toPriceUpdate, ctx.program);    
     const tryQuerySwapParams: TryQuerySwapParams = {
+      wooconfig: fromPoolParams.wooconfig,
       amount,
       wooracleFrom: fromPoolParams.wooracle,
       woopoolFrom: fromPoolParams.woopool,
@@ -191,6 +192,7 @@ export class WoofiClient {
     }
 
     const swapParams : SwapParams = {
+      wooconfig: fromPoolParams.wooconfig,
       amount,
       minToAmount,
       owner: ctx.wallet.publicKey,

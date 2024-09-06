@@ -21,6 +21,7 @@ describe("woofi", () => {
   const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
   const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 
+  let wooconfigAccount;
   let wooracleAccount;
   let pythoracle_price: BN;
   let pythoracle_decimal: number;
@@ -73,10 +74,16 @@ describe("woofi", () => {
   const getPriceResult = async () => {
     const confirmOptions: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
 
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      program.programId
+    );  
+
     const tx = await program
       .methods
       .getPrice()
       .accounts({
+        wooconfig,
         oracle: wooracleAccount,
         priceUpdate: priceUpdateAccount,
         quotePriceUpdate
@@ -95,14 +102,57 @@ describe("woofi", () => {
     return [price, feasible];
   };
 
+  describe("#create_config()", async () => {
+    it("creates an config account", async () => {
+      const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('wooconfig')],
+        program.programId
+      );
+      
+      let wooconfigData = null;
+      try {
+        wooconfigData = await program.account.wooConfig.fetch(wooconfig);
+      } catch (e) {
+        const error = e as Error;
+        if (error.message.indexOf("Account does not exist") >= 0) {
+            const tx = await program
+              .methods
+              .createConfig()
+              .accounts({
+                wooconfig,
+                authority: provider.wallet.publicKey,
+              })
+              .rpc(confirmOptionsRetryTres);
+  
+            const logs = await getLogs(provider.connection, tx);
+            console.log(logs);
+        }
+      }
+  
+      if (wooconfigData == null) {
+        wooconfigData = await program.account.wooConfig.fetch(wooconfig);
+      }
+
+      assert.ok(
+        wooconfigData.authority.equals(provider.wallet.publicKey)
+      );
+    });
+  });
+
   describe("#create_oracle()", async () => {
     it("creates an oracle account", async () => {
 
+      const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('wooconfig')],
+        program.programId
+      );  
+  
       const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooracle'), solTokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdateAccount.toBuffer()],
+        [Buffer.from('wooracle'), wooconfig.toBuffer(), solTokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdateAccount.toBuffer()],
         program.programId
       );
 
+      wooconfigAccount = wooconfig;
       wooracleAccount = wooracle;
 
       // console.log("process.env:");
@@ -124,6 +174,7 @@ describe("woofi", () => {
             .methods
             .createOracle(new BN(1000))
             .accounts({
+              wooconfig,
               tokenMint,
               wooracle,
               admin: provider.wallet.publicKey,
@@ -202,6 +253,7 @@ describe("woofi", () => {
         .methods
         .setWooState(setPrice, setCoeff, setSpread)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
@@ -234,6 +286,7 @@ describe("woofi", () => {
         .methods
         .setWooRange(rangeMin, setRangeMax)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
@@ -256,6 +309,7 @@ describe("woofi", () => {
           .methods
           .getPrice()
           .accounts({
+            wooconfig: wooconfigAccount,
             oracle: wooracleAccount,
             priceUpdate: priceUpdateAccount,
             quotePriceUpdate
@@ -289,6 +343,7 @@ describe("woofi", () => {
         .methods
         .setWooRange(setRangeMin, rangeMax)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
@@ -311,6 +366,7 @@ describe("woofi", () => {
           .methods
           .getPrice()
           .accounts({
+            wooconfig: wooconfigAccount,
             oracle: wooracleAccount,
             priceUpdate: priceUpdateAccount,
             quotePriceUpdate
@@ -342,6 +398,7 @@ describe("woofi", () => {
         .methods
         .setWooRange(rangeMin, rangeMax)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
@@ -374,6 +431,7 @@ describe("woofi", () => {
         .methods
         .getPrice()
         .accounts({
+          wooconfig: wooconfigAccount,
           oracle: wooracleAccount,
           priceUpdate: priceUpdateAccount,
           quotePriceUpdate
@@ -429,6 +487,7 @@ describe("woofi", () => {
         .methods
         .setWooPrice(setPrice)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
@@ -460,6 +519,7 @@ describe("woofi", () => {
         .methods
         .setWooPrice(setPrice)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
@@ -490,6 +550,7 @@ describe("woofi", () => {
         .methods
         .setWooPrice(setPrice)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
@@ -521,6 +582,7 @@ describe("woofi", () => {
         .methods
         .setWooPrice(setPrice)
         .accounts({
+          wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })

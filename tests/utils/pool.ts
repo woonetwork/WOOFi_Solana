@@ -62,6 +62,7 @@ export class PoolUtils {
   };
 
   public getOraclePriceResult = async (
+    wooconfig: anchor.web3.PublicKey,
     oracle: anchor.web3.PublicKey,
     priceUpdate: anchor.web3.PublicKey,
     quotePriceUpdate: anchor.web3.PublicKey
@@ -72,6 +73,7 @@ export class PoolUtils {
       .methods
       .getPrice()
       .accounts({
+        wooconfig,
         oracle,
         priceUpdate,
         quotePriceUpdate
@@ -90,9 +92,47 @@ export class PoolUtils {
     return [price, feasible];
   };
 
+  public createConfig = async () => {
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      this.program.programId
+    );
+    
+    let wooconfigData = null;
+    try {
+      wooconfigData = await this.program.account.wooConfig.fetch(wooconfig);
+    } catch (e) {
+      const error = e as Error;
+      if (error.message.indexOf("Account does not exist") >= 0) {
+          const tx = await this.program
+            .methods
+            .createConfig()
+            .accounts({
+              wooconfig,
+              authority: this.provider.wallet.publicKey,
+            })
+            .rpc(this.confirmOptionsRetryTres);
+
+          const logs = await getLogs(this.provider.connection, tx);
+          console.log(logs);
+      }
+    }
+
+    if (wooconfigData == null) {
+      wooconfigData = await this.program.account.wooConfig.fetch(wooconfig);
+    }
+
+    return wooconfigData;
+  }
+
   public createOracle = async (token: SupportedToken, tokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      this.program.programId
+    );
+    
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
+      [Buffer.from('wooracle'), wooconfig.toBuffer(), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       this.program.programId
     );
 
@@ -109,6 +149,7 @@ export class PoolUtils {
             .methods
             .createOracle(new BN(1000))
             .accounts({
+              wooconfig,
               tokenMint,
               wooracle,
               admin: this.provider.wallet.publicKey,
@@ -136,6 +177,7 @@ export class PoolUtils {
       .methods
       .setWooRange(pythPrice.rangeMin, pythPrice.rangeMax)
       .accounts({
+        wooconfig,
         wooracle: wooracle,
         authority: this.provider.wallet.publicKey,
       })
@@ -145,16 +187,18 @@ export class PoolUtils {
   }
 
   public createPool = async (tokenMint: anchor.web3.PublicKey, quoteTokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      this.program.programId
+    );
+
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
+      [Buffer.from('wooracle'), wooconfig.toBuffer(), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       this.program.programId
     );
   
-    const adminAuthority = this.provider.wallet.publicKey;
-    const feeAuthority = this.provider.wallet.publicKey;
-
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
+      [Buffer.from('woopool'), wooconfig.toBuffer(), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
       this.program.programId
     );
 
@@ -173,8 +217,9 @@ export class PoolUtils {
 
         await this.program
         .methods
-        .createPool(adminAuthority, feeAuthority)
+        .createPool()
         .accounts({
+          wooconfig,
           tokenMint,
           quoteTokenMint,
           authority: this.provider.wallet.publicKey,
@@ -183,7 +228,6 @@ export class PoolUtils {
           wooracle,
           tokenProgram: token.TOKEN_PROGRAM_ID, 
           systemProgram: web3.SystemProgram.programId,
-          rent: web3.SYSVAR_RENT_PUBKEY
         })
         .signers([tokenVaultKeypair])
         .rpc(this.confirmOptionsRetryTres);   
@@ -196,6 +240,7 @@ export class PoolUtils {
     .methods
     .setPoolMaxNotionalSwap(new BN(1000*LAMPORTS_PER_SOL))
     .accounts({
+      wooconfig,
       woopool: woopool,
       authority: this.provider.wallet.publicKey
     }).rpc(this.confirmOptionsRetryTres);
@@ -205,6 +250,7 @@ export class PoolUtils {
     .methods
     .setPoolMaxGamma(new BN(1000))
     .accounts({
+      wooconfig,
       woopool: woopool,
       authority: this.provider.wallet.publicKey
     }).rpc(this.confirmOptionsRetryTres);
@@ -224,16 +270,18 @@ export class PoolUtils {
   }
 
   public checkPool = async (tokenMint: anchor.web3.PublicKey, quoteTokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      this.program.programId
+    );
+
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
+      [Buffer.from('wooracle'), wooconfig.toBuffer(), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       this.program.programId
     );
   
-    const adminAuthority = this.provider.wallet.publicKey;
-    const feeAuthority = this.provider.wallet.publicKey;
-
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
+      [Buffer.from('woopool'), wooconfig.toBuffer(), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
       this.program.programId
     );
 
@@ -264,13 +312,18 @@ export class PoolUtils {
     feedAccount: anchor.web3.PublicKey,
     priceUpdate: anchor.web3.PublicKey
   ) => {
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      this.program.programId
+    );
+
     const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('wooracle'), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
+      [Buffer.from('wooracle'), wooconfig.toBuffer(), tokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdate.toBuffer()],
       this.program.programId
     );
 
     const [woopool] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from('woopool'), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
+      [Buffer.from('woopool'), wooconfig.toBuffer(), tokenMint.toBuffer(), quoteTokenMint.toBuffer()],
       this.program.programId
     );
 
@@ -278,10 +331,27 @@ export class PoolUtils {
     const {tokenVault} = await this.program.account.wooPool.fetch(woopool);
 
     return {
+      wooconfig,
       wooracle,
       woopool,
       tokenVault
     }
+  }
+
+  public checkAdmins = async() => {
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('wooconfig')],
+      this.program.programId
+    );
+
+    const wooconfigData = await this.program.account.wooConfig.fetch(wooconfig);
+
+    console.log('paused:', wooconfigData.paused);
+    console.log('wooracleAdminAuthority:', wooconfigData.wooracleAdminAuthority)
+    console.log('woopoolAdminAuthority:', wooconfigData.woopoolAdminAuthority)
+    console.log('guardianAuthority:', wooconfigData.guardianAuthority)
+    console.log('pauseAuthority:', wooconfigData.pauseAuthority)
+    console.log('feeAuthority:', wooconfigData.feeAuthority)
   }
 
 }

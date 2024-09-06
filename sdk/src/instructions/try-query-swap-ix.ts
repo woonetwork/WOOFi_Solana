@@ -7,14 +7,18 @@ import { Woofi } from "../artifacts/woofi";
  * Raw parameters and accounts to swap on a Woofi
  *
  * @category Instruction Types
+ * @param wooconfig - The config account for the program
  * @param amount - The amount of input token to swap from.
  * @param wooracleFrom - PublicKey for the wooracle account for from woopool.
  * @param woopoolFrom - PublicKey for the woopool that the swap will occur on from.
+ * @param priceUpdateFrom - PublicKey for the pyth oracle update for from token.
  * @param wooracleTo - PublicKey for the wooracle account for to woopool.
  * @param woopoolTo - PublicKey for the woopool that the swap will occur on to.
- * @param priceUpdate - PublicKey for the pyth oracle update.
+ * @param priceUpdateTo - PublicKey for the pyth oracle update for to token.
+ * @param quotePriceUpdate - PublicKey for the pyth oracle update for quote token.
  */
 export type TryQuerySwapParams = {
+  wooconfig: PublicKey,
   amount: BN,
   wooracleFrom: PublicKey,
   woopoolFrom: PublicKey,
@@ -45,6 +49,7 @@ export type TryQuerySwapParams = {
  */
 export function tryQuerySwapIx(program: Program<Woofi>, params: TryQuerySwapParams): Promise<TransactionInstruction> {
   const {
+    wooconfig,
     amount,
     wooracleFrom,
     woopoolFrom,
@@ -59,6 +64,7 @@ export function tryQuerySwapIx(program: Program<Woofi>, params: TryQuerySwapPara
     .methods
     .tryQuery(amount)
     .accounts({
+      wooconfig,
       wooracleFrom,
       woopoolFrom,
       priceUpdateFrom,
