@@ -18,7 +18,7 @@ pub struct Swap<'info> {
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
 
-    pub owner: Signer<'info>,
+    pub payer: Signer<'info>,
 
     #[account(mut,
         has_one = wooconfig,
@@ -34,7 +34,7 @@ pub struct Swap<'info> {
     )]
     woopool_from: Box<Account<'info, WooPool>>,
     #[account(mut,
-        has_one = owner,
+        constraint = token_owner_account_from.owner == payer.key(),
         constraint = token_owner_account_from.mint == woopool_from.token_mint
     )]
     token_owner_account_from: Box<Account<'info, TokenAccount>>,
@@ -196,7 +196,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
 
     transfer_from_owner_to_vault(
-        &ctx.accounts.owner,
+        &ctx.accounts.payer,
         token_owner_account_from,
         token_vault_from,
         &ctx.accounts.token_program,
@@ -212,7 +212,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     )?;
 
     emit!(SwapEvent {
-        sender: ctx.accounts.owner.key(),
+        sender: ctx.accounts.payer.key(),
         from_token_mint: woopool_from.token_mint,
         to_token_mint: woopool_to.token_mint,
         from_amount,

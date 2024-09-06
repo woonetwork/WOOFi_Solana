@@ -195,7 +195,7 @@ export class WoofiClient {
       wooconfig: fromPoolParams.wooconfig,
       amount,
       minToAmount,
-      owner: ctx.wallet.publicKey,
+      payer: ctx.wallet.publicKey,
       wooracleFrom: fromPoolParams.wooracle,
       woopoolFrom: fromPoolParams.woopool,
       tokenOwnerAccountFrom,
