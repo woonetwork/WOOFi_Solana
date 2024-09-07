@@ -111,9 +111,6 @@ pub fn handler(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
     // ctx.accounts.wooracle.round = price.price as i128;
     // ctx.accounts.wooracle.updated_at = price.publish_time;
 
-    // Default set prefer outer oracle to true
-    ctx.accounts.wooracle.outer_preferred = true;
-
     ctx.accounts.wooracle.stale_duration = DEFAULT_STALE_DURATION;
     // set default bound to 1e16 means 1%
     ctx.accounts.wooracle.bound = DEFAULT_BOUND;

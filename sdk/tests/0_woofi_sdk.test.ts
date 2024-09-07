@@ -3,8 +3,9 @@ import * as borsh from "borsh";
 import { BN } from "@coral-xyz/anchor";
 import { WoofiClient } from "../src/client";
 import { WoofiContext } from "../src";
-import { WOOFI_TOKENS } from '../src/utils/constants'
-import { ConfirmOptions, Transaction, TransactionResponse } from "@solana/web3.js";
+import { PYTH_FEED_ACCOUNT, PYTH_PRICE_UPDATE_ACCOUNT, QuoteTokenMint, TOKEN_MINTS, WOOFI_TOKENS } from '../src/utils/constants'
+import { Transaction, TransactionResponse } from "@solana/web3.js";
+import { generatePoolParams, getOraclePrice } from "../src/utils/contract";
 
 describe("woofi_sdk", async () => {
 
@@ -24,6 +25,28 @@ describe("woofi_sdk", async () => {
   anchor.setProvider(provider);
 
   const context = WoofiContext.from(provider.connection, provider.wallet);
+
+  it("trader_set_price", async ()=> {
+    let pythPrice = await getOraclePrice(WOOFI_TOKENS.SOL);
+
+    const params = await generatePoolParams(
+        new anchor.web3.PublicKey(TOKEN_MINTS.SOL),
+        QuoteTokenMint,
+        new anchor.web3.PublicKey(PYTH_FEED_ACCOUNT.SOL),
+        new anchor.web3.PublicKey(PYTH_PRICE_UPDATE_ACCOUNT.SOL),
+        context.program
+    );
+
+    await context.program
+      .methods
+      .setWooPrice(pythPrice)
+      .accounts({
+        wooconfig: params.wooconfig,
+        wooracle: params.wooracle,
+        authority: provider.wallet.publicKey,
+      })
+      .rpc();
+  })
 
   it("try_query", async ()=> {
     const result = await WoofiClient.tryQuery(

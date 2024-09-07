@@ -28,10 +28,10 @@ export type PythPrice = {
 export async function getPythPrice(token: WOOFI_TOKENS): Promise<PythPrice> {
     const pythPriceFeed = await runQuery() ?? [];
     const solPrice = pythPriceFeed[0].getPriceNoOlderThan(1000)!;
-    console.log("solPrice", solPrice);
+    // console.log("solPrice", solPrice);
 
     const usdcPrice = pythPriceFeed[1].getPriceNoOlderThan(1000)!;
-    console.log("usdcPrice", usdcPrice);
+    // console.log("usdcPrice", usdcPrice);
 
     const tokenPrice = token == WOOFI_TOKENS.SOL ? solPrice! : usdcPrice!;
 
@@ -41,15 +41,15 @@ export async function getPythPrice(token: WOOFI_TOKENS): Promise<PythPrice> {
 
     const updatedAt = moment.unix(tokenPrice.publishTime);
 
-    console.log(`pythoracle_price:${price}`);
-    console.log(`pythoracle_decimal:${decimal}`);
-    console.log(`updated at - ${updatedAt}`);
+    // console.log(`pythoracle_price:${price}`);
+    // console.log(`pythoracle_decimal:${decimal}`);
+    // console.log(`updated at - ${updatedAt}`);
 
     const rangeMax = price.mul(new BN(110)).div(new BN(100));
     const rangeMin = price.mul(new BN(90)).div(new BN(100));
 
-    console.log('rangeMin: ', rangeMin.toNumber());
-    console.log('rangeMax: ', rangeMax.toNumber());
+    // console.log('rangeMin: ', rangeMin.toNumber());
+    // console.log('rangeMax: ', rangeMax.toNumber());
 
     return {
         price,
