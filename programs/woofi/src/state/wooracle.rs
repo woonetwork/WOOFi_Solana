@@ -109,7 +109,10 @@ impl WOOracle {
     }
 
     pub fn update_bound(&mut self, bound: u64) -> Result<()> {
-        require!(bound > 0 && bound < TENPOW18U64, ErrorCode::WooOracleBoundLimit);
+        require!(
+            bound > 0 && bound < TENPOW18U64,
+            ErrorCode::WooOracleBoundLimit
+        );
 
         self.bound = bound;
 

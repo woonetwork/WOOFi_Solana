@@ -81,7 +81,7 @@ pub fn get_price_impl<'info>(
 
     let price_out: u128;
     let feasible_out: bool;
-    if wo_feasible && wo_price_in_bound{
+    if wo_feasible && wo_price_in_bound {
         price_out = wo_price;
         feasible_out = true;
     } else {
