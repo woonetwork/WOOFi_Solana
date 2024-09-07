@@ -41,7 +41,7 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, instructions::*, state::*};
 
-declare_id!("4UXfbLucawG1X82nHsLCsZxNHYxQMBXHhWf3XV8x2UKW");
+declare_id!("5KNaYPW5Yi53eieBAfKpGS9tX9Dj4uq2UFEWWXfGokkB");
 
 #[program]
 pub mod woofi {
@@ -91,13 +91,6 @@ pub mod woofi {
 
     pub fn set_woo_spread(ctx: Context<SetWooStateOnlyAdmin>, spread: u64) -> Result<()> {
         instructions::set_woo_state::set_spread_handler(ctx, spread)
-    }
-
-    pub fn set_out_preferred(
-        ctx: Context<SetWooStateOnlyAdmin>,
-        out_preferred: bool,
-    ) -> Result<()> {
-        instructions::set_woo_state::set_outer_preferred_handler(ctx, out_preferred)
     }
 
     pub fn set_woo_admin(

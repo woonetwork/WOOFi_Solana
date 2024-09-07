@@ -52,7 +52,6 @@ pub struct WOOracle {
     pub quote_decimals: u8, // 1
     pub base_decimals: u8,  // 1
     //    pub round: i128,          // 16
-    pub outer_preferred: bool,      // 1
     pub updated_at: i64,            // 8
     pub stale_duration: i64,        // 8
     pub bound: u64,                 // 8
@@ -78,7 +77,6 @@ impl WOOracle {
             + 1
             + 1
 //            + 16
-            + 1
             + 8
             + 8
             + 8
@@ -98,12 +96,6 @@ impl WOOracle {
         Ok(())
     }
 
-    pub fn update_outer_preferred(&mut self, outer_preferred: bool) -> Result<()> {
-        self.outer_preferred = outer_preferred;
-
-        Ok(())
-    }
-
     pub fn update_maximum_age(&mut self, maximum_age: u64) -> Result<()> {
         self.maximum_age = maximum_age;
 
@@ -117,6 +109,11 @@ impl WOOracle {
     }
 
     pub fn update_bound(&mut self, bound: u64) -> Result<()> {
+        require!(
+            bound > 0 && bound < TENPOW18U64,
+            ErrorCode::WooOracleBoundLimit
+        );
+
         self.bound = bound;
 
         Ok(())

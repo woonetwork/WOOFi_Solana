@@ -78,20 +78,15 @@ pub fn get_price_impl<'info>(
     let wo_price_in_bound = clo_price != 0
         && ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price
             && wo_price <= (clo_price * (TENPOW18U128 + bound)) / TENPOW18U128);
-    // TODO: check upper and low bound
 
     let price_out: u128;
     let feasible_out: bool;
-    if wo_feasible {
+    if wo_feasible && wo_price_in_bound {
         price_out = wo_price;
-        feasible_out = wo_price_in_bound;
+        feasible_out = true;
     } else {
-        if oracle.outer_preferred {
-            price_out = clo_price;
-        } else {
-            price_out = 0;
-        }
-        feasible_out = price_out != 0;
+        price_out = 0;
+        feasible_out = false;
     }
 
     if feasible_out {
@@ -102,7 +97,6 @@ pub fn get_price_impl<'info>(
             return Err(ErrorCode::WooOraclePriceRangeMax.into());
         }
     }
-    // TODO Prince: consider, if not feasible, just return ErrorCode here
 
     Ok(GetPriceResult {
         price_out,

@@ -271,32 +271,6 @@ export type Woofi = {
       ]
     },
     {
-      "name": "setOutPreferred",
-      "accounts": [
-        {
-          "name": "wooconfig",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "wooracle",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "outPreferred",
-          "type": "bool"
-        }
-      ]
-    },
-    {
       "name": "setWooAdmin",
       "accounts": [
         {
@@ -1219,10 +1193,6 @@ export type Woofi = {
             "type": "u8"
           },
           {
-            "name": "outerPreferred",
-            "type": "bool"
-          },
-          {
             "name": "updatedAt",
             "type": "i64"
           },
@@ -1639,61 +1609,66 @@ export type Woofi = {
     },
     {
       "code": 6019,
+      "name": "WooOracleBoundLimit",
+      "msg": "Woo oracle bound exceed limit"
+    },
+    {
+      "code": 6020,
       "name": "WooOracleNotFeasible",
       "msg": "Woo oracle is not feasible"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "WooOraclePriceNotValid",
       "msg": "Woo oracle price is not valid"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "WooOraclePriceRangeMin",
       "msg": "Woo oracle price below range MIN"
     },
     {
-      "code": 6022,
+      "code": 6023,
       "name": "WooOraclePriceRangeMax",
       "msg": "Woo oracle price exceed range MAX"
     },
     {
-      "code": 6023,
+      "code": 6024,
       "name": "WooOracleSpreadExceed",
       "msg": "Woo oracle spread exceed 1E18"
     },
     {
-      "code": 6024,
+      "code": 6025,
       "name": "WooPoolExceedMaxNotionalValue",
       "msg": "Woo pp exceed max notional value"
     },
     {
-      "code": 6025,
+      "code": 6026,
       "name": "WooPoolExceedMaxGamma",
       "msg": "Woo pp exceed max gamma"
     },
     {
-      "code": 6026,
+      "code": 6027,
       "name": "NotEnoughBalance",
       "msg": "Src Balance < LP Deposit Amount."
     },
     {
-      "code": 6027,
+      "code": 6028,
       "name": "NoPoolMintOutput",
       "msg": "Pool Mint Amount < 0 on LP Deposit"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "BurnTooMuch",
       "msg": "Trying to burn too much"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
     },
     {
-      "code": 6030,
+      "code": 6031,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
     }
@@ -1973,32 +1948,6 @@ export const IDL: Woofi = {
       ]
     },
     {
-      "name": "setOutPreferred",
-      "accounts": [
-        {
-          "name": "wooconfig",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "wooracle",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "outPreferred",
-          "type": "bool"
-        }
-      ]
-    },
-    {
       "name": "setWooAdmin",
       "accounts": [
         {
@@ -2921,10 +2870,6 @@ export const IDL: Woofi = {
             "type": "u8"
           },
           {
-            "name": "outerPreferred",
-            "type": "bool"
-          },
-          {
             "name": "updatedAt",
             "type": "i64"
           },
@@ -3341,61 +3286,66 @@ export const IDL: Woofi = {
     },
     {
       "code": 6019,
+      "name": "WooOracleBoundLimit",
+      "msg": "Woo oracle bound exceed limit"
+    },
+    {
+      "code": 6020,
       "name": "WooOracleNotFeasible",
       "msg": "Woo oracle is not feasible"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "WooOraclePriceNotValid",
       "msg": "Woo oracle price is not valid"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "WooOraclePriceRangeMin",
       "msg": "Woo oracle price below range MIN"
     },
     {
-      "code": 6022,
+      "code": 6023,
       "name": "WooOraclePriceRangeMax",
       "msg": "Woo oracle price exceed range MAX"
     },
     {
-      "code": 6023,
+      "code": 6024,
       "name": "WooOracleSpreadExceed",
       "msg": "Woo oracle spread exceed 1E18"
     },
     {
-      "code": 6024,
+      "code": 6025,
       "name": "WooPoolExceedMaxNotionalValue",
       "msg": "Woo pp exceed max notional value"
     },
     {
-      "code": 6025,
+      "code": 6026,
       "name": "WooPoolExceedMaxGamma",
       "msg": "Woo pp exceed max gamma"
     },
     {
-      "code": 6026,
+      "code": 6027,
       "name": "NotEnoughBalance",
       "msg": "Src Balance < LP Deposit Amount."
     },
     {
-      "code": 6027,
+      "code": 6028,
       "name": "NoPoolMintOutput",
       "msg": "Pool Mint Amount < 0 on LP Deposit"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "BurnTooMuch",
       "msg": "Trying to burn too much"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
     },
     {
-      "code": 6030,
+      "code": 6031,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
     }

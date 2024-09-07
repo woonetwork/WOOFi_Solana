@@ -283,7 +283,7 @@ describe("woofi_swap", () => {
         .accounts({
           wooconfig: fromPoolParams.wooconfig,
           tokenProgram: token.TOKEN_PROGRAM_ID,
-          owner: fromWallet.publicKey,  // is the user want to do swap
+          payer: fromWallet.publicKey,  // is the user want to do swap
           wooracleFrom: fromPoolParams.wooracle,
           woopoolFrom: fromPoolParams.woopool,
           tokenOwnerAccountFrom: fromTokenAccount,

@@ -66,15 +66,6 @@ pub fn set_maximum_age_handler(ctx: Context<SetWooStateOnlyAdmin>, maximum_age: 
     ctx.accounts.wooracle.update_maximum_age(maximum_age)
 }
 
-pub fn set_outer_preferred_handler(
-    ctx: Context<SetWooStateOnlyAdmin>,
-    outer_preferred: bool,
-) -> Result<()> {
-    ctx.accounts
-        .wooracle
-        .update_outer_preferred(outer_preferred)
-}
-
 pub fn set_stale_duration_handler(
     ctx: Context<SetWooStateOnlyAdmin>,
     stale_duration: i64,
@@ -83,7 +74,6 @@ pub fn set_stale_duration_handler(
 }
 
 pub fn set_bound_handler(ctx: Context<SetWooStateOnlyOwner>, bound: u64) -> Result<()> {
-    // TODO: check bound limit
     ctx.accounts.wooracle.update_bound(bound)
 }
 

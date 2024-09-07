@@ -41,37 +41,39 @@ pub enum ErrorCode {
     #[msg("Reserve not enough")]
     ReserveNotEnough, // 0x1780
     #[msg("Reserve less than fee")]
-    ReserveLessThanFee,
+    ReserveLessThanFee, // 0x1781
 
     #[msg("Too Many Authorities")]
-    TooManyAuthorities,
+    TooManyAuthorities, // 0x1782
+    #[msg("Woo oracle bound exceed limit")]
+    WooOracleBoundLimit, //0x1783
 
     #[msg("Woo oracle is not feasible")]
-    WooOracleNotFeasible, //0x1781
+    WooOracleNotFeasible, //0x1784
     #[msg("Woo oracle price is not valid")]
-    WooOraclePriceNotValid, //0x1782
+    WooOraclePriceNotValid, //0x1785
     #[msg("Woo oracle price below range MIN")]
-    WooOraclePriceRangeMin, //0x1783
+    WooOraclePriceRangeMin, //0x1786
     #[msg("Woo oracle price exceed range MAX")]
-    WooOraclePriceRangeMax, //0x1784
+    WooOraclePriceRangeMax, //0x1787
     #[msg("Woo oracle spread exceed 1E18")]
-    WooOracleSpreadExceed, //0x1785
+    WooOracleSpreadExceed, //0x1788
 
     #[msg("Woo pp exceed max notional value")]
-    WooPoolExceedMaxNotionalValue, //0x1786
+    WooPoolExceedMaxNotionalValue, //0x1789
     #[msg("Woo pp exceed max gamma")]
-    WooPoolExceedMaxGamma, //0x1787
+    WooPoolExceedMaxGamma, //0x178a
 
     #[msg("Src Balance < LP Deposit Amount.")]
-    NotEnoughBalance, //0x1788
+    NotEnoughBalance, //0x178b
     #[msg("Pool Mint Amount < 0 on LP Deposit")]
-    NoPoolMintOutput, //0x1789
+    NoPoolMintOutput, //0x178c
     #[msg("Trying to burn too much")]
-    BurnTooMuch, //0x178a
+    BurnTooMuch, //0x178d
     #[msg("Not enough out")]
-    NotEnoughOut, //0x178b
+    NotEnoughOut, //0x178e
     #[msg("Amount out below minimum threshold")]
-    AmountOutBelowMinimum, //0x178c
+    AmountOutBelowMinimum, //0x178f
 }
 
 impl From<TryFromIntError> for ErrorCode {

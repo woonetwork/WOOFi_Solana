@@ -98,7 +98,7 @@ import { getPythPrice } from "./pyth";
 
     let price = basePrice.price.mul(new BN(10 ** quotePrice.decimal)).div(quotePrice.price);
 
-    // console.log('pythPrice base after quote:', price.toNumber());
+    console.log('pyth price in quote token:', price.toNumber());
     return price;
   }
   
@@ -106,32 +106,28 @@ import { getPythPrice } from "./pyth";
     token: WOOFI_TOKENS,
     wooracle: any,
   ) : Promise<GetStateResult> => {
-    const now = new Date().getTime();
+    const milliseconds = new Date().getTime();
+    const now = milliseconds / 1000;
 
     let pythPrice = await getOraclePrice(token);
   
     const wo_price = wooracle.price;
     const wo_timestamp = wooracle.updatedAt;
     const bound = wooracle.bound;
-  
+
     const clo_price = pythPrice;
     const wo_feasible = !clo_price.eq(new BN(0)) && new BN(now).lte(wo_timestamp.add(wooracle.staleDuration));
     const wo_price_in_bound = !clo_price.eq(new BN(0)) &&
     ((clo_price.mul(TENPOW18U128.sub(bound)).div(TENPOW18U128)).lte(wo_price) && wo_price.lte(clo_price.mul(TENPOW18U128.add(bound)).div(TENPOW18U128)));
-    // TODO: check upper and low bound
   
     let price_out: BN;
     let feasible_out: boolean;
-    if (wo_feasible) {
+    if (wo_feasible && wo_price_in_bound) {
         price_out = wo_price;
-        feasible_out = wo_price_in_bound;
+        feasible_out = true;
     } else {
-        if (wooracle.outerPreferred) {
-            price_out = clo_price;
-        } else {
-            price_out = new BN(0);
-        }
-        feasible_out = !price_out.eq(new BN(0));
+        price_out = new BN(0);
+        feasible_out = false;
     }
   
     if (feasible_out) {
@@ -146,6 +142,9 @@ import { getPythPrice } from "./pyth";
           throw new Error("Woo oracle price exceed range MAX");
         }
     }
+
+    console.log('price_out:', price_out.toNumber());
+    console.log('feasible_out:', feasible_out);
   
     return {
       price_out,
@@ -162,7 +161,6 @@ import { getPythPrice } from "./pyth";
   export const checked_mul_div_round = (a: BN, b: BN, c: BN): BN => {
     return a.mul(b).divRound(c)
   }
-
 
   export const calc_quote_amount_sell_base = (
     base_amount: BN,
@@ -319,7 +317,7 @@ import { getPythPrice } from "./pyth";
     );
 
     let quote_amount = fromAmount;
-    if (woopool_from.tokenMint != woopool_from.quoteTokenMint) {
+    if (!woopool_from.tokenMint.equals(woopool_from.quoteTokenMint)) {
       let state_from = await getWooPrice(fromToken, wooracle_from);
 
       let {amount, new_price} = calc_quote_amount_sell_base(
@@ -341,7 +339,7 @@ import { getPythPrice } from "./pyth";
     );
 
     let to_amount = quote_amount;
-    if (woopool_to.tokenMint != woopool_to.quoteTokenMint) {
+    if (!woopool_to.tokenMint.equals(woopool_to.quoteTokenMint)) {
       let state_to = await getWooPrice(toToken, wooracle_to);
 
       let {amount, new_price} = calc_base_amount_sell_quote(
