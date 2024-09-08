@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "anchor build -p woofi",
+    "anchor_test": "anchor test",
     "test": "cargo test -p woofi --lib",
     "format": "cargo clippy -p woofi --fix --allow-dirty --allow-staged -- -D clippy::all && cargo fmt -p woofi",
     "lint": "cargo clippy -p woofi -- -D clippy::all",
