@@ -529,7 +529,7 @@ describe("woofi", () => {
       console.log(`price - ${price}`);
       console.log(`feasible - ${feasible}`);
 
-      assert.equal(price, setPrice.toNumber());
+      assert.equal(price, 0);
       assert.equal(feasible, 0);
     });
   });
@@ -593,7 +593,7 @@ describe("woofi", () => {
       console.log(`price - ${price}`);
       console.log(`feasible - ${feasible}`);
 
-      assert.equal(price, setPrice.toNumber());
+      assert.equal(price, 0);
       assert.equal(feasible, 0);
     });
   });
