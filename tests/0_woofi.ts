@@ -207,12 +207,12 @@ describe("woofi", () => {
   describe("#sync_pyth_price()", async () => {
     it("sync with pyth oracle's price", async () => {
 
-      if (global.getCluster() == 'localnet') {
-        pythoracle_price = new BN(2211263986);
-        pythoracle_decimal = 8;
+      // if (global.getCluster() == 'localnet') {
+      //   pythoracle_price = new BN(2211263986);
+      //   pythoracle_decimal = 8;
 
-        return;
-      }
+      //   return;
+      // }
 
       const pythPriceFeed = await runQuery();
       const solPrice = pythPriceFeed[0].getPriceNoOlderThan(1000);
@@ -231,6 +231,8 @@ describe("woofi", () => {
       console.log(`pythoracle_decimal:${pythoracle_decimal}`);
       console.log(`updated at - ${updatedAt}`);
 
+      // TODO Prince: The price is the latest pyth price
+      // May slightly differ from the one in wooracle's pyth price (clone program in localnet)
       traderSetPrice = pythoracle_price;
       rangeMax = traderSetPrice.mul(new BN(110)).div(new BN(100));
       rangeMin = traderSetPrice.mul(new BN(90)).div(new BN(100));
@@ -239,6 +241,31 @@ describe("woofi", () => {
       console.log('rangeMin: ', rangeMin.toNumber());
       console.log('rangeMax: ', rangeMax.toNumber());
 
+    });
+  });
+
+  describe("#set_woo_stale_duration()", async () => {
+    it("set woo oracle state", async () => {
+    
+      const setStaleDuration = new BN(1200);
+
+      await program
+        .methods
+        .setStaleDuration(setStaleDuration)
+        .accounts({
+          wooconfig: wooconfigAccount,
+          wooracle: wooracleAccount,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+  
+      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      console.log(`staleDuration - ${result.staleDuration}`);
+
+      assert.ok(
+        result.staleDuration.eq(setStaleDuration), "wooracle stale duration should be the same with setted"
+      );
     });
   });
 
@@ -595,6 +622,31 @@ describe("woofi", () => {
 
       assert.equal(price, 0);
       assert.equal(feasible, 0);
+    });
+  });
+
+  describe("#set_price_back_to_pyth_price()", async () => {
+    it("set wooracle price back to pyth price", async () => {
+    
+      const setPrice = pythoracle_price;
+
+      await program
+        .methods
+        .setWooPrice(setPrice)
+        .accounts({
+          wooconfig: wooconfigAccount,
+          wooracle: wooracleAccount,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+
+      const [price, feasible] = await getPriceResult();  
+
+      console.log(`price - ${price}`);
+      console.log(`feasible - ${feasible}`);
+
+      assert.equal(price, setPrice.toNumber());
+      assert.equal(feasible, 1);
     });
   });
   
