@@ -23,6 +23,7 @@ describe("woofi_swap", () => {
   const usdcFeedAccount = poolUtils.usdcFeedAccount;
   const quoteFeedAccount = usdcFeedAccount;
 
+  // Note: test account only in devnet
   const keypair = anchor.web3.Keypair.fromSecretKey(
     Uint8Array.from([
         14, 134,  28, 211,  88,  74,  30, 241,  77, 166,  34,
