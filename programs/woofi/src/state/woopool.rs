@@ -72,6 +72,7 @@ impl WooPool {
         ]
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn initialize(
         &mut self,
         bump: u8,

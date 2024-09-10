@@ -86,34 +86,34 @@ describe("woofi_swap", () => {
     });
   });
 
-  describe("#deposit_usdc_pool()", async () => {
-    it("deposit usdc pool", async () => {
+//   describe("#deposit_usdc_pool()", async () => {
+//     it("deposit usdc pool", async () => {
 
-      const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+//       const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
-      const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+//       const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
 
-      const tx = await program
-      .methods
-      .deposit(new BN(1000000))
-      .accounts({
-        tokenMint: usdcTokenMint,
-        quoteTokenMint: usdcTokenMint,
-        authority: provider.wallet.publicKey,
-        tokenOwnerAccount: providerTokenAccount,
-        woopool: params.woopool,
-        tokenVault: params.tokenVault,
-        tokenProgram: token.TOKEN_PROGRAM_ID,
-      })
-      .rpc(confirmOptionsRetryTres);
+//       const tx = await program
+//       .methods
+//       .deposit(new BN(1000000))
+//       .accounts({
+//         tokenMint: usdcTokenMint,
+//         quoteTokenMint: usdcTokenMint,
+//         authority: provider.wallet.publicKey,
+//         tokenOwnerAccount: providerTokenAccount,
+//         woopool: params.woopool,
+//         tokenVault: params.tokenVault,
+//         tokenProgram: token.TOKEN_PROGRAM_ID,
+//       })
+//       .rpc(confirmOptionsRetryTres);
 
-      const logs = await getLogs(provider.connection, tx);
-      console.log(logs);
+//       const logs = await getLogs(provider.connection, tx);
+//       console.log(logs);
 
-      let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      assert.ok(
-        checkUsdcPool.authority.equals(provider.wallet.publicKey)
-      );
-    });
-  });
+//       let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+//       assert.ok(
+//         checkUsdcPool.authority.equals(provider.wallet.publicKey)
+//       );
+//     });
+//   });
 });

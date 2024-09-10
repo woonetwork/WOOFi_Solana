@@ -20,7 +20,7 @@ inputs:
   solana-cluster:
     description: 'The cluster to use for the solana sdk.'
     required: false
-    default: 'devnet'
+    default: 'localhost'
   run:
     description: 'The command(s) to run.'
 

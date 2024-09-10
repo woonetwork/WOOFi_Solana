@@ -1,8 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { assert } from "chai";
 import { PoolUtils } from "./utils/pool";
-import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
-
+import { confirmOptionsRetryTres } from "./utils/test-consts";
 
 describe("woofi", async () => {
   const poolUtils = new PoolUtils();
@@ -22,19 +21,25 @@ describe("woofi", async () => {
     program.programId
   );
 
+  const adminPublicKey = new anchor.web3.PublicKey("EW4E3yBnijzDjoyBpDkgQkJ48Yd6cmponxRsuUT2Cinn");
+
   const oracleKeys: anchor.web3.Keypair[] = [];
-  for (let i = 0; i < 5; ++i) {
+  for (let i = 0; i < 4; ++i) {
     const key = anchor.web3.Keypair.generate();
     console.log('Oracle Keypair:' + i + ':' + key.publicKey);
     oracleKeys.push(key);
   }
+  const wooAdmins: anchor.web3.PublicKey[] = [adminPublicKey];
+  oracleKeys.every(key => wooAdmins.push(key.publicKey))
 
   const poolKeys: anchor.web3.Keypair[] = [];
-  for (let i = 0; i < 5; ++i) {
+  for (let i = 0; i < 4; ++i) {
     const key = anchor.web3.Keypair.generate();
     console.log('WooPool Keypair:' + i + ':' + key.publicKey);
     poolKeys.push(key);
   }
+  const poolAdmins: anchor.web3.PublicKey[] = [adminPublicKey];
+  poolKeys.every(key => poolAdmins.push(key.publicKey))
 
   const guardianKeys: anchor.web3.Keypair[] = [];
   for (let i = 0; i < 5; ++i) {
@@ -57,14 +62,12 @@ describe("woofi", async () => {
     feeKeys.push(key);
   }
 
-  const adminPublicKey = new anchor.web3.PublicKey("EW4E3yBnijzDjoyBpDkgQkJ48Yd6cmponxRsuUT2Cinn");
-
   describe("#set_woo_admin()", async () => {
     it("set woo oracle admin", async () => {
         console.log('Set wooracle admin authority to:', adminPublicKey);
         await program
             .methods
-            .setWooAdmin(oracleKeys.map(key => key.publicKey))
+            .setWooAdmin(wooAdmins)
             .accounts({
                 wooconfig,
                 authority: provider.wallet.publicKey,
@@ -73,7 +76,7 @@ describe("woofi", async () => {
 
         await program
             .methods
-            .setPoolAdmin(poolKeys.map(key => key.publicKey))
+            .setPoolAdmin(poolAdmins)
             .accounts({
                 wooconfig,
                 authority: provider.wallet.publicKey,
@@ -153,7 +156,7 @@ describe("woofi", async () => {
 
         await program
             .methods
-            .setPoolAdmin([poolKeys[0].publicKey])
+            .setPoolAdmin(poolAdmins)
             .accounts({
                 wooconfig,
                 authority: provider.wallet.publicKey,
