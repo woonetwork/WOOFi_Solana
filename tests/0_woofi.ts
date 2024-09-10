@@ -56,6 +56,7 @@ describe("woofi", () => {
   const confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3, commitment: "confirmed" };
   const tenpow18 = new BN(10).pow(new BN(18));
   const tenpow16 = new BN(10).pow(new BN(16));
+  const tenpow15 = new BN(10).pow(new BN(15));
   let traderSetPrice = new BN(2200000000);
   let rangeMin = new BN(2000000000);
   let rangeMax = new BN(2300000000);
@@ -488,23 +489,49 @@ describe("woofi", () => {
     });
   });
 
+  describe("#set_woo_bound()", async () => {
+    it("set woo oracle bound", async () => {
+    
+      // 1e16 means 1%, 2.5%
+      const bound = new BN(25).mul(tenpow15);
+      await program
+        .methods
+        .setWooBound(bound) 
+        .accounts({
+          wooconfig: wooconfigAccount,
+          wooracle: wooracleAccount,
+          authority: provider.wallet.publicKey,
+        })
+        .rpc(confirmOptionsRetryTres);
+  
+      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      console.log(`Wooracle Bound - ${result.bound}`);
+
+      assert.ok(
+        result.bound.eq(bound), "wooracle bound should be the same with setted"
+      );
+    });
+  });
+
   describe("#set_price_upper_bound_get_result()", async () => {
     it("set oracle price to upper bound and get oracle result", async () => {
-      if (global.getCluster() == 'localnet') {
-        // TODO Prince: Above setted price is the latest pyth price
-        // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
-        return;
-      }
+      // if (global.getCluster() == 'localnet') {
+      //   // TODO Prince: Above setted price is the latest pyth price
+      //   // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
+      //   return;
+      // }
     
-      // upper cloracle 1%
-      const low_bound = pythoracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
-      const upper_bound = pythoracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+      // bound should be 2.5%, need threshhold for pythprice not sync
+      const bound = new BN(15).mul(tenpow15);
+      const low_bound = pythoracle_price.mul(tenpow18.sub(bound)).div(tenpow18);
+      const upper_bound = pythoracle_price.mul(tenpow18.add(bound)).div(tenpow18);
 
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
       // TODO Prince: Failed here, double check later
-      const setPrice = upper_bound.sub(new BN(10000000));
+      const setPrice = upper_bound;
 
       await program
         .methods
@@ -527,21 +554,22 @@ describe("woofi", () => {
 
   describe("#set_price_beyond_upper_bound_get_result()", async () => {
     it("set oracle price to beyond upper bound and get oracle result", async () => {
-      if (global.getCluster() == 'localnet') {
-        // TODO Prince: Above setted price is the latest pyth price
-        // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
-          return;
-      }
+      // if (global.getCluster() == 'localnet') {
+      //   // TODO Prince: Above setted price is the latest pyth price
+      //   // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
+      //     return;
+      // }
       
-      // upper cloracle 1%
-      const low_bound = pythoracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
-      const upper_bound = pythoracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+      // bound should be 2.5%, need threshhold for pythprice not sync
+      const bound = new BN(35).mul(tenpow15);
+      const low_bound = pythoracle_price.mul(tenpow18.sub(bound)).div(tenpow18);
+      const upper_bound = pythoracle_price.mul(tenpow18.add(bound)).div(tenpow18);
 
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
       // TODO Prince: Failed here, double check later
-      const setPrice = upper_bound.add(new BN(10000000));
+      const setPrice = upper_bound;
 
       await program
         .methods
@@ -564,20 +592,21 @@ describe("woofi", () => {
 
   describe("#set_price_low_bound_get_result()", async () => {
     it("set oracle price to low bound and get oracle result", async () => {
-      if (global.getCluster() == 'localnet') {
-        // TODO Prince: Above setted price is the latest pyth price
-        // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
-        return;
-      }
+      // if (global.getCluster() == 'localnet') {
+      //   // TODO Prince: Above setted price is the latest pyth price
+      //   // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
+      //   return;
+      // }
 
-      // upper cloracle 1%
-      const low_bound = pythoracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
-      const upper_bound = pythoracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+      // bound should be 2.5%, need threshhold for pythprice not sync
+      const bound = new BN(15).mul(tenpow15);
+      const low_bound = pythoracle_price.mul(tenpow18.sub(bound)).div(tenpow18);
+      const upper_bound = pythoracle_price.mul(tenpow18.add(bound)).div(tenpow18);
 
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
-      const setPrice = low_bound.add(new BN(10000000));
+      const setPrice = low_bound;
 
       await program
         .methods
@@ -601,20 +630,21 @@ describe("woofi", () => {
 
   describe("#set_price_beyond_low_bound_get_result()", async () => {
     it("set oracle price to beyond low bound and get oracle result", async () => {
-      if (global.getCluster() == 'localnet') {
-        // TODO Prince: Above setted price is the latest pyth price
-        // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
-        return;
-      }
+      // if (global.getCluster() == 'localnet') {
+      //   // TODO Prince: Above setted price is the latest pyth price
+      //   // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
+      //   return;
+      // }
 
-      // upper cloracle 1%
-      const low_bound = pythoracle_price.mul(tenpow18.sub(tenpow16)).div(tenpow18);
-      const upper_bound = pythoracle_price.mul(tenpow18.add(tenpow16)).div(tenpow18);
+      // bound should be 2.5%, need threshhold for pythprice not sync
+      const bound = new BN(35).mul(tenpow15);
+      const low_bound = pythoracle_price.mul(tenpow18.sub(bound)).div(tenpow18);
+      const upper_bound = pythoracle_price.mul(tenpow18.add(bound)).div(tenpow18);
 
       console.log(`low_bound: ${low_bound}`);
       console.log(`upper_bound: ${upper_bound}`);
 
-      const setPrice = low_bound.sub(new BN(10000000));
+      const setPrice = low_bound;
 
       await program
         .methods
