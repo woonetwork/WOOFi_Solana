@@ -5,14 +5,12 @@ export type Cluster = 'localnet' | 'devnet' | 'mainnet';
 
 export function getCluster(_cluster?: string): Cluster {
   let cluster = _cluster ? _cluster : process.env.ANCHOR_PROVIDER_URL;
-  let result: Cluster = 'localnet' as Cluster;
-  if (cluster == null) {
-    cluster = 'localnet';
-  } else if (cluster.toLowerCase().indexOf("devnet")) {
+  if (cluster.toLowerCase().indexOf("devnet") >= 0) {
       cluster = 'devnet'
   } else {
     cluster = 'localnet'
   }
+  
   return cluster as Cluster;
 }
 

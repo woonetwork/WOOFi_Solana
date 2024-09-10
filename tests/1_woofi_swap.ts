@@ -7,6 +7,7 @@ import { getLogs } from "@solana-developers/helpers";
 import { assert } from "chai";
 import { createAssociatedTokenAccount, transferToken } from "./utils/token";
 import { PoolUtils } from "./utils/pool";
+import { getCluster } from "./global";
 import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres, SupportedToken } from "./utils/test-consts";
 
 describe("woofi_swap", () => {
@@ -21,6 +22,17 @@ describe("woofi_swap", () => {
   // USDC/USD
   const usdcFeedAccount = poolUtils.usdcFeedAccount;
   const quoteFeedAccount = usdcFeedAccount;
+
+  const keypair = anchor.web3.Keypair.fromSecretKey(
+    Uint8Array.from([
+        14, 134,  28, 211,  88,  74,  30, 241,  77, 166,  34,
+        106, 198, 235, 100, 159,  82, 127,  72,  10, 101, 146,
+        137,  83,  43,  25,  38,  10,  26, 217, 248,  64, 165,
+        109,  48, 119, 128,  14, 170,  92,  99,  37,  71,  77,
+         90, 116,  13,  67, 176, 214,   9,  47,  46, 103, 197,
+        222,  76, 186, 193, 143, 114, 203, 154, 225
+    ]),
+  )
 
   describe("#create_usdc_pool()", async () => {
     it("creates usdc pool", async () => {
@@ -91,24 +103,35 @@ describe("woofi_swap", () => {
 
   describe("#deposit_usdc_pool()", async () => {
     it("deposit usdc pool", async () => {
-
       const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
-      const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+      await program
+          .methods
+          .setPoolAdmin([keypair.publicKey])
+          .accounts({
+              wooconfig: params.wooconfig,
+              authority: provider.wallet.publicKey,
+          })
+          .rpc(confirmOptionsRetryTres);
 
+      const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, keypair.publicKey);
+
+      // Deposit 0.2 USDC
+      const depositAmount = new BN(200000);
       const tx = await program
       .methods
-      .deposit(new BN(1000000))
+      .deposit(depositAmount)
       .accounts({
         wooconfig: params.wooconfig,
         tokenMint: usdcTokenMint,
         quoteTokenMint: usdcTokenMint,
-        authority: provider.wallet.publicKey,
+        authority: keypair.publicKey,
         tokenOwnerAccount: providerTokenAccount,
         woopool: params.woopool,
         tokenVault: params.tokenVault,
         tokenProgram: token.TOKEN_PROGRAM_ID,
       })
+      .signers([keypair])
       .rpc(confirmOptionsRetryTres);
 
       const logs = await getLogs(provider.connection, tx);
@@ -118,6 +141,10 @@ describe("woofi_swap", () => {
       assert.ok(
         checkUsdcPool.authority.equals(provider.wallet.publicKey)
       );
+
+      assert.ok(
+        checkUsdcPool.reserve.eq(depositAmount)
+      )
     });
   });
 
@@ -161,19 +188,26 @@ describe("woofi_swap", () => {
       let fromAmount = 0.001 * LAMPORTS_PER_SOL;
       let feeAuthority = provider.wallet.publicKey;
 
+      let payerWallet = keypair;
+      if (getCluster() == 'devnet') {
+        payerWallet = provider.wallet;
+      }
+
       const fromWallet = anchor.web3.Keypair.generate();
 
       const fromTokenAccount = await createAssociatedTokenAccount(
         provider,
         solTokenMint,
         fromWallet.publicKey,
-        provider.wallet.publicKey
+        payerWallet.publicKey,
+        payerWallet
       );
       const toTokenAccount = await createAssociatedTokenAccount(
         provider,
         usdcTokenMint,
         fromWallet.publicKey,
-        provider.wallet.publicKey
+        payerWallet.publicKey,
+        payerWallet
       );
       console.log("fromWallet PublicKey:" + fromWallet.publicKey);
       console.log('fromWalletTokenAccount:' + fromTokenAccount);
@@ -183,7 +217,7 @@ describe("woofi_swap", () => {
       const transferTranscation = new Transaction().add(
         // transfer SOL to from wallet
         SystemProgram.transfer({
-          fromPubkey: provider.wallet.publicKey,
+          fromPubkey: payerWallet.publicKey,
           toPubkey: fromWallet.publicKey,
           lamports: fromAmount,
         }),
@@ -197,7 +231,7 @@ describe("woofi_swap", () => {
         token.createSyncNativeInstruction(fromTokenAccount)
       );
 
-      await provider.sendAndConfirm(transferTranscation, [fromWallet], { commitment: "confirmed" });
+      await provider.sendAndConfirm(transferTranscation, [payerWallet, fromWallet], { commitment: "confirmed" });
 
       // const fromAirdropSignature = await provider.connection.requestAirdrop(
       //   fromWallet.publicKey,

@@ -1,9 +1,6 @@
 import { AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
 import {
-  AccountLayout,
   AuthorityType,
-  NATIVE_MINT,
-  TOKEN_PROGRAM_ID,
   createApproveInstruction,
   createAssociatedTokenAccountInstruction,
   createBurnInstruction,
@@ -68,7 +65,8 @@ export async function createAssociatedTokenAccount(
   provider: AnchorProvider,
   mint: web3.PublicKey,
   owner: web3.PublicKey,
-  payer: web3.PublicKey
+  payer: web3.PublicKey,
+  signer?: web3.Keypair,
 ) {
   const ataAddress = getAssociatedTokenAddressSync(mint, owner);
   const instr = createAssociatedTokenAccountInstruction(
@@ -79,7 +77,7 @@ export async function createAssociatedTokenAccount(
   );
   const tx = new web3.Transaction();
   tx.add(instr);
-  await provider.sendAndConfirm(tx, [], { commitment: "confirmed" });
+  await provider.sendAndConfirm(tx, [signer!], { commitment: "confirmed" });
   return ataAddress;
 }
 
