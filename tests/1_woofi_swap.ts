@@ -142,9 +142,11 @@ describe("woofi_swap", () => {
         checkUsdcPool.authority.equals(provider.wallet.publicKey)
       );
 
-      assert.ok(
-        checkUsdcPool.reserve.eq(depositAmount)
-      )
+      if (getCluster() == 'localnet') {
+        assert.ok(
+          checkUsdcPool.reserve.eq(depositAmount)
+        )
+      }
     });
   });
 
@@ -188,26 +190,30 @@ describe("woofi_swap", () => {
       let fromAmount = 0.001 * LAMPORTS_PER_SOL;
       let feeAuthority = provider.wallet.publicKey;
 
-      let payerWallet = keypair;
-      if (getCluster() == 'devnet') {
-        payerWallet = provider.wallet;
-      }
-
       const fromWallet = anchor.web3.Keypair.generate();
+
+      let signers: anchor.web3.Keypair[] = [fromWallet];
+      let ataSigner: anchor.web3.Keypair[] = [];
+      let payerWallet = provider.wallet;
+      if (getCluster() == 'localnet') {
+        payerWallet = keypair;
+        signers.push(keypair);
+        ataSigner.push(payerWallet);
+      }
 
       const fromTokenAccount = await createAssociatedTokenAccount(
         provider,
         solTokenMint,
         fromWallet.publicKey,
         payerWallet.publicKey,
-        payerWallet
+        ataSigner
       );
       const toTokenAccount = await createAssociatedTokenAccount(
         provider,
         usdcTokenMint,
         fromWallet.publicKey,
         payerWallet.publicKey,
-        payerWallet
+        ataSigner
       );
       console.log("fromWallet PublicKey:" + fromWallet.publicKey);
       console.log('fromWalletTokenAccount:' + fromTokenAccount);
@@ -231,7 +237,7 @@ describe("woofi_swap", () => {
         token.createSyncNativeInstruction(fromTokenAccount)
       );
 
-      await provider.sendAndConfirm(transferTranscation, [payerWallet, fromWallet], { commitment: "confirmed" });
+      await provider.sendAndConfirm(transferTranscation, signers, { commitment: "confirmed" });
 
       // const fromAirdropSignature = await provider.connection.requestAirdrop(
       //   fromWallet.publicKey,

@@ -66,7 +66,7 @@ export async function createAssociatedTokenAccount(
   mint: web3.PublicKey,
   owner: web3.PublicKey,
   payer: web3.PublicKey,
-  signer?: web3.Keypair,
+  signer?: web3.Keypair[],
 ) {
   const ataAddress = getAssociatedTokenAddressSync(mint, owner);
   const instr = createAssociatedTokenAccountInstruction(
@@ -77,7 +77,7 @@ export async function createAssociatedTokenAccount(
   );
   const tx = new web3.Transaction();
   tx.add(instr);
-  await provider.sendAndConfirm(tx, [signer!], { commitment: "confirmed" });
+  await provider.sendAndConfirm(tx, signer, { commitment: "confirmed" });
   return ataAddress;
 }
 
