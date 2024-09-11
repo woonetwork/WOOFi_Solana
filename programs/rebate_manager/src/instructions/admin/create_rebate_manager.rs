@@ -5,32 +5,28 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount};
 use crate::constants::*;
 
 #[derive(Accounts)]
-pub struct CreateRebatePool<'info> {
+pub struct CreateRebateManager<'info> {
     pub quote_token_mint: Account<'info, Mint>,
 
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    /// CHECK: rebate authority which can claim rebate fees in this rebate pool
-    pub rebate_authority: UncheckedAccount<'info>,
-
     #[account(
         init,
         payer = authority,
-        space = 8 + RebatePool::INIT_SPACE,
+        space = 8 + RebateManager::INIT_SPACE,
         seeds = [
-          REBATEPOOL_SEED.as_bytes(),
-          rebate_authority.key().as_ref(),
+          REBATEMANAGER_SEED.as_bytes(),
           quote_token_mint.key().as_ref()
         ],
         bump)]
-    pub rebate_pool: Box<Account<'info, RebatePool>>,
+    pub rebate_manager: Box<Account<'info, RebateManager>>,
 
     #[account(
         init,
         payer = authority,
         token::mint = quote_token_mint,
-        token::authority = rebate_pool
+        token::authority = rebate_manager
       )]
     pub token_vault: Box<Account<'info, TokenAccount>>,
 
@@ -40,18 +36,12 @@ pub struct CreateRebatePool<'info> {
     pub rent: Sysvar<'info, Rent>,
 }
 
-pub fn handler(ctx: Context<CreateRebatePool>) -> Result<()> {
+pub fn handler(ctx: Context<CreateRebateManager>) -> Result<()> {
     let authority = ctx.accounts.authority.key();
-    let rebate_authority = ctx.accounts.rebate_authority.key();
     let quote_token_mint = ctx.accounts.quote_token_mint.key();
     let token_vault = ctx.accounts.token_vault.key();
 
-    let rebate_pool = &mut ctx.accounts.rebate_pool;
+    let rebate_manager = &mut ctx.accounts.rebate_manager;
 
-    rebate_pool.initialize(
-        authority,
-        rebate_authority,
-        quote_token_mint,
-        token_vault,
-    )
+    rebate_manager.initialize(authority, quote_token_mint, token_vault)
 }

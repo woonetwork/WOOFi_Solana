@@ -30,39 +30,57 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-mod constants;
-mod errors;
-mod instructions;
-mod state;
-mod util;
 
+use crate::{constants::*, errors::ErrorCode};
 use anchor_lang::prelude::*;
 
-use crate::{instructions::*, state::*};
+#[account]
+#[derive(InitSpace)]
+pub struct RebateInfo {
+    pub authority: Pubkey,
 
-declare_id!("6UcVauE8N1icb7uV8a7aJy7cZ9SDcuxbXMVjAgsoMn3Z");
+    pub rebate_manager: Pubkey,
 
-#[program]
-pub mod rebate_manager {
-    use super::*;
+    pub rebate_authority: Pubkey,
 
-    pub fn create_rebate_info(ctx: Context<CreateRebateInfo>) -> Result<()> {
-        instructions::create_rebate_info::handler(ctx)
+    // pending rebate
+    pub pending_rebate: u128, // 16
+}
+
+impl RebateInfo {
+    pub fn seeds(&self) -> [&[u8]; 3] {
+        [
+            REBATEINFO_SEED.as_bytes(),
+            self.rebate_manager.as_ref(),
+            self.rebate_authority.as_ref(),
+        ]
     }
 
-    pub fn create_rebate_manager(ctx: Context<CreateRebateManager>) -> Result<()> {
-        instructions::create_rebate_manager::handler(ctx)
+    pub fn add_pending_rebate(&mut self, fee: u128) -> Result<()> {
+        self.pending_rebate = self
+            .pending_rebate
+            .checked_add(fee)
+            .ok_or(ErrorCode::RebateFeeMaxExceeded)?;
+
+        Ok(())
     }
 
-    pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>) -> Result<()> {
-        instructions::claim_rebate_fee::handler(ctx)
+    pub fn sub_pending_rebate(&mut self, fee: u128) -> Result<()> {
+        if fee > self.pending_rebate {
+            return Err(ErrorCode::RebateFeeNotEnough.into());
+        }
+
+        self.pending_rebate = self
+            .pending_rebate
+            .checked_sub(fee)
+            .ok_or(ErrorCode::RebateFeeNotEnough)?;
+
+        Ok(())
     }
 
-    pub fn deposit_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
-        instructions::deposit(ctx, amount)
-    }
+    pub fn clear_pending_rebate(&mut self) -> Result<()> {
+        self.pending_rebate = 0;
 
-    pub fn withdraw_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
-        instructions::withdraw(ctx, amount)
+        Ok(())
     }
 }

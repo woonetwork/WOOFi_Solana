@@ -1,9 +1,8 @@
-use crate::{events::ClaimRebateFeeEvent, state::*};
+use crate::state::*;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
-use crate::errors::ErrorCode;
-use crate::util::*;
+use crate::{errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct ClaimRebateFee<'info> {
@@ -12,15 +11,20 @@ pub struct ClaimRebateFee<'info> {
     pub rebate_authority: Signer<'info>,
 
     #[account(mut,
-        has_one = rebate_authority,
         has_one = quote_token_mint,
     )]
-    pub rebate_pool: Account<'info, RebatePool>,
+    pub rebate_manager: Account<'info, RebateManager>,
 
     #[account(mut,
-        address = rebate_pool.token_vault
+        address = rebate_manager.token_vault
     )]
     token_vault: Box<Account<'info, TokenAccount>>,
+
+    #[account(mut,
+        has_one = rebate_manager,
+        has_one = rebate_authority
+    )]
+    pub rebate_info: Account<'info, RebateInfo>,
 
     #[account(mut, constraint = claim_fee_to_account.mint == quote_token_mint.key())]
     pub claim_fee_to_account: Box<Account<'info, TokenAccount>>,
@@ -30,32 +34,26 @@ pub struct ClaimRebateFee<'info> {
 }
 
 pub fn handler(ctx: Context<ClaimRebateFee>) -> Result<()> {
-    let rebate_pool = &mut ctx.accounts.rebate_pool;
+    let rebate_manager = &mut ctx.accounts.rebate_manager;
     let token_vault = &mut ctx.accounts.token_vault;
+    let rebate_info = &mut ctx.accounts.rebate_info;
     let claim_fee_to_account = &ctx.accounts.claim_fee_to_account;
 
     require!(
-        rebate_pool.pending_rebate > 0,
+        token_vault.amount as u128 >= rebate_info.pending_rebate,
         ErrorCode::RebateFeeNotEnough
     );
 
-    let claim_amount = rebate_pool.pending_rebate;
-    rebate_pool.clear_pending_rebate()?;
+    let claim_amount = rebate_info.pending_rebate;
+    rebate_info.clear_pending_rebate()?;
 
     transfer_from_vault_to_owner(
-        rebate_pool,
+        rebate_manager,
         token_vault,
-        &ctx.accounts.claim_fee_to_account,
+        claim_fee_to_account,
         &ctx.accounts.token_program,
         claim_amount as u64,
     )?;
-
-    emit!(ClaimRebateFeeEvent {
-        quote_token_mint: rebate_pool.quote_token_mint,
-        rebate_authority: ctx.accounts.rebate_authority.key(),
-        to_account: claim_fee_to_account.key(),
-        claim_amount,
-    });
 
     Ok(())
 }

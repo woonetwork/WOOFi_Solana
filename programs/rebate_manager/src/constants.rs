@@ -1,2 +1,2 @@
-pub const WOOCONFIG_SEED: &str = "wooconfig";
-pub const REBATEPOOL_SEED: &str = "rebatepool";
+pub const REBATEMANAGER_SEED: &str = "rebatemanager";
+pub const REBATEINFO_SEED: &str = "rebateinfo";
