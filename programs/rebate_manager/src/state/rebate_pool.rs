@@ -34,12 +34,15 @@
 use crate::{constants::*, errors::ErrorCode};
 use anchor_lang::prelude::*;
 
+pub const ADMIN_AUTH_MAX_LEN: usize = 5;
+
 #[account]
 #[derive(InitSpace)]
 pub struct RebatePool {
     pub authority: Pubkey, // 32
 
-    pub wooconfig: Pubkey, // 32
+    #[max_len(ADMIN_AUTH_MAX_LEN)]
+    pub admin_authority: Vec<Pubkey>,
 
     pub rebate_authority: Pubkey, // 32
 
@@ -54,10 +57,9 @@ pub struct RebatePool {
 impl RebatePool {
     pub const LEN: usize = 8 + (32 + 32 + 32 + 32 + 32 + 16);
 
-    pub fn seeds(&self) -> [&[u8]; 4] {
+    pub fn seeds(&self) -> [&[u8]; 3] {
         [
             REBATEPOOL_SEED.as_bytes(),
-            self.wooconfig.as_ref(),
             self.rebate_authority.as_ref(),
             self.quote_token_mint.as_ref(),
         ]
@@ -66,13 +68,11 @@ impl RebatePool {
     pub fn initialize(
         &mut self,
         authority: Pubkey,
-        wooconfig: Pubkey,
         rebate_authority: Pubkey,
         quote_token_mint: Pubkey,
         token_vault: Pubkey,
     ) -> Result<()> {
         self.authority = authority;
-        self.wooconfig = wooconfig;
         self.rebate_authority = rebate_authority;
         self.quote_token_mint = quote_token_mint;
         self.token_vault = token_vault;

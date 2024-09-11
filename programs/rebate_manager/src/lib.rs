@@ -44,12 +44,8 @@ use crate::{instructions::*, state::*};
 declare_id!("6UcVauE8N1icb7uV8a7aJy7cZ9SDcuxbXMVjAgsoMn3Z");
 
 #[program]
-pub mod woofi {
+pub mod rebate_manager {
     use super::*;
-
-    pub fn create_config(ctx: Context<CreateConfig>) -> Result<()> {
-        instructions::create_config::handler(ctx)
-    }
 
     pub fn create_rebate_pool(ctx: Context<CreateRebatePool>) -> Result<()> {
         instructions::create_rebate_pool::handler(ctx)
@@ -65,13 +61,5 @@ pub mod woofi {
 
     pub fn withdraw_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
         instructions::withdraw(ctx, amount)
-    }
-
-    pub fn pause(ctx: Context<PauseSwitch>) -> Result<()> {
-        instructions::pause(ctx)
-    }
-
-    pub fn unpause(ctx: Context<PauseSwitch>) -> Result<()> {
-        instructions::unpause(ctx)
     }
 }

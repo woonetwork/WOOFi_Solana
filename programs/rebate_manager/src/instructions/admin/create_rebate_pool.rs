@@ -6,7 +6,6 @@ use crate::constants::*;
 
 #[derive(Accounts)]
 pub struct CreateRebatePool<'info> {
-    pub wooconfig: Box<Account<'info, WooConfig>>,
     pub quote_token_mint: Account<'info, Mint>,
 
     #[account(mut)]
@@ -21,7 +20,6 @@ pub struct CreateRebatePool<'info> {
         space = 8 + RebatePool::INIT_SPACE,
         seeds = [
           REBATEPOOL_SEED.as_bytes(),
-          wooconfig.key().as_ref(),
           rebate_authority.key().as_ref(),
           quote_token_mint.key().as_ref()
         ],
@@ -44,7 +42,6 @@ pub struct CreateRebatePool<'info> {
 
 pub fn handler(ctx: Context<CreateRebatePool>) -> Result<()> {
     let authority = ctx.accounts.authority.key();
-    let wooconfig = ctx.accounts.authority.key();
     let rebate_authority = ctx.accounts.rebate_authority.key();
     let quote_token_mint = ctx.accounts.quote_token_mint.key();
     let token_vault = ctx.accounts.token_vault.key();
@@ -53,7 +50,6 @@ pub fn handler(ctx: Context<CreateRebatePool>) -> Result<()> {
 
     rebate_pool.initialize(
         authority,
-        wooconfig,
         rebate_authority,
         quote_token_mint,
         token_vault,

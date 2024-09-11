@@ -7,16 +7,11 @@ use crate::util::*;
 
 #[derive(Accounts)]
 pub struct ClaimRebateFee<'info> {
-    #[account(
-        constraint = !wooconfig.paused
-    )]
-    pub wooconfig: Account<'info, WooConfig>,
     pub quote_token_mint: Account<'info, Mint>,
 
     pub rebate_authority: Signer<'info>,
 
     #[account(mut,
-        has_one = wooconfig,
         has_one = rebate_authority,
         has_one = quote_token_mint,
     )]

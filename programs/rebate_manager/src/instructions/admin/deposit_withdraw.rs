@@ -9,7 +9,6 @@ use crate::{constants::*, errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct DepositWithdraw<'info> {
-    pub wooconfig: Box<Account<'info, WooConfig>>,
     pub quote_token_mint: Account<'info, Mint>,
 
     /// CHECK: rebater's authority
@@ -24,17 +23,15 @@ pub struct DepositWithdraw<'info> {
     token_owner_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut,
-        has_one = wooconfig,
         has_one = rebate_authority,
         seeds = [
           REBATEPOOL_SEED.as_bytes(),
-          wooconfig.key().as_ref(),
           rebate_authority.key().as_ref(),
           quote_token_mint.key().as_ref()
         ],
         bump,
         constraint = rebate_pool.authority == authority.key()
-                  || wooconfig.admin_authority.contains(authority.key),
+                  || rebate_pool.admin_authority.contains(authority.key),
         constraint = rebate_pool.quote_token_mint == quote_token_mint.key()
     )]
     pub rebate_pool: Box<Account<'info, RebatePool>>,
