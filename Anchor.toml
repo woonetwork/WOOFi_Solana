@@ -8,9 +8,11 @@ skip-lint = false
 
 [programs.localnet]
 woofi = "5KNaYPW5Yi53eieBAfKpGS9tX9Dj4uq2UFEWWXfGokkB"
+rebate_manager = "2MXx86ULhH5NNVno7VdpLB16EbPTv69bhJXt4DRVTyiD"
 
 [programs.devnet]
 woofi = "5KNaYPW5Yi53eieBAfKpGS9tX9Dj4uq2UFEWWXfGokkB"
+rebate_manager = "2MXx86ULhH5NNVno7VdpLB16EbPTv69bhJXt4DRVTyiD"
 
 [registry]
 url = "https://api.apr.dev"

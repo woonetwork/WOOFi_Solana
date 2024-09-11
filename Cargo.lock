@@ -1660,6 +1660,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rebate_manager"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "pyth-solana-receiver-sdk",
+ "solana-program",
+ "spl-memo",
+ "spl-token",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

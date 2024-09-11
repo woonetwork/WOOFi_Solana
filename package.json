@@ -5,16 +5,16 @@
   "packageManager": "yarn@1.22.22",
   "type": "module",
   "scripts": {
-    "build": "anchor build -p woofi",
+    "build": "anchor build",
     "anchor_test": "anchor test",
-    "test": "cargo test -p woofi --lib",
-    "format": "cargo clippy -p woofi --fix --allow-dirty --allow-staged -- -D clippy::all && cargo fmt -p woofi",
-    "lint": "cargo clippy -p woofi -- -D clippy::all",
+    "test": "cargo test --lib",
+    "format": "cargo clippy --fix --allow-dirty --allow-staged -- -D clippy::all && cargo fmt",
+    "lint": "cargo clippy -- -D clippy::all",
     "clean": "anchor clean",
     "prepare": "husky"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.29.0",
+    "@coral-xyz/anchor": "0.29.0",
     "@pythnetwork/price-service-client": "^1.9.0",
     "@solana-developers/helpers": "^2.3.0",
     "@solana/spl-token": "^0.4.1",
