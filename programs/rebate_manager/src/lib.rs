@@ -65,4 +65,8 @@ pub mod rebate_manager {
     pub fn withdraw_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
         instructions::withdraw(ctx, amount)
     }
+
+    pub fn add_rebate(ctx: Context<AddRebate>, amount: u128) -> Result<()> {
+        instructions::add_rebate(ctx, amount)
+    }
 }
