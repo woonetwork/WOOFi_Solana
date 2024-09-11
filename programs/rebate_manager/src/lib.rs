@@ -66,7 +66,11 @@ pub mod rebate_manager {
         instructions::withdraw(ctx, amount)
     }
 
-    pub fn add_rebate(ctx: Context<AddRebate>, amount: u128) -> Result<()> {
+    pub fn add_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
         instructions::add_rebate(ctx, amount)
+    }
+
+    pub fn sub_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
+        instructions::sub_rebate(ctx, amount)
     }
 }

@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token};
 
 #[derive(Accounts)]
-pub struct AddRebate<'info> {
+pub struct AddSubRebate<'info> {
     pub quote_token_mint: Account<'info, Mint>,
 
     pub authority: Signer<'info>,
@@ -28,8 +28,14 @@ pub struct AddRebate<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-pub fn add_rebate(ctx: Context<AddRebate>, amount: u128) -> Result<()> {
+pub fn add_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
     let rebate_info = &mut ctx.accounts.rebate_info;
 
     rebate_info.add_pending_rebate(amount)
+}
+
+pub fn sub_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
+    let rebate_info = &mut ctx.accounts.rebate_info;
+
+    rebate_info.sub_pending_rebate(amount)
 }
