@@ -32,6 +32,7 @@
 */
 
 use crate::constants::*;
+use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
 
 pub const ADMIN_AUTH_MAX_LEN: usize = 5;
@@ -66,6 +67,16 @@ impl RebateManager {
         self.authority = authority;
         self.quote_token_mint = quote_token_mint;
         self.token_vault = token_vault;
+
+        Ok(())
+    }
+
+    pub fn set_admin_authority(&mut self, admin_authority: Vec<Pubkey>) -> Result<()> {
+        require!(
+            admin_authority.len() <= ADMIN_AUTH_MAX_LEN,
+            ErrorCode::TooManyAuthorities
+        );
+        self.admin_authority = admin_authority;
 
         Ok(())
     }

@@ -12,6 +12,10 @@ pub struct CreateRebateInfo<'info> {
     /// CHECK, rebate authority is third party account, can be anyone
     pub rebate_authority: UncheckedAccount<'info>,
 
+    #[account(
+      constraint = rebate_manager.authority == authority.key()
+                || rebate_manager.admin_authority.contains(authority.key),
+    )]
     pub rebate_manager: Box<Account<'info, RebateManager>>,
 
     #[account(

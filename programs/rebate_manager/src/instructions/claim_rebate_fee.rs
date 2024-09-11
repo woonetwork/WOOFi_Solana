@@ -22,7 +22,8 @@ pub struct ClaimRebateFee<'info> {
 
     #[account(mut,
         has_one = rebate_manager,
-        has_one = rebate_authority
+        has_one = rebate_authority,
+        constraint = rebate_info.authority == rebate_manager.authority
     )]
     pub rebate_info: Account<'info, RebateInfo>,
 

@@ -1,6 +1,6 @@
 use crate::state::*;
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Mint, Token};
+use anchor_spl::token::Mint;
 
 #[derive(Accounts)]
 pub struct AddSubRebate<'info> {
@@ -23,9 +23,6 @@ pub struct AddSubRebate<'info> {
         has_one = rebate_authority,
     )]
     pub rebate_info: Account<'info, RebateInfo>,
-
-    #[account(address = token::ID)]
-    pub token_program: Program<'info, Token>,
 }
 
 pub fn add_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {

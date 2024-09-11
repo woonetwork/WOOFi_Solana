@@ -54,6 +54,10 @@ pub mod rebate_manager {
         instructions::create_rebate_manager::handler(ctx)
     }
 
+    pub fn set_admin(ctx: Context<SetAdmin>, admins: Vec<Pubkey>) -> Result<()> {
+        instructions::set_admin_handler(ctx, admins)
+    }
+
     pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>) -> Result<()> {
         instructions::claim_rebate_fee::handler(ctx)
     }

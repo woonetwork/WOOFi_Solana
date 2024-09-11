@@ -5,6 +5,8 @@ use anchor_lang::prelude::*;
 #[error_code]
 #[derive(PartialEq)]
 pub enum ErrorCode {
+    #[msg("Too Many Authorities")]
+    TooManyAuthorities, // 0x1782
     #[msg("Unable to cast number into BigInt")]
     NumberCastError, //  0x1771
     #[msg("Rebate pool and vault not match")]
