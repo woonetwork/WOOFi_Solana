@@ -40,7 +40,7 @@ use anchor_lang::prelude::*;
 
 use crate::{instructions::*, state::*};
 
-declare_id!("6UcVauE8N1icb7uV8a7aJy7cZ9SDcuxbXMVjAgsoMn3Z");
+declare_id!("2MXx86ULhH5NNVno7VdpLB16EbPTv69bhJXt4DRVTyiD");
 
 #[program]
 pub mod rebate_manager {
