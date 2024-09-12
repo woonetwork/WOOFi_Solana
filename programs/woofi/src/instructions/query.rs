@@ -69,9 +69,6 @@ pub struct Query<'info> {
 }
 
 pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> Result<QueryResult> {
-    // TODO Prince: check from_amount upper, total amount limit in one swap
-    // TODO Prince: use checked_mul checked_div in math
-
     let price_update_from = &mut ctx.accounts.price_update_from;
     let price_update_to = &mut ctx.accounts.price_update_to;
     let quote_price_update = &mut ctx.accounts.quote_price_update;

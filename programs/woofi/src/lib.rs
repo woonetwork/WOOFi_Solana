@@ -199,4 +199,8 @@ pub mod woofi {
     pub fn claim_fee_amount(ctx: Context<ClaimFee>, claim_amount: u128) -> Result<()> {
         instructions::claim_fee::claim_amount_handler(ctx, claim_amount)
     }
+
+    pub fn incase_token_got_stuck(ctx: Context<IncaseTokenGotStuck>, amount: u128) -> Result<()> {
+        instructions::incase_token_got_stuck_handler(ctx, amount)
+    }
 }
