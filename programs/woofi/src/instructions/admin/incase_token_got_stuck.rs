@@ -6,9 +6,7 @@ use crate::util::*;
 
 #[derive(Accounts)]
 pub struct IncaseTokenGotStuck<'info> {
-    pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
-    pub quote_token_mint: Account<'info, Mint>,
 
     pub authority: Signer<'info>,
 
@@ -18,10 +16,8 @@ pub struct IncaseTokenGotStuck<'info> {
     to_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut,
-        has_one = wooconfig,
         has_one = authority,
         has_one = token_mint,
-        has_one = quote_token_mint,
     )]
     pub woopool: Box<Account<'info, WooPool>>,
 
