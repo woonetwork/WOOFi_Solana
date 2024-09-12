@@ -37,7 +37,7 @@ describe("woofi_swap", () => {
 
   describe("#create_usdc_pool()", async () => {
     it("creates usdc pool", async () => {
-      let usdcOracle = await poolUtils.createOracle(SupportedToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      let usdcOracle = await poolUtils.createWooracle(SupportedToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
       assert.ok(
         usdcOracle.authority.equals(provider.wallet.publicKey)
       );
@@ -51,7 +51,7 @@ describe("woofi_swap", () => {
 
   describe("#create_sol_pool()", async () => {
     it("creates sol pool", async () => {
-      let solOracle = await poolUtils.createOracle(SupportedToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
+      let solOracle = await poolUtils.createWooracle(SupportedToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
         solOracle.authority.equals(provider.wallet.publicKey)
       );

@@ -125,7 +125,7 @@ export class PoolUtils {
     return wooconfigData;
   }
 
-  public createOracle = async (token: SupportedToken, tokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
+  public createWooracle = async (token: SupportedToken, tokenMint: anchor.web3.PublicKey, feedAccount: anchor.web3.PublicKey, priceUpdate: anchor.web3.PublicKey) => {
     const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from('wooconfig')],
       this.program.programId
@@ -147,7 +147,7 @@ export class PoolUtils {
           const quoteFeedAccount = this.quoteFeedAccount;
           const tx = await this.program
             .methods
-            .createOracle(new BN(1000))
+            .createWooracle(new BN(1000))
             .accounts({
               wooconfig,
               tokenMint,
