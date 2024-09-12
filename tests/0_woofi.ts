@@ -172,7 +172,7 @@ describe("woofi", () => {
           try {
           const tx = await program
             .methods
-            .createOracle(new BN(1000))
+            .createWooracle(new BN(1000))
             .accounts({
               wooconfig,
               tokenMint,
