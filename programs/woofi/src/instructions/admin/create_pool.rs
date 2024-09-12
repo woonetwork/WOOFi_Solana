@@ -43,7 +43,7 @@ pub struct CreatePool<'info> {
         has_one = token_mint,
         has_one = quote_token_mint
     )]
-    wooracle: Account<'info, WOOracle>,
+    wooracle: Account<'info, Wooracle>,
 
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,

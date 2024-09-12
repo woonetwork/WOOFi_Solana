@@ -11,7 +11,7 @@ pub struct SetWooStateOnlyAdmin<'info> {
             wooracle.authority == authority.key() ||
             wooconfig.wooracle_admin_authority.contains(authority.key)
     )]
-    pub wooracle: Account<'info, WOOracle>,
+    pub wooracle: Account<'info, Wooracle>,
 
     pub authority: Signer<'info>,
 }
@@ -23,7 +23,7 @@ pub struct SetWooStateOnlyOwner<'info> {
         has_one = wooconfig,
         has_one = authority
     )]
-    pub wooracle: Account<'info, WOOracle>,
+    pub wooracle: Account<'info, Wooracle>,
 
     pub authority: Signer<'info>,
 }
@@ -37,7 +37,7 @@ pub struct SetWooStateOnlyGuardian<'info> {
             wooracle.authority == authority.key() ||
             wooconfig.guardian_authority.contains(authority.key)
     )]
-    pub wooracle: Account<'info, WOOracle>,
+    pub wooracle: Account<'info, Wooracle>,
 
     pub authority: Signer<'info>,
 }

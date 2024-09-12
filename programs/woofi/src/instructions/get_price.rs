@@ -15,7 +15,7 @@ pub struct GetPrice<'info> {
         has_one = price_update,
         has_one = quote_price_update,
     )]
-    pub oracle: Account<'info, WOOracle>,
+    pub oracle: Account<'info, Wooracle>,
     pub price_update: Account<'info, PriceUpdateV2>,
     pub quote_price_update: Account<'info, PriceUpdateV2>,
 }
@@ -43,7 +43,7 @@ pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
 }
 
 pub fn get_price_impl<'info>(
-    oracle: &Account<'info, WOOracle>,
+    oracle: &Account<'info, Wooracle>,
     price_update: &mut Account<'info, PriceUpdateV2>,
     quote_price_update: &mut Account<'info, PriceUpdateV2>,
 ) -> Result<GetPriceResult> {
@@ -105,7 +105,7 @@ pub fn get_price_impl<'info>(
 }
 
 pub fn get_state_impl<'info>(
-    oracle: &Account<'info, WOOracle>,
+    oracle: &Account<'info, Wooracle>,
     price_update: &mut Account<'info, PriceUpdateV2>,
     quote_price_update: &mut Account<'info, PriceUpdateV2>,
 ) -> Result<GetStateResult> {

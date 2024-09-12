@@ -138,7 +138,7 @@ export class PoolUtils {
 
     let oracleItemData = null;
     try {
-      oracleItemData = await this.program.account.woOracle.fetch(wooracle);
+      oracleItemData = await this.program.account.wooracle.fetch(wooracle);
     } catch (e) {
       const error = e as Error;
       if (error.message.indexOf("Account does not exist") >= 0) {
@@ -167,7 +167,7 @@ export class PoolUtils {
     }
 
     if (oracleItemData == null) {
-      oracleItemData = await this.program.account.woOracle.fetch(wooracle);
+      oracleItemData = await this.program.account.wooracle.fetch(wooracle);
     }
 
     // init set wooracle range min and max

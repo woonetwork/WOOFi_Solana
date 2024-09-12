@@ -26,7 +26,7 @@ pub struct Swap<'info> {
         has_one = quote_price_update,
         constraint = wooracle_from.price_update == price_update_from.key()
     )]
-    wooracle_from: Account<'info, WOOracle>,
+    wooracle_from: Account<'info, Wooracle>,
     #[account(mut,
         has_one = wooconfig,
         constraint = woopool_from.authority == wooracle_from.authority,
@@ -53,7 +53,7 @@ pub struct Swap<'info> {
         has_one = quote_price_update,
         constraint = wooracle_to.price_update == price_update_to.key()
     )]
-    wooracle_to: Account<'info, WOOracle>,
+    wooracle_to: Account<'info, Wooracle>,
     #[account(mut,
         has_one = wooconfig,
         constraint = woopool_to.authority == woopool_from.authority,

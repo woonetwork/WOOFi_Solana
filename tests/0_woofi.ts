@@ -49,7 +49,7 @@ describe("woofi", () => {
   const quoteTokenMint = usdcTokenMint;
   const quoteFeedAccount = usdcFeedAccount;
   const quotePriceUpdate = usdcPriceUpdate;
-  
+
   const tokenMint = solTokenMint;
   const feedAccount = new anchor.web3.PublicKey(sol_priceFeed);
   const priceUpdateAccount = new anchor.web3.PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
@@ -78,7 +78,7 @@ describe("woofi", () => {
     const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from('wooconfig')],
       program.programId
-    );  
+    );
 
     const tx = await program
       .methods
@@ -109,7 +109,7 @@ describe("woofi", () => {
         [Buffer.from('wooconfig')],
         program.programId
       );
-      
+
       let wooconfigData = null;
       try {
         wooconfigData = await program.account.wooConfig.fetch(wooconfig);
@@ -124,12 +124,12 @@ describe("woofi", () => {
                 authority: provider.wallet.publicKey,
               })
               .rpc(confirmOptionsRetryTres);
-  
+
             const logs = await getLogs(provider.connection, tx);
             console.log(logs);
         }
       }
-  
+
       if (wooconfigData == null) {
         wooconfigData = await program.account.wooConfig.fetch(wooconfig);
       }
@@ -145,8 +145,8 @@ describe("woofi", () => {
       const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from('wooconfig')],
         program.programId
-      );  
-  
+      );
+
       const [wooracle] = await anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from('wooracle'), wooconfig.toBuffer(), solTokenMint.toBuffer(), feedAccount.toBuffer(), priceUpdateAccount.toBuffer()],
         program.programId
@@ -162,7 +162,7 @@ describe("woofi", () => {
 
       let oracleItemData = null;
       try {
-        oracleItemData = await program.account.woOracle.fetch(wooracleAccount);
+        oracleItemData = await program.account.wooracle.fetch(wooracleAccount);
       } catch (e) {
         const error = e as Error;
         if (error.message.indexOf("Account does not exist") >= 0) {
@@ -195,7 +195,7 @@ describe("woofi", () => {
       }
 
       if (oracleItemData == null) {
-        oracleItemData = await program.account.woOracle.fetch(wooracleAccount);
+        oracleItemData = await program.account.wooracle.fetch(wooracleAccount);
       }
 
       assert.ok(
@@ -238,7 +238,7 @@ describe("woofi", () => {
 
   describe("#set_woo_stale_duration()", async () => {
     it("set woo oracle state", async () => {
-    
+
       const setStaleDuration = new BN(1200);
 
       await program
@@ -250,8 +250,8 @@ describe("woofi", () => {
           authority: provider.wallet.publicKey,
         })
         .rpc(confirmOptionsRetryTres);
-  
-      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      const result = await program.account.wooracle.fetch(wooracleAccount);
 
       console.log(`staleDuration - ${result.staleDuration}`);
 
@@ -263,7 +263,7 @@ describe("woofi", () => {
 
   describe("#set_woo_state()", async () => {
     it("set woo oracle state", async () => {
-    
+
       const setPrice = traderSetPrice;
       const setCoeff = new BN(100);
       const setSpread = new BN(200);
@@ -277,8 +277,8 @@ describe("woofi", () => {
           authority: provider.wallet.publicKey,
         })
         .rpc(confirmOptionsRetryTres);
-  
-      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      const result = await program.account.wooracle.fetch(wooracleAccount);
 
       console.log(`price - ${result.price}`);
       console.log(`coeff - ${result.coeff}`);
@@ -297,7 +297,7 @@ describe("woofi", () => {
   });
 
   describe("#set_woo_range_max()", async () => {
-    it("set woo oracle range max too small", async () => {    
+    it("set woo oracle range max too small", async () => {
       const setPrice = traderSetPrice;
       const setRangeMax = setPrice.sub(new BN(100));
 
@@ -310,8 +310,8 @@ describe("woofi", () => {
           authority: provider.wallet.publicKey,
         })
         .rpc(confirmOptionsRetryTres);
-  
-      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      const result = await program.account.wooracle.fetch(wooracleAccount);
 
       console.log(`rangeMin - ${result.rangeMin}`);
       console.log(`rangeMax - ${result.rangeMax}`);
@@ -354,7 +354,7 @@ describe("woofi", () => {
   });
 
   describe("#set_woo_range_min()", async () => {
-    it("set woo oracle range min too large", async () => {    
+    it("set woo oracle range min too large", async () => {
       const setPrice = traderSetPrice;
       const setRangeMin = setPrice.add(new BN(100));
 
@@ -367,8 +367,8 @@ describe("woofi", () => {
           authority: provider.wallet.publicKey,
         })
         .rpc(confirmOptionsRetryTres);
-  
-      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      const result = await program.account.wooracle.fetch(wooracleAccount);
 
       console.log(`rangeMin - ${result.rangeMin}`);
       console.log(`rangeMax - ${result.rangeMax}`);
@@ -412,7 +412,7 @@ describe("woofi", () => {
 
   describe("#set_woo_range()", async () => {
     it("set woo oracle range", async () => {
-    
+
       await program
         .methods
         .setWooRange(rangeMin, rangeMax)
@@ -422,8 +422,8 @@ describe("woofi", () => {
           authority: provider.wallet.publicKey,
         })
         .rpc(confirmOptionsRetryTres);
-  
-      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      const result = await program.account.wooracle.fetch(wooracleAccount);
 
       console.log(`rangeMin - ${result.rangeMin}`);
       console.log(`rangeMax - ${result.rangeMax}`);
@@ -439,7 +439,7 @@ describe("woofi", () => {
 
   describe("#get_price()", async () => {
     it("get oracle price result", async () => {
-    
+
       const setPrice = traderSetPrice;
       const setCoeff = new BN(100);
       const setSpread = new BN(200);
@@ -476,7 +476,7 @@ describe("woofi", () => {
       console.log(`t.meta.logMessages: ${t.meta.logMessages}`);
       console.log(`receiveLog: ${receiveLog}`);
       assert(receiveLog !== undefined);
-  
+
       const reader = new borsh.BinaryReader(buffer);
       const price = reader.readU128().toNumber();
       const feasible = reader.readU8();
@@ -491,20 +491,20 @@ describe("woofi", () => {
 
   describe("#set_woo_bound()", async () => {
     it("set woo oracle bound", async () => {
-    
+
       // 1e16 means 1%, 2.5%
       const bound = new BN(25).mul(tenpow15);
       await program
         .methods
-        .setWooBound(bound) 
+        .setWooBound(bound)
         .accounts({
           wooconfig: wooconfigAccount,
           wooracle: wooracleAccount,
           authority: provider.wallet.publicKey,
         })
         .rpc(confirmOptionsRetryTres);
-  
-      const result = await program.account.woOracle.fetch(wooracleAccount);
+
+      const result = await program.account.wooracle.fetch(wooracleAccount);
 
       console.log(`Wooracle Bound - ${result.bound}`);
 
@@ -521,7 +521,7 @@ describe("woofi", () => {
       //   // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
       //   return;
       // }
-    
+
       // bound should be 2.5%, need threshhold for pythprice not sync
       const bound = new BN(15).mul(tenpow15);
       const low_bound = pythoracle_price.mul(tenpow18.sub(bound)).div(tenpow18);
@@ -543,7 +543,7 @@ describe("woofi", () => {
         })
         .rpc(confirmOptionsRetryTres);
 
-      const [price, feasible] = await getPriceResult();  
+      const [price, feasible] = await getPriceResult();
       console.log(`price - ${price}`);
       console.log(`feasible - ${feasible}`);
 
@@ -559,7 +559,7 @@ describe("woofi", () => {
       //   // In localnet May slightly differ from the one in wooracle's pyth price (clone program in localnet)
       //     return;
       // }
-      
+
       // bound should be 2.5%, need threshhold for pythprice not sync
       const bound = new BN(35).mul(tenpow15);
       const low_bound = pythoracle_price.mul(tenpow18.sub(bound)).div(tenpow18);
@@ -581,7 +581,7 @@ describe("woofi", () => {
         })
         .rpc(confirmOptionsRetryTres);
 
-      const [price, feasible] = await getPriceResult();  
+      const [price, feasible] = await getPriceResult();
       console.log(`price - ${price}`);
       console.log(`feasible - ${feasible}`);
 
@@ -618,7 +618,7 @@ describe("woofi", () => {
         })
         .rpc(confirmOptionsRetryTres);
 
-      const [price, feasible] = await getPriceResult();  
+      const [price, feasible] = await getPriceResult();
 
       console.log(`price - ${price}`);
       console.log(`feasible - ${feasible}`);
@@ -656,7 +656,7 @@ describe("woofi", () => {
         })
         .rpc(confirmOptionsRetryTres);
 
-      const [price, feasible] = await getPriceResult();  
+      const [price, feasible] = await getPriceResult();
 
       console.log(`price - ${price}`);
       console.log(`feasible - ${feasible}`);
@@ -668,7 +668,7 @@ describe("woofi", () => {
 
   describe("#set_price_back_to_pyth_price()", async () => {
     it("set wooracle price back to pyth price", async () => {
-    
+
       const setPrice = pythoracle_price;
 
       await program
@@ -681,7 +681,7 @@ describe("woofi", () => {
         })
         .rpc(confirmOptionsRetryTres);
 
-      const [price, feasible] = await getPriceResult();  
+      const [price, feasible] = await getPriceResult();
 
       console.log(`price - ${price}`);
       console.log(`feasible - ${feasible}`);
@@ -690,5 +690,5 @@ describe("woofi", () => {
       assert.equal(feasible, 1);
     });
   });
-  
+
 });

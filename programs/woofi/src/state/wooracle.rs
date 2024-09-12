@@ -39,7 +39,7 @@ use anchor_lang::prelude::*;
 
 #[account]
 #[derive(InitSpace)]
-pub struct WOOracle {
+pub struct Wooracle {
     pub wooconfig: Pubkey,    // 32
     pub authority: Pubkey,    // 32
     pub token_mint: Pubkey,   // 32
@@ -47,11 +47,10 @@ pub struct WOOracle {
     // store pyth price update account
     pub price_update: Pubkey, // 32
     // store pyth oracle maximum age, in seconds, 60 means 60s
-    pub maximum_age: u64,   // 8
-    pub price_decimals: u8, // 1
-    pub quote_decimals: u8, // 1
-    pub base_decimals: u8,  // 1
-    //    pub round: i128,          // 16
+    pub maximum_age: u64,           // 8
+    pub price_decimals: u8,         // 1
+    pub quote_decimals: u8,         // 1
+    pub base_decimals: u8,          // 1
     pub updated_at: i64,            // 8
     pub stale_duration: i64,        // 8
     pub bound: u64,                 // 8
@@ -65,7 +64,7 @@ pub struct WOOracle {
     pub quote_price_update: Pubkey, // 32
 }
 
-impl WOOracle {
+impl Wooracle {
     pub const LEN: usize = 8
         + (32
             + 32
@@ -76,7 +75,6 @@ impl WOOracle {
             + 1
             + 1
             + 1
-//            + 16
             + 8
             + 8
             + 8
@@ -90,21 +88,17 @@ impl WOOracle {
             + 32);
 
     pub fn update_now(&mut self) -> Result<()> {
-        let timestamp = Clock::get()?.unix_timestamp;
-        self.updated_at = timestamp;
-
+        self.updated_at = Clock::get()?.unix_timestamp;
         Ok(())
     }
 
     pub fn update_maximum_age(&mut self, maximum_age: u64) -> Result<()> {
         self.maximum_age = maximum_age;
-
         Ok(())
     }
 
     pub fn update_stale_duration(&mut self, stale_duration: i64) -> Result<()> {
         self.stale_duration = stale_duration;
-
         Ok(())
     }
 
@@ -113,39 +107,32 @@ impl WOOracle {
             bound > 0 && bound < TENPOW18U64,
             ErrorCode::WooOracleBoundLimit
         );
-
         self.bound = bound;
-
         Ok(())
     }
 
     pub fn update_price(&mut self, price: u128) -> Result<()> {
         self.price = price;
-
         Ok(())
     }
 
     pub fn update_coeff(&mut self, coeff: u64) -> Result<()> {
         self.coeff = coeff;
-
         Ok(())
     }
 
     pub fn update_spread(&mut self, spread: u64) -> Result<()> {
         self.spread = spread;
-
         Ok(())
     }
 
     pub fn update_range_min(&mut self, range_min: u128) -> Result<()> {
         self.range_min = range_min;
-
         Ok(())
     }
 
     pub fn update_range_max(&mut self, range_max: u128) -> Result<()> {
         self.range_max = range_max;
-
         Ok(())
     }
 
@@ -153,7 +140,6 @@ impl WOOracle {
         self.update_spread_for_new_price(price)?;
         self.update_price(price)?;
         self.update_now()?;
-
         Ok(())
     }
 

@@ -1152,7 +1152,7 @@
       }
     },
     {
-      "name": "WOOracle",
+      "name": "Wooracle",
       "type": {
         "kind": "struct",
         "fields": [

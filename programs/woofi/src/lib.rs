@@ -51,8 +51,8 @@ pub mod woofi {
         instructions::create_config::handler(ctx)
     }
 
-    pub fn create_oracle(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
-        instructions::create_oracle::handler(ctx, maximum_age)
+    pub fn create_oracle(ctx: Context<CreateWooracle>, maximum_age: u64) -> Result<()> {
+        instructions::create_wooracle::handler(ctx, maximum_age)
     }
 
     pub fn set_oracle_maximum_age(
