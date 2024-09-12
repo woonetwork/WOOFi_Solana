@@ -40,14 +40,14 @@ use crate::constants::*;
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 #[derive(Accounts)]
-pub struct CreateOracle<'info> {
+pub struct CreateWooracle<'info> {
     pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
 
     #[account(
         init,
         payer = admin,
-        space = 8 + WOOracle::INIT_SPACE,
+        space = 8 + Wooracle::INIT_SPACE,
         seeds = [
             WOORACLE_SEED.as_bytes(),
             wooconfig.key().as_ref(),
@@ -57,7 +57,7 @@ pub struct CreateOracle<'info> {
             ],
         bump,
     )]
-    wooracle: Account<'info, WOOracle>,
+    wooracle: Account<'info, Wooracle>,
     #[account(mut)]
     admin: Signer<'info>,
     system_program: Program<'info, System>,
@@ -81,7 +81,7 @@ pub struct CreateOracle<'info> {
     quote_price_update: Account<'info, PriceUpdateV2>,
 }
 
-pub fn handler(ctx: Context<CreateOracle>, maximum_age: u64) -> Result<()> {
+pub fn handler(ctx: Context<CreateWooracle>, maximum_age: u64) -> Result<()> {
     ctx.accounts.wooracle.wooconfig = ctx.accounts.wooconfig.key();
     ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
     ctx.accounts.wooracle.token_mint = ctx.accounts.token_mint.key();

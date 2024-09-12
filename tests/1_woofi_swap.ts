@@ -48,14 +48,14 @@ describe("woofi_swap", () => {
       );
     });
   });
-  
+
   describe("#create_sol_pool()", async () => {
     it("creates sol pool", async () => {
       let solOracle = await poolUtils.createOracle(SupportedToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
         solOracle.authority.equals(provider.wallet.publicKey)
       );
-  
+
       let solPool = await poolUtils.createPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
         solPool.authority.equals(provider.wallet.publicKey)
@@ -68,7 +68,7 @@ describe("woofi_swap", () => {
       const fromPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
 
       // init set wooracle range min and max
-      const oracleItemData = await program.account.woOracle.fetch(fromPoolParams.wooracle);
+      const oracleItemData = await program.account.wooracle.fetch(fromPoolParams.wooracle);
       console.log('wooracle price:', oracleItemData.price.toNumber());
       console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
       console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
@@ -82,12 +82,12 @@ describe("woofi_swap", () => {
       const toPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
       // init set wooracle range min and max
-      const oracleItemData = await program.account.woOracle.fetch(toPoolParams.wooracle);
+      const oracleItemData = await program.account.wooracle.fetch(toPoolParams.wooracle);
       console.log('wooracle price:', oracleItemData.price.toNumber());
       console.log('wooracle rangeMin:', oracleItemData.rangeMin.toNumber());
       console.log('wooracle rangeMax:', oracleItemData.rangeMax.toNumber());
 
-      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
+      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
     })
@@ -172,7 +172,7 @@ describe("woofi_swap", () => {
           console.log(e);
           return;
       }
-      
+
       console.log('authority:', woopoolData.authority);
       console.log('feeAuthority:', woopoolData.feeAuthority);
       console.log('tokenMint:', woopoolData.tokenMint);
@@ -182,7 +182,7 @@ describe("woofi_swap", () => {
         // 3%
         woopoolData.feeRate == 3000
       );
-  
+
     })
   })
 
@@ -255,15 +255,15 @@ describe("woofi_swap", () => {
       const tokenBalance = await provider.connection.getTokenAccountBalance(fromTokenAccount);
       console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
       console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
-    
+
       const fromPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       const toPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
       const quotePoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooconfig, fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);  
+      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooconfig, fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
       console.log(`price - ${fromPrice}`);
       console.log(`feasible - ${fromFeasible}`);
 
-      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);  
+      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
 
@@ -271,7 +271,7 @@ describe("woofi_swap", () => {
         .methods
         .tryQuery(new BN(fromAmount))
         .accounts({
-          wooconfig: fromPoolParams.wooconfig,  
+          wooconfig: fromPoolParams.wooconfig,
           wooracleFrom: fromPoolParams.wooracle,
           woopoolFrom: fromPoolParams.woopool,
           priceUpdateFrom: solPriceUpdate,
@@ -285,7 +285,7 @@ describe("woofi_swap", () => {
       let t = await provider.connection.getTransaction(tx, {
         commitment: "confirmed",
       })
-  
+
       const [key, data, buffer] = poolUtils.getReturnLog(t);
       const reader = new borsh.BinaryReader(buffer);
       const toAmount = reader.readU128().toNumber();
@@ -298,7 +298,7 @@ describe("woofi_swap", () => {
             // const beforeProviderToTokenBalance = await provider.connection.getTokenAccountBalance(providerToTokenAccount);
             // console.log("beforeProviderToTokenBalance amount:" + beforeProviderToTokenBalance.value.amount);
             // console.log("beforeProviderToTokenBalance decimals:" + beforeProviderToTokenBalance.value.decimals);
-      
+
             // const transferToTranscation = new Transaction().add(
             //   // trasnfer USDC to to account
             //   token.createTransferCheckedInstruction(
@@ -310,14 +310,14 @@ describe("woofi_swap", () => {
             //     beforeProviderToTokenBalance.value.decimals
             //   ),
             // );
-      
+
             // await provider.sendAndConfirm(transferToTranscation, [], { commitment: "confirmed" });
-      
+
             // const afterToTokenBalance = await provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
             // console.log("afterProviderToTokenBalance amount:" + afterToTokenBalance.value.amount);
             // console.log("afterProviderToTokenBalance decimals:" + afterToTokenBalance.value.decimals);
-      
-  
+
+
       await program
         .methods
         .swap(new BN(fromAmount), new BN(0))

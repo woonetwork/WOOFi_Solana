@@ -33,7 +33,6 @@ pub struct CreateRebateInfo<'info> {
     #[account(address = token::ID)]
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
 }
 
 pub fn handler(ctx: Context<CreateRebateInfo>) -> Result<()> {

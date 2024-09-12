@@ -1,7 +1,7 @@
 pub mod claim_fee;
 pub mod create_config;
-pub mod create_oracle;
 pub mod create_pool;
+pub mod create_wooracle;
 pub mod deposit_withdraw;
 pub mod incase_token_got_stuck;
 pub mod pause_unpause;
@@ -12,8 +12,8 @@ pub mod set_woo_state;
 
 pub use claim_fee::*;
 pub use create_config::*;
-pub use create_oracle::*;
 pub use create_pool::*;
+pub use create_wooracle::*;
 pub use deposit_withdraw::*;
 pub use incase_token_got_stuck::*;
 pub use pause_unpause::*;
