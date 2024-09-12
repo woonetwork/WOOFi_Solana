@@ -94,8 +94,6 @@ pub struct Swap<'info> {
 }
 
 pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
-    // TODO Prince: check from_amount upper, total amount limit in one swap
-
     let price_update_from = &mut ctx.accounts.price_update_from;
     let price_update_to = &mut ctx.accounts.price_update_to;
     let quote_price_update = &mut ctx.accounts.quote_price_update;
