@@ -2,9 +2,9 @@ pub const WOORACLE_SEED: &str = "wooracle";
 pub const WOOPOOL_SEED: &str = "woopool";
 pub const WOOCONFIG_SEED: &str = "wooconfig";
 
-pub const TE5U128: u128 = 100_000;
-pub const TENPOW18U64: u64 = 1_000_000_000_000_000_000;
-pub const TENPOW18U128: u128 = 1_000_000_000_000_000_000;
+pub const ONE_E5_U128: u128 = 100_000;
+pub const ONE_E18_U64: u64 = 1_000_000_000_000_000_000;
+pub const ONE_E18_U128: u128 = 1_000_000_000_000_000_000;
 pub const DEFAULT_BOUND: u64 = 10_000_000_000_000_000; // 1e16 means 1%
                                                        // unix timestamp in seconds
 pub const DEFAULT_STALE_DURATION: i64 = 120; // Default to 120s

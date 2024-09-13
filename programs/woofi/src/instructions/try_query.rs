@@ -100,7 +100,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
         quote_amount = _quote_amount;
     }
 
-    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, TE5U128)?;
+    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
