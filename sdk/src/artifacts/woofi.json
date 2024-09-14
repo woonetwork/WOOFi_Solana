@@ -948,12 +948,12 @@
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -989,12 +989,12 @@
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1131,12 +1131,12 @@
             "type": "publicKey"
           },
           {
-            "name": "feeRate",
-            "type": "u16"
-          },
-          {
             "name": "reserve",
             "type": "u128"
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
           },
           {
             "name": "maxGamma",
@@ -1164,9 +1164,6 @@
           },
           {
             "name": "baseDecimals",
-            "docs": [
-              "Number of base 10 digits to the right of the decimal place."
-            ],
             "type": "u8"
           }
         ]
@@ -1695,6 +1692,6 @@
     }
   ],
   "metadata": {
-    "address": "5KNaYPW5Yi53eieBAfKpGS9tX9Dj4uq2UFEWWXfGokkB"
+    "address": "B5iGPpZyhhJrmidqrDLSrUYXBKwXTTm3WatKMjnrneaA"
   }
 }

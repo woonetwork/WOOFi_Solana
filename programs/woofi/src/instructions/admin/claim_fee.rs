@@ -11,7 +11,7 @@ pub struct ClaimFee<'info> {
 
     pub authority: Signer<'info>,
 
-    #[account(
+    #[account(mut,
         has_one = wooconfig,
         constraint = woopool.authority == authority.key()
                   || wooconfig.fee_authority.contains(authority.key),
@@ -19,7 +19,7 @@ pub struct ClaimFee<'info> {
     )]
     pub woopool: Box<Account<'info, WooPool>>,
 
-    #[account(
+    #[account(mut,
         address = woopool.token_vault,
         constraint = token_vault.mint == token_mint.key()
       )]

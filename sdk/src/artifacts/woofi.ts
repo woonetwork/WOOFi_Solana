@@ -948,12 +948,12 @@ export type Woofi = {
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -989,12 +989,12 @@ export type Woofi = {
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1131,12 +1131,12 @@ export type Woofi = {
             "type": "publicKey"
           },
           {
-            "name": "feeRate",
-            "type": "u16"
-          },
-          {
             "name": "reserve",
             "type": "u128"
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
           },
           {
             "name": "maxGamma",
@@ -1164,9 +1164,6 @@ export type Woofi = {
           },
           {
             "name": "baseDecimals",
-            "docs": [
-              "Number of base 10 digits to the right of the decimal place."
-            ],
             "type": "u8"
           }
         ]
@@ -2646,12 +2643,12 @@ export const IDL: Woofi = {
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2687,12 +2684,12 @@ export const IDL: Woofi = {
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2829,12 +2826,12 @@ export const IDL: Woofi = {
             "type": "publicKey"
           },
           {
-            "name": "feeRate",
-            "type": "u16"
-          },
-          {
             "name": "reserve",
             "type": "u128"
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
           },
           {
             "name": "maxGamma",
@@ -2862,9 +2859,6 @@ export const IDL: Woofi = {
           },
           {
             "name": "baseDecimals",
-            "docs": [
-              "Number of base 10 digits to the right of the decimal place."
-            ],
             "type": "u8"
           }
         ]
