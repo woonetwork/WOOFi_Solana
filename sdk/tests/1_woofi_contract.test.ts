@@ -18,7 +18,7 @@ describe("woofi_sdk", async () => {
       new anchor.web3.PublicKey(PYTH_PRICE_UPDATE_ACCOUNT['SOL']),
       ctx.program);
 
-    const wooracle = await ctx.program.account.woOracle.fetch(poolParams.wooracle);
+    const wooracle = await ctx.program.account.wooracle.fetch(poolParams.wooracle);
 
     const result = await getWooPrice(WOOFI_TOKENS.SOL, wooracle);
 
@@ -34,7 +34,7 @@ describe("woofi_sdk", async () => {
       new anchor.web3.PublicKey(PYTH_PRICE_UPDATE_ACCOUNT['USDC']),
       ctx.program);
 
-    const wooracle = await ctx.program.account.woOracle.fetch(poolParams.wooracle);
+    const wooracle = await ctx.program.account.wooracle.fetch(poolParams.wooracle);
 
     const result = await getWooPrice(WOOFI_TOKENS.USDC, wooracle);
 

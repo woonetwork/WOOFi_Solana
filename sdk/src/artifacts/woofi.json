@@ -24,7 +24,7 @@
       "args": []
     },
     {
-      "name": "createOracle",
+      "name": "createWooracle",
       "accounts": [
         {
           "name": "wooconfig",
@@ -850,11 +850,6 @@
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -897,11 +892,6 @@
         },
         {
           "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "quoteTokenMint",
           "isMut": false,
           "isSigner": false
         },
@@ -952,23 +942,18 @@
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -998,23 +983,18 @@
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
         },
         {
           "name": "woopool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
           "name": "tokenVault",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1031,6 +1011,47 @@
       "args": [
         {
           "name": "claimAmount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "incaseTokenGotStuck",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "toTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
           "type": "u128"
         }
       ]
@@ -1110,12 +1131,12 @@
             "type": "publicKey"
           },
           {
-            "name": "feeRate",
-            "type": "u16"
-          },
-          {
             "name": "reserve",
             "type": "u128"
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
           },
           {
             "name": "maxGamma",
@@ -1143,9 +1164,6 @@
           },
           {
             "name": "baseDecimals",
-            "docs": [
-              "Number of base 10 digits to the right of the decimal place."
-            ],
             "type": "u8"
           }
         ]
@@ -1674,6 +1692,6 @@
     }
   ],
   "metadata": {
-    "address": "5KNaYPW5Yi53eieBAfKpGS9tX9Dj4uq2UFEWWXfGokkB"
+    "address": "B5iGPpZyhhJrmidqrDLSrUYXBKwXTTm3WatKMjnrneaA"
   }
 }

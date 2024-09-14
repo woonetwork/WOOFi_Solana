@@ -2,13 +2,12 @@ use crate::{events::DepositEvent, events::WithdrawEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
-use crate::{constants::*, errors::ErrorCode, util::*};
+use crate::{errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct DepositWithdraw<'info> {
     pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
-    pub quote_token_mint: Account<'info, Mint>,
 
     pub authority: Signer<'info>,
 
@@ -20,13 +19,6 @@ pub struct DepositWithdraw<'info> {
 
     #[account(mut,
         has_one = wooconfig,
-        seeds = [
-          WOOPOOL_SEED.as_bytes(),
-          wooconfig.key().as_ref(),
-          token_mint.key().as_ref(),
-          quote_token_mint.key().as_ref()
-        ],
-        bump,
         constraint = woopool.authority == authority.key()
                   || wooconfig.woopool_admin_authority.contains(authority.key),
         constraint = woopool.token_mint == token_mint.key()
@@ -64,12 +56,6 @@ pub fn deposit(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
         &ctx.accounts.token_program,
         amount as u64,
     )?;
-
-    // TODO Prince: currently we cannot get result from above CPI, so we cannot check
-    // the transfer result in the same call
-    // let balance_after = balance(woopool, token_vault)?;
-    // let amount_received = balance_after - balance_before;
-    // require!(amount_received >= amount, ErrorCode::ReserveLessThanFee);
 
     emit!(DepositEvent {
         authority: ctx.accounts.authority.key(),

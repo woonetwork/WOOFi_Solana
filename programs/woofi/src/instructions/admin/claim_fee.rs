@@ -2,34 +2,24 @@ use crate::{events::ClaimFeeEvent, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
 
-use crate::{constants::*, errors::ErrorCode, util::*};
+use crate::{errors::ErrorCode, util::*};
 
 #[derive(Accounts)]
 pub struct ClaimFee<'info> {
-    #[account(
-        constraint = !wooconfig.paused
-    )]
     pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
-    pub quote_token_mint: Account<'info, Mint>,
 
     pub authority: Signer<'info>,
 
-    #[account(
+    #[account(mut,
         has_one = wooconfig,
-        seeds = [
-          WOOPOOL_SEED.as_bytes(),
-          token_mint.key().as_ref(),
-          quote_token_mint.key().as_ref()
-        ],
-        bump,
         constraint = woopool.authority == authority.key()
                   || wooconfig.fee_authority.contains(authority.key),
         constraint = woopool.token_mint == token_mint.key()
     )]
     pub woopool: Box<Account<'info, WooPool>>,
 
-    #[account(
+    #[account(mut,
         address = woopool.token_vault,
         constraint = token_vault.mint == token_mint.key()
       )]

@@ -7,12 +7,12 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-woofi = "5KNaYPW5Yi53eieBAfKpGS9tX9Dj4uq2UFEWWXfGokkB"
-rebate_manager = "2MXx86ULhH5NNVno7VdpLB16EbPTv69bhJXt4DRVTyiD"
+woofi = "B5iGPpZyhhJrmidqrDLSrUYXBKwXTTm3WatKMjnrneaA"
+rebate_manager = "7c8QRTYyyvsUh4jvD88bxjuFRASmh9affrS7qqtoL6eY"
 
 [programs.devnet]
-woofi = "5KNaYPW5Yi53eieBAfKpGS9tX9Dj4uq2UFEWWXfGokkB"
-rebate_manager = "2MXx86ULhH5NNVno7VdpLB16EbPTv69bhJXt4DRVTyiD"
+woofi = "B5iGPpZyhhJrmidqrDLSrUYXBKwXTTm3WatKMjnrneaA"
+rebate_manager = "7c8QRTYyyvsUh4jvD88bxjuFRASmh9affrS7qqtoL6eY"
 
 [registry]
 url = "https://api.apr.dev"

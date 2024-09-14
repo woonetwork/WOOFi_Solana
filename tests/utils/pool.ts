@@ -260,7 +260,6 @@ export class PoolUtils {
     }
 
     console.log('authority:' + woopoolData.authority);
-    console.log('feeAuthority:' + woopoolData.feeAuthority);
     console.log('tokenMint:' + woopoolData.tokenMint);
     console.log('tokenVault:' + woopoolData.tokenVault);
     console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
@@ -296,7 +295,6 @@ export class PoolUtils {
     }
 
     console.log('authority:', woopoolData.authority);
-    console.log('feeAuthority:', woopoolData.feeAuthority);
     console.log('tokenMint:', woopoolData.tokenMint);
     console.log('tokenVault:', woopoolData.tokenVault);
     console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
@@ -351,7 +349,6 @@ export class PoolUtils {
     console.log('woopoolAdminAuthority:', wooconfigData.woopoolAdminAuthority)
     console.log('guardianAuthority:', wooconfigData.guardianAuthority)
     console.log('pauseAuthority:', wooconfigData.pauseAuthority)
-    console.log('feeAuthority:', wooconfigData.feeAuthority)
   }
 
 }

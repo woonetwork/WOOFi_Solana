@@ -4,9 +4,6 @@ use crate::{state::woopool::*, WooConfig};
 
 #[derive(Accounts)]
 pub struct SetPoolState<'info> {
-    #[account(
-        constraint = !wooconfig.paused
-    )]
     pub wooconfig: Box<Account<'info, WooConfig>>,
     #[account(mut,
         has_one = wooconfig,
