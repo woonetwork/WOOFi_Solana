@@ -94,14 +94,14 @@ pub mod woofi {
     }
 
     pub fn set_woo_admin(
-        ctx: Context<SetWooAuthOnlyOwner>,
+        ctx: Context<SetOnlyOwnerConfig>,
         admin_authority: Vec<Pubkey>,
     ) -> Result<()> {
         instructions::set_wooracle_admin_handler(ctx, admin_authority)
     }
 
     pub fn set_guardian_admin(
-        ctx: Context<SetWooAuthOnlyOwner>,
+        ctx: Context<SetOnlyOwnerConfig>,
         guardian_authority: Vec<Pubkey>,
     ) -> Result<()> {
         instructions::set_guardian_handler(ctx, guardian_authority)
@@ -125,21 +125,21 @@ pub mod woofi {
     }
 
     pub fn set_pool_admin(
-        ctx: Context<SetPoolAuthOnlyAdmin>,
+        ctx: Context<SetOnlyAdminConfig>,
         admin_authority: Vec<Pubkey>,
     ) -> Result<()> {
         instructions::set_pool_admin_handler(ctx, admin_authority)
     }
 
     pub fn set_fee_admin(
-        ctx: Context<SetPoolAuthOnlyAdmin>,
+        ctx: Context<SetOnlyAdminConfig>,
         fee_authority: Vec<Pubkey>,
     ) -> Result<()> {
         instructions::set_fee_admin_handler(ctx, fee_authority)
     }
 
     pub fn set_pause_role(
-        ctx: Context<SetPoolAuthOnlyAdmin>,
+        ctx: Context<SetOnlyAdminConfig>,
         pause_authority: Vec<Pubkey>,
     ) -> Result<()> {
         instructions::set_pause_role_handler(ctx, pause_authority)

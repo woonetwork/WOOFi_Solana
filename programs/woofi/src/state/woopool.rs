@@ -41,26 +41,25 @@ pub struct WooPool {
     pub woopool_bump: [u8; 1], // 1
     pub authority: Pubkey,     // 32
     pub wooracle: Pubkey,      // 32
-    // unit: 0.1 bps (1e6 = 100%, 25 = 2.5 bps)
-    // decimal = 5; 1 in 100_000; 10 = 1bp = 0.01%; max = 65535
-    // Max fee rate supported is u16::MAX around 65.5%.
-    pub fee_rate: u16, // 2
+
     // balance reserve
     pub reserve: u128, // 16
+    // 1 in 100000; 10 = 1bp = 0.01%; max = 65535
+    pub fee_rate: u16, // 2
     // max range of `balance * k`
     pub max_gamma: u128, // 16
     // max volume per swap
-    pub max_notional_swap: u128,  // 16
+    pub max_notional_swap: u128, // 16
+
     pub unclaimed_fee: u128,      // 16
     pub token_mint: Pubkey,       // 32
     pub token_vault: Pubkey,      // 32
     pub quote_token_mint: Pubkey, // 32
-    /// Number of base 10 digits to the right of the decimal place.
-    pub base_decimals: u8, // 1
+    pub base_decimals: u8,        // 1
 }
 
 impl WooPool {
-    pub const LEN: usize = 8 + (32 + 1 + 32 + 32 + 2 + 16 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
+    pub const LEN: usize = 8 + (32 + 1 + 32 + 32 + 16 + 2 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
 
     pub fn seeds(&self) -> [&[u8]; 5] {
         [
@@ -87,11 +86,10 @@ impl WooPool {
         self.woopool_bump = [bump];
         self.wooconfig = wooconfig;
         self.authority = authority;
-
         self.wooracle = wooracle;
 
-        self.fee_rate = 0;
         self.reserve = 0;
+        self.fee_rate = 0;
         self.unclaimed_fee = 0;
         self.max_gamma = 0;
         self.max_notional_swap = 0;
@@ -141,10 +139,7 @@ impl WooPool {
             return Err(ErrorCode::ReserveNotEnough.into());
         }
 
-        self.reserve = self
-            .reserve
-            .checked_sub(amount)
-            .ok_or(ErrorCode::ReserveNotEnough)?;
+        self.reserve -= amount;
 
         Ok(())
     }
@@ -163,10 +158,7 @@ impl WooPool {
             return Err(ErrorCode::ProtocolFeeNotEnough.into());
         }
 
-        self.unclaimed_fee = self
-            .unclaimed_fee
-            .checked_sub(fee)
-            .ok_or(ErrorCode::ProtocolFeeNotEnough)?;
+        self.unclaimed_fee -= fee;
 
         Ok(())
     }

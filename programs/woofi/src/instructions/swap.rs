@@ -148,7 +148,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         quote_amount = _quote_amount;
     }
 
-    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, TE5U128)?;
+    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
     if woopool_from.token_mint != woopool_from.quote_token_mint {

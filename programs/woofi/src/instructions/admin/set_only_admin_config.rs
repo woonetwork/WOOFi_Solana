@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Accounts)]
-pub struct SetPoolAuthOnlyAdmin<'info> {
+pub struct SetOnlyAdminConfig<'info> {
     #[account(mut,
         constraint =
             wooconfig.authority == authority.key() ||
@@ -18,7 +18,7 @@ pub struct SetPoolAuthOnlyAdmin<'info> {
 }
 
 pub fn set_pool_admin_handler(
-    ctx: Context<SetPoolAuthOnlyAdmin>,
+    ctx: Context<SetOnlyAdminConfig>,
     admins: Vec<Pubkey>,
 ) -> Result<()> {
     ctx.accounts
@@ -35,7 +35,7 @@ pub fn set_pool_admin_handler(
 }
 
 pub fn set_fee_admin_handler(
-    ctx: Context<SetPoolAuthOnlyAdmin>,
+    ctx: Context<SetOnlyAdminConfig>,
     fee_admins: Vec<Pubkey>,
 ) -> Result<()> {
     ctx.accounts
@@ -52,7 +52,7 @@ pub fn set_fee_admin_handler(
 }
 
 pub fn set_pause_role_handler(
-    ctx: Context<SetPoolAuthOnlyAdmin>,
+    ctx: Context<SetOnlyAdminConfig>,
     pause_roles: Vec<Pubkey>,
 ) -> Result<()> {
     ctx.accounts

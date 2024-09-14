@@ -76,8 +76,8 @@ pub fn get_price_impl<'info>(
 
     let wo_feasible = clo_price != 0 && now <= (wo_timestamp + oracle.stale_duration);
     let wo_price_in_bound = clo_price != 0
-        && ((clo_price * (TENPOW18U128 - bound)) / TENPOW18U128 <= wo_price
-            && wo_price <= (clo_price * (TENPOW18U128 + bound)) / TENPOW18U128);
+        && ((clo_price * (ONE_E18_U128 - bound)) / ONE_E18_U128 <= wo_price
+            && wo_price <= (clo_price * (ONE_E18_U128 + bound)) / ONE_E18_U128);
 
     let price_out: u128;
     let feasible_out: bool;
