@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::WooConfig;
 
 #[derive(Accounts)]
-pub struct SetWooAuthOnlyOwner<'info> {
+pub struct SetOnlyOwnerConfig<'info> {
     #[account(mut,
         has_one = authority,
     )]
@@ -13,7 +13,7 @@ pub struct SetWooAuthOnlyOwner<'info> {
 }
 
 pub fn set_wooracle_admin_handler(
-    ctx: Context<SetWooAuthOnlyOwner>,
+    ctx: Context<SetOnlyOwnerConfig>,
     admin_authority: Vec<Pubkey>,
 ) -> Result<()> {
     ctx.accounts
@@ -22,7 +22,7 @@ pub fn set_wooracle_admin_handler(
 }
 
 pub fn set_guardian_handler(
-    ctx: Context<SetWooAuthOnlyOwner>,
+    ctx: Context<SetOnlyOwnerConfig>,
     guardian_authority: Vec<Pubkey>,
 ) -> Result<()> {
     ctx.accounts
