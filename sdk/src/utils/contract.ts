@@ -301,11 +301,11 @@ import { getPythPrice } from "./pyth";
     quoteTokenMint: PublicKey,
   ): Promise<QueryResult> => {
     const fromPoolParams = await generatePoolParams(fromTokenMint, quoteTokenMint, fromOracleFeedAccount, fromPriceUpdate, ctx.program);
-    const wooracle_from = await ctx.program.account.woOracle.fetch(fromPoolParams.wooracle);
+    const wooracle_from = await ctx.program.account.wooracle.fetch(fromPoolParams.wooracle);
     const woopool_from = await ctx.program.account.wooPool.fetch(fromPoolParams.woopool);
 
     const toPoolParams = await generatePoolParams(toTokenMint, quoteTokenMint, toOracleFeedAccount, toPriceUpdate, ctx.program);
-    const wooracle_to = await ctx.program.account.woOracle.fetch(toPoolParams.wooracle);
+    const wooracle_to = await ctx.program.account.wooracle.fetch(toPoolParams.wooracle);
     const woopool_to = await ctx.program.account.wooPool.fetch(toPoolParams.woopool);
 
     let fee_rate = woopool_from.feeRate > woopool_to.feeRate ? new BN(woopool_from.feeRate) : new BN(woopool_to.feeRate);

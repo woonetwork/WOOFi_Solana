@@ -6,9 +6,6 @@ use crate::constants::*;
 
 #[derive(Accounts)]
 pub struct CreatePool<'info> {
-    #[account(
-        constraint = !wooconfig.paused
-    )]
     pub wooconfig: Box<Account<'info, WooConfig>>,
     pub token_mint: Account<'info, Mint>,
     pub quote_token_mint: Account<'info, Mint>,

@@ -24,7 +24,7 @@
       "args": []
     },
     {
-      "name": "createOracle",
+      "name": "createWooracle",
       "accounts": [
         {
           "name": "wooconfig",
@@ -850,11 +850,6 @@
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -897,11 +892,6 @@
         },
         {
           "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "quoteTokenMint",
           "isMut": false,
           "isSigner": false
         },
@@ -952,11 +942,6 @@
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -998,11 +983,6 @@
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -1031,6 +1011,47 @@
       "args": [
         {
           "name": "claimAmount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "incaseTokenGotStuck",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "toTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
           "type": "u128"
         }
       ]

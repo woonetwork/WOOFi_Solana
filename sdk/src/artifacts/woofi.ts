@@ -24,7 +24,7 @@ export type Woofi = {
       "args": []
     },
     {
-      "name": "createOracle",
+      "name": "createWooracle",
       "accounts": [
         {
           "name": "wooconfig",
@@ -850,11 +850,6 @@ export type Woofi = {
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -897,11 +892,6 @@ export type Woofi = {
         },
         {
           "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "quoteTokenMint",
           "isMut": false,
           "isSigner": false
         },
@@ -952,11 +942,6 @@ export type Woofi = {
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -998,11 +983,6 @@ export type Woofi = {
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -1031,6 +1011,47 @@ export type Woofi = {
       "args": [
         {
           "name": "claimAmount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "incaseTokenGotStuck",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "toTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
           "type": "u128"
         }
       ]
@@ -1152,7 +1173,7 @@ export type Woofi = {
       }
     },
     {
-      "name": "woOracle",
+      "name": "wooracle",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1701,7 +1722,7 @@ export const IDL: Woofi = {
       "args": []
     },
     {
-      "name": "createOracle",
+      "name": "createWooracle",
       "accounts": [
         {
           "name": "wooconfig",
@@ -2527,11 +2548,6 @@ export const IDL: Woofi = {
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -2574,11 +2590,6 @@ export const IDL: Woofi = {
         },
         {
           "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "quoteTokenMint",
           "isMut": false,
           "isSigner": false
         },
@@ -2629,11 +2640,6 @@ export const IDL: Woofi = {
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -2675,11 +2681,6 @@ export const IDL: Woofi = {
           "isSigner": false
         },
         {
-          "name": "quoteTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "authority",
           "isMut": false,
           "isSigner": true
@@ -2708,6 +2709,47 @@ export const IDL: Woofi = {
       "args": [
         {
           "name": "claimAmount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
+      "name": "incaseTokenGotStuck",
+      "accounts": [
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "toTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
           "type": "u128"
         }
       ]
@@ -2829,7 +2871,7 @@ export const IDL: Woofi = {
       }
     },
     {
-      "name": "woOracle",
+      "name": "wooracle",
       "type": {
         "kind": "struct",
         "fields": [
