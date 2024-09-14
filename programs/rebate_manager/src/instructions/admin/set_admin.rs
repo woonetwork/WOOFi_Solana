@@ -15,7 +15,6 @@ pub struct SetAdmin<'info> {
 }
 
 pub fn set_admin_handler(ctx: Context<SetAdmin>, admins: Vec<Pubkey>) -> Result<()> {
-    // TODO Prince: we may support add/remove single admin when rust/solana have more convinent vec tools
     ctx.accounts
         .rebate_manager
         .set_admin_authority(admins.clone())?;

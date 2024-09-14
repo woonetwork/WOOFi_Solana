@@ -21,7 +21,6 @@ pub fn set_pool_admin_handler(
     ctx: Context<SetPoolAuthOnlyAdmin>,
     admins: Vec<Pubkey>,
 ) -> Result<()> {
-    // TODO Prince: we may support add/remove single admin when rust/solana have more convinent vec tools
     ctx.accounts
         .wooconfig
         .set_woopool_admin_authority(admins.clone())?;
