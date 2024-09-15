@@ -23,14 +23,6 @@ pub struct ClaimFeeEvent {
 }
 
 #[event]
-pub struct ClaimRebateFeeEvent {
-    pub quote_token_mint: Pubkey,
-    pub rebate_authority: Pubkey,
-    pub claim_fee_to_account: Pubkey,
-    pub claim_amount: u128,
-}
-
-#[event]
 pub struct WooPoolAdminUpdatedEvent {
     pub wooconfig: Pubkey,
     pub authority: Pubkey,

@@ -59,8 +59,6 @@ pub struct WooPool {
 }
 
 impl WooPool {
-    pub const LEN: usize = 8 + (32 + 1 + 32 + 32 + 16 + 2 + 16 + 16 + 16 + 32 + 32 + 32 + 1);
-
     pub fn seeds(&self) -> [&[u8]; 5] {
         [
             WOOPOOL_SEED.as_bytes(),
