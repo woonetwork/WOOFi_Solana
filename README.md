@@ -18,9 +18,12 @@ Set up a valid Solana keypair at the path specified in the `wallet` in `Anchor.t
 ## Usage
 
 ```
-anchor build
-```
+// Install dependencies
+yarn
 
-```
+// Build
+anchor build
+
+// Tests
 anchor test
 ```
