@@ -17,10 +17,7 @@ pub struct SetOnlyAdminConfig<'info> {
     pub authority: Signer<'info>,
 }
 
-pub fn set_pool_admin_handler(
-    ctx: Context<SetOnlyAdminConfig>,
-    admins: Vec<Pubkey>,
-) -> Result<()> {
+pub fn set_pool_admin_handler(ctx: Context<SetOnlyAdminConfig>, admins: Vec<Pubkey>) -> Result<()> {
     ctx.accounts
         .wooconfig
         .set_woopool_admin_authority(admins.clone())?;
