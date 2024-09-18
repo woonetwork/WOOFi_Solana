@@ -7,3 +7,5 @@ node_modules
 sdk/dist/
 test-ledger
 .yarn
+.env
+.vscode/
