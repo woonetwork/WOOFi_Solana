@@ -78,6 +78,7 @@ pub struct Swap<'info> {
 
     #[account(mut,
         has_one = wooconfig,
+        constraint = woopool_quote.token_mint == woopool_quote.quote_token_mint,
         constraint = woopool_quote.token_mint == woopool_from.quote_token_mint,
         constraint = woopool_quote.authority == woopool_from.authority,
     )]
