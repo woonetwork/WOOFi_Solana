@@ -24,8 +24,9 @@ pub struct CreateRebateInfo<'info> {
         space = 8 + RebateInfo::INIT_SPACE,
         seeds = [
           REBATEINFO_SEED.as_bytes(),
+          authority.key().as_ref(),
           rebate_manager.key().as_ref(),
-          rebate_authority.key().as_ref()
+          rebate_authority.key().as_ref(),
         ],
        bump)]
     pub rebate_info: Account<'info, RebateInfo>,
