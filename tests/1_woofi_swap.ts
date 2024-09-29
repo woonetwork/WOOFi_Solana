@@ -335,7 +335,7 @@ describe("woofi_swap", () => {
         console.log(error.stack);
         console.log("----------------------end-----------------------------")
 
-        assert.match(error.message, /CapExceeds/);
+        assert.match(error.message, /BalanceCapExceeds/);
       }
     });
 
