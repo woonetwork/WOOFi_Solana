@@ -118,8 +118,8 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     let rebate_to = &ctx.accounts.rebate_to;
 
     require!(
-        token_vault_from.amount as u128 + from_amount <= woopool_from.cap_bal,
-        ErrorCode::CapExceeds
+        (token_vault_from.amount as u128) + from_amount <= woopool_from.cap_bal,
+        ErrorCode::BalanceCapExceeds
     );
 
     let fee_rate: u16 = if woopool_from.token_mint == woopool_from.quote_token_mint {
