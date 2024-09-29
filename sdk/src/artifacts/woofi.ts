@@ -1702,7 +1702,7 @@ export type Woofi = {
     },
     {
       "code": 6032,
-      "name": "CapExceeds",
+      "name": "BalanceCapExceeds",
       "msg": "Amount exceeds max balance cap"
     }
   ]
@@ -3412,7 +3412,7 @@ export const IDL: Woofi = {
     },
     {
       "code": 6032,
-      "name": "CapExceeds",
+      "name": "BalanceCapExceeds",
       "msg": "Amount exceeds max balance cap"
     }
   ]
