@@ -118,7 +118,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
     let rebate_to = &ctx.accounts.rebate_to;
 
     require!(
-        woopool_from.cap_bal >= from_amount,
+        token_vault_from.amount as u128 + from_amount <= woopool_from.cap_bal,
         ErrorCode::CapExceeds
     );
 

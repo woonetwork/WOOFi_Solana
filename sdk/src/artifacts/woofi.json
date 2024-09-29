@@ -610,6 +610,32 @@
       ]
     },
     {
+      "name": "setPoolCapBal",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "capBal",
+          "type": "u128"
+        }
+      ]
+    },
+    {
       "name": "tryQuery",
       "accounts": [
         {
@@ -679,6 +705,11 @@
         {
           "name": "woopoolFrom",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultFrom",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1147,6 +1178,10 @@
             "type": "u128"
           },
           {
+            "name": "capBal",
+            "type": "u128"
+          },
+          {
             "name": "unclaimedFee",
             "type": "u128"
           },
@@ -1367,31 +1402,6 @@
         },
         {
           "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "claimFeeToAccount",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "claimAmount",
-          "type": "u128",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "ClaimRebateFeeEvent",
-      "fields": [
-        {
-          "name": "quoteTokenMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateAuthority",
           "type": "publicKey",
           "index": false
         },
@@ -1689,6 +1699,11 @@
       "code": 6031,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
+    },
+    {
+      "code": 6032,
+      "name": "CapExceeds",
+      "msg": "Amount exceeds max balance cap"
     }
   ],
   "metadata": {
