@@ -83,6 +83,11 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     let wooracle_to = &ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
+    require!(
+        woopool_from.cap_bal >= from_amount,
+        ErrorCode::CapExceeds
+    );
+
     let fee_rate: u16 = if woopool_from.token_mint == woopool_from.quote_token_mint {
         woopool_to.fee_rate
     } else if woopool_to.token_mint == woopool_to.quote_token_mint {

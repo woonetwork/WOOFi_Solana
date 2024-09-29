@@ -32,3 +32,7 @@ pub fn set_max_notional_swap_handler(
 pub fn set_max_gamma_handler(ctx: Context<SetPoolState>, max_gamma: u128) -> Result<()> {
     ctx.accounts.woopool.set_max_gamma(max_gamma)
 }
+
+pub fn set_cap_bal_handler(ctx: Context<SetPoolState>, cap_bal: u128) -> Result<()> {
+    ctx.accounts.woopool.set_cap_bal(cap_bal)
+}

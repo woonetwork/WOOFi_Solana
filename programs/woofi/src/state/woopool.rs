@@ -50,6 +50,8 @@ pub struct WooPool {
     pub max_gamma: u128, // 16
     // max volume per swap
     pub max_notional_swap: u128, // 16
+    // max balance cap in token amount
+    pub cap_bal: u128,
 
     pub unclaimed_fee: u128,      // 16
     pub token_mint: Pubkey,       // 32
@@ -91,6 +93,7 @@ impl WooPool {
         self.unclaimed_fee = 0;
         self.max_gamma = 0;
         self.max_notional_swap = 0;
+        self.cap_bal = 0;
 
         self.token_mint = token_mint;
         self.token_vault = token_vault;
@@ -119,6 +122,12 @@ impl WooPool {
 
     pub fn set_max_notional_swap(&mut self, max_notional_swap: u128) -> Result<()> {
         self.max_notional_swap = max_notional_swap;
+
+        Ok(())
+    }
+
+    pub fn set_cap_bal(&mut self, cap_bal: u128) -> Result<()> {
+        self.cap_bal = cap_bal;
 
         Ok(())
     }
