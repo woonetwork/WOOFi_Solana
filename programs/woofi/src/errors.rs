@@ -74,6 +74,8 @@ pub enum ErrorCode {
     NotEnoughOut, //0x178e
     #[msg("Amount out below minimum threshold")]
     AmountOutBelowMinimum, //0x178f
+    #[msg("Amount exceeds max balance cap")]
+    BalanceCapExceeds, //0x1790
 }
 
 impl From<TryFromIntError> for ErrorCode {

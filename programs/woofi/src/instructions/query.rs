@@ -27,6 +27,10 @@ pub struct Query<'info> {
     )]
     woopool_from: Box<Account<'info, WooPool>>,
     #[account(mut,
+        address = woopool_from.token_vault
+    )]
+    token_vault_from: Box<Account<'info, TokenAccount>>,
+    #[account(mut,
         address = wooracle_from.price_update,
     )]
     price_update_from: Account<'info, PriceUpdateV2>,
@@ -73,6 +77,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     let price_update_to = &mut ctx.accounts.price_update_to;
     let quote_price_update = &mut ctx.accounts.quote_price_update;
 
+    let token_vault_from = &ctx.accounts.token_vault_from;
     let token_vault_to = &ctx.accounts.token_vault_to;
     let quote_token_vault = &ctx.accounts.quote_token_vault;
     let woopool_quote = &ctx.accounts.woopool_quote;
@@ -82,6 +87,11 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
 
     let wooracle_to = &ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
+
+    require!(
+        (token_vault_from.amount as u128) + from_amount <= woopool_from.cap_bal,
+        ErrorCode::BalanceCapExceeds
+    );
 
     let fee_rate: u16 = if woopool_from.token_mint == woopool_from.quote_token_mint {
         woopool_to.fee_rate

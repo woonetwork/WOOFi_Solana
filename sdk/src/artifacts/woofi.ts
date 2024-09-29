@@ -610,6 +610,32 @@ export type Woofi = {
       ]
     },
     {
+      "name": "setPoolCapBal",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "capBal",
+          "type": "u128"
+        }
+      ]
+    },
+    {
       "name": "tryQuery",
       "accounts": [
         {
@@ -679,6 +705,11 @@ export type Woofi = {
         {
           "name": "woopoolFrom",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultFrom",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1147,6 +1178,10 @@ export type Woofi = {
             "type": "u128"
           },
           {
+            "name": "capBal",
+            "type": "u128"
+          },
+          {
             "name": "unclaimedFee",
             "type": "u128"
           },
@@ -1367,31 +1402,6 @@ export type Woofi = {
         },
         {
           "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "claimFeeToAccount",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "claimAmount",
-          "type": "u128",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "ClaimRebateFeeEvent",
-      "fields": [
-        {
-          "name": "quoteTokenMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateAuthority",
           "type": "publicKey",
           "index": false
         },
@@ -1689,6 +1699,11 @@ export type Woofi = {
       "code": 6031,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
+    },
+    {
+      "code": 6032,
+      "name": "BalanceCapExceeds",
+      "msg": "Amount exceeds max balance cap"
     }
   ]
 };
@@ -2305,6 +2320,32 @@ export const IDL: Woofi = {
       ]
     },
     {
+      "name": "setPoolCapBal",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "capBal",
+          "type": "u128"
+        }
+      ]
+    },
+    {
       "name": "tryQuery",
       "accounts": [
         {
@@ -2374,6 +2415,11 @@ export const IDL: Woofi = {
         {
           "name": "woopoolFrom",
           "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenVaultFrom",
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2842,6 +2888,10 @@ export const IDL: Woofi = {
             "type": "u128"
           },
           {
+            "name": "capBal",
+            "type": "u128"
+          },
+          {
             "name": "unclaimedFee",
             "type": "u128"
           },
@@ -3062,31 +3112,6 @@ export const IDL: Woofi = {
         },
         {
           "name": "authority",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "claimFeeToAccount",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "claimAmount",
-          "type": "u128",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "ClaimRebateFeeEvent",
-      "fields": [
-        {
-          "name": "quoteTokenMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "rebateAuthority",
           "type": "publicKey",
           "index": false
         },
@@ -3384,6 +3409,11 @@ export const IDL: Woofi = {
       "code": 6031,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
+    },
+    {
+      "code": 6032,
+      "name": "BalanceCapExceeds",
+      "msg": "Amount exceeds max balance cap"
     }
   ]
 };

@@ -200,7 +200,7 @@ describe("woofi_swap", () => {
   })
 
   describe("#swap_between_sol_and_usdc", async ()=> {
-    it("swap_from_sol_to_usdc", async ()=> {
+    it("swap_exceed_cap_bal", async ()=> {
       let fromAmount = 0.001 * LAMPORTS_PER_SOL;
 
       payerSolTokenAccount = await createAssociatedTokenAccount(
@@ -252,6 +252,136 @@ describe("woofi_swap", () => {
       //   signature: fromAirdropSignature,
       //   ...(await provider.connection.getLatestBlockhash("confirmed")),
       // }, "confirmed");
+
+      const initBalance = await provider.connection.getBalance(fromWallet.publicKey);
+      console.log("fromWallet Balance:" + initBalance);
+      const tokenBalance = await provider.connection.getTokenAccountBalance(solTokenAccount);
+      console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
+      console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
+
+      const fromPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      const toPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      const quotePoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      const [fromPrice, fromFeasible] = await poolUtils.getOraclePriceResult(fromPoolParams.wooconfig, fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
+      console.log(`price - ${fromPrice}`);
+      console.log(`feasible - ${fromFeasible}`);
+
+      const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);
+      console.log(`price - ${toPrice}`);
+      console.log(`feasible - ${toFeasible}`);
+
+      const tx = await program
+        .methods
+        .tryQuery(new BN(fromAmount))
+        .accounts({
+          wooconfig: fromPoolParams.wooconfig,
+          wooracleFrom: fromPoolParams.wooracle,
+          woopoolFrom: fromPoolParams.woopool,
+          priceUpdateFrom: solPriceUpdate,
+          wooracleTo: toPoolParams.wooracle,
+          woopoolTo: toPoolParams.woopool,
+          priceUpdateTo: usdcPriceUpdate,
+          quotePriceUpdate: usdcPriceUpdate,
+        })
+        .rpc(confirmOptionsRetryTres);
+
+      let t = await provider.connection.getTransaction(tx, {
+        commitment: "confirmed",
+      })
+
+      const [key, data, buffer] = poolUtils.getReturnLog(t);
+      const reader = new borsh.BinaryReader(buffer);
+      const toAmount = reader.readU128().toNumber();
+      const swapFee = reader.readU128().toNumber();
+      console.log('toAmount:' + toAmount);
+      console.log('swapFee:' + swapFee);
+
+      try {
+        await program
+            .methods
+            .swap(new BN(fromAmount), new BN(0))
+            .accounts({
+            wooconfig: fromPoolParams.wooconfig,
+            tokenProgram: token.TOKEN_PROGRAM_ID,
+            payer: fromWallet.publicKey,  // is the user want to do swap
+            wooracleFrom: fromPoolParams.wooracle,
+            woopoolFrom: fromPoolParams.woopool,
+            tokenOwnerAccountFrom: solTokenAccount,
+            tokenVaultFrom: fromPoolParams.tokenVault,
+            priceUpdateFrom: solPriceUpdate,
+            wooracleTo: toPoolParams.wooracle,
+            woopoolTo: toPoolParams.woopool,
+            tokenOwnerAccountTo: usdcTokenAccount,
+            tokenVaultTo: toPoolParams.tokenVault,
+            priceUpdateTo: usdcPriceUpdate,
+            woopoolQuote: quotePoolParams.woopool,
+            quotePriceUpdate: usdcPriceUpdate,
+            quoteTokenVault: quotePoolParams.tokenVault,
+            rebateTo: fromWallet.publicKey,
+        })
+        .signers([fromWallet])
+        .rpc(confirmOptionsRetryTres);
+
+        assert.fail(
+          "should fail exceed cap bal"
+        );
+      } catch (e) {
+        const error = e as Error;
+        console.log("----------------------name----------------------------")
+        console.log(error.name);
+        console.log("----------------------message-------------------------")
+        console.log(error.message);
+        console.log("----------------------stack---------------------------")
+        console.log(error.stack);
+        console.log("----------------------end-----------------------------")
+
+        assert.match(error.message, /BalanceCapExceeds/);
+      }
+    });
+
+    it ("set_cap_bal", async() => {
+      const solPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      const usdcPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+      // init set SOL Pool Max Cap Bal
+      const setSolCapBal = new BN(1000000);
+      await program
+      .methods
+      .setPoolCapBal(setSolCapBal)
+      .accounts({
+        wooconfig: solPoolParams.wooconfig,
+        woopool: solPoolParams.woopool,
+        authority: provider.wallet.publicKey
+      }).rpc(confirmOptionsRetryTres);
+      
+      const woopoolData = await program.account.wooPool.fetch(solPoolParams.woopool);
+      console.log('cap_bal:', woopoolData.capBal.toNumber());
+      assert(woopoolData.capBal.eq(setSolCapBal));
+
+      // init set SOL Pool Max Cap Bal
+      const setUSDCCapBal = new BN(200000);
+      await program
+      .methods
+      .setPoolCapBal(setUSDCCapBal)
+      .accounts({
+        wooconfig: usdcPoolParams.wooconfig,
+        woopool: usdcPoolParams.woopool,
+        authority: provider.wallet.publicKey
+      }).rpc(confirmOptionsRetryTres);
+      
+      const woopoolUSDCData = await program.account.wooPool.fetch(usdcPoolParams.woopool);
+      console.log('cap_bal:', woopoolUSDCData.capBal.toNumber());
+      assert(woopoolUSDCData.capBal.eq(setUSDCCapBal));
+    })
+
+    it("swap_from_sol_to_usdc", async ()=> {
+      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
+
+      const solTokenAccount = payerSolTokenAccount;
+      const usdcTokenAccount = payerUsdcTokenAccount;
+      console.log("fromWallet PublicKey:" + fromWallet.publicKey);
+      console.log('solWalletTokenAccount:' + solTokenAccount);
+      console.log('usdcWalletTokenAccount:' + usdcTokenAccount);    
 
       const initBalance = await provider.connection.getBalance(fromWallet.publicKey);
       console.log("fromWallet Balance:" + initBalance);
