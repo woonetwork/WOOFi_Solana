@@ -14,11 +14,14 @@ export class PoolUtils {
   public program: Program<Woofi>;
   public sol_priceFeed;
   public usdc_priceFeed;
+  public orca_priceFeed;
 
   // SOL/USD
   public solFeedAccount: anchor.web3.PublicKey;
   // USDC/USD
   public usdcFeedAccount: anchor.web3.PublicKey;
+  // ORCA/USD
+  public orcaFeedAccount: anchor.web3.PublicKey;
   public quoteFeedAccount: anchor.web3.PublicKey;
 
   public confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3, commitment: "confirmed" };
@@ -43,10 +46,16 @@ export class PoolUtils {
     this.usdc_priceFeed = bs58.encode(usdc_bytes)
     console.log("USDC PriceFeed:", this.usdc_priceFeed)
 
+    const orca_bytes = Buffer.from('37505261e557e251290b8c8899453064e8d760ed5c65a779726f2490980da74c', 'hex')
+    this.orca_priceFeed = bs58.encode(orca_bytes)
+    console.log("ORCA PriceFeed:", this.orca_priceFeed)
+
     // SOL/USD
     this.solFeedAccount = new anchor.web3.PublicKey(this.sol_priceFeed);
     // USDC/USD
     this.usdcFeedAccount = new anchor.web3.PublicKey(this.usdc_priceFeed);
+    // BONK/USD
+    this.orcaFeedAccount = new anchor.web3.PublicKey(this.orca_priceFeed);
     this.quoteFeedAccount = this.usdcFeedAccount;    
   };
 

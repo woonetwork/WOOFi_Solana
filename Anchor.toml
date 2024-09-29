@@ -33,7 +33,11 @@ address = "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
 [[test.validator.clone]]
 address = "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX"
 [[test.validator.clone]]
+address = "4CBshVeNBEXz24GZpoj8SrqP5L7VGG3qjGd6tCST1pND"
+[[test.validator.clone]]
 address = "So11111111111111111111111111111111111111112"
+[[test.validator.clone]]
+address = "orcarKHSqC5CDDsGbho8GKvwExejWHxTqGzXgcewB9L"
 [[test.validator.account]]
 address = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
 filename = "usdc-mock.json"

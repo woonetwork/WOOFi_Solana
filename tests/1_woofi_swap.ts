@@ -8,7 +8,7 @@ import { assert } from "chai";
 import { createAssociatedTokenAccount, transferToken } from "./utils/token";
 import { PoolUtils } from "./utils/pool";
 import { getCluster } from "./global";
-import { usdcTokenMint, solTokenMint, solPriceUpdate, usdcPriceUpdate, confirmOptionsRetryTres, SupportedToken } from "./utils/test-consts";
+import { usdcTokenMint, solTokenMint, orcaTokenMint, solPriceUpdate, usdcPriceUpdate, orcaPriceUpdate, confirmOptionsRetryTres, SupportedToken } from "./utils/test-consts";
 
 describe("woofi_swap", () => {
   const poolUtils = new PoolUtils();
@@ -21,6 +21,8 @@ describe("woofi_swap", () => {
   const solFeedAccount = poolUtils.solFeedAccount;
   // USDC/USD
   const usdcFeedAccount = poolUtils.usdcFeedAccount;
+  // ORCA/USD
+  const orcaFeedAccount = poolUtils.orcaFeedAccount;
   const quoteFeedAccount = usdcFeedAccount;
 
   // Note: test account only in devnet
@@ -74,6 +76,20 @@ describe("woofi_swap", () => {
       let solPool = await poolUtils.createPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
         solPool.authority.equals(provider.wallet.publicKey)
+      );
+    });
+  });
+
+  describe("#create_orca_pool()", async () => {
+    it("creates orca pool", async () => {
+      let orcaOracle = await poolUtils.createWooracle(SupportedToken.ORCA, orcaTokenMint, orcaFeedAccount, orcaPriceUpdate);
+      // assert.ok(
+      //   orcaOracle.authority.equals(provider.wallet.publicKey)
+      // );
+
+      let orcaPool = await poolUtils.createPool(orcaTokenMint, usdcTokenMint, orcaFeedAccount, orcaPriceUpdate);
+      assert.ok(
+        orcaPool.authority.equals(provider.wallet.publicKey)
       );
     });
   });

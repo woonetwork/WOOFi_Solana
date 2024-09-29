@@ -5,7 +5,8 @@ import { ConfirmOptions } from "@solana/web3.js";
 
 export enum SupportedToken {
     USDC,
-    SOL
+    SOL,
+    ORCA,
 }
 
 export const TEST_TOKEN_PROGRAM_ID = new anchor.web3.PublicKey(TOKEN_PROGRAM_ID.toString());
@@ -20,12 +21,16 @@ export const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111
 
 export const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 
+export const orcaTokenMint = new anchor.web3.PublicKey("orcarKHSqC5CDDsGbho8GKvwExejWHxTqGzXgcewB9L");
+
 export const quoteTokenMint = usdcTokenMint;
 
 // SOL Price Update
 export const solPriceUpdate = new anchor.web3.PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
 // USDC Price Update
 export const usdcPriceUpdate = new anchor.web3.PublicKey("Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX");
+// ORCA Price Update
+export const orcaPriceUpdate = new anchor.web3.PublicKey("4CBshVeNBEXz24GZpoj8SrqP5L7VGG3qjGd6tCST1pND");
 
 export const quotePriceUpdate = usdcPriceUpdate;
 
