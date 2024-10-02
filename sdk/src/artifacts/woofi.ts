@@ -1704,6 +1704,11 @@ export type Woofi = {
       "code": 6032,
       "name": "BalanceCapExceeds",
       "msg": "Amount exceeds max balance cap"
+    },
+    {
+      "code": 6033,
+      "name": "SwapPoolInvalid",
+      "msg": "Swap pool invalid"
     }
   ]
 };
@@ -3414,6 +3419,11 @@ export const IDL: Woofi = {
       "code": 6032,
       "name": "BalanceCapExceeds",
       "msg": "Amount exceeds max balance cap"
+    },
+    {
+      "code": 6033,
+      "name": "SwapPoolInvalid",
+      "msg": "Swap pool invalid"
     }
   ]
 };
