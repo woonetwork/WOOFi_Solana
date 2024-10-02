@@ -76,6 +76,8 @@ pub enum ErrorCode {
     AmountOutBelowMinimum, //0x178f
     #[msg("Amount exceeds max balance cap")]
     BalanceCapExceeds, //0x1790
+    #[msg("Swap pool invalid")]
+    SwapPoolInvalid, //0x1791
 }
 
 impl From<TryFromIntError> for ErrorCode {
