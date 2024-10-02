@@ -133,10 +133,8 @@ pub fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) ->
     let rebate_to = &ctx.accounts.rebate_to;
 
     let fee_rate: u16 = woopool_to.fee_rate;
-    let mut quote_amount = from_amount;
-
-    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
-    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+    let swap_fee = checked_mul_div_round_up(from_amount, fee_rate as u128, ONE_E5_U128)?;
+    let quote_amount: u128 = from_amount.checked_sub(swap_fee).unwrap();
 
     let decimals_to = Decimals::new(
         wooracle_to.price_decimals as u32,
