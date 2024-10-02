@@ -272,7 +272,7 @@ pub fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> 
 
     transfer_from_vault_to_owner(
         woopool_quote,
-        &quote_token_vault,
+        quote_token_vault,
         token_owner_account_to,
         &ctx.accounts.token_program,
         quote_amount as u64,
