@@ -42,6 +42,8 @@ pub const ADMIN_AUTH_MAX_LEN: usize = 5;
 pub struct RebateManager {
     pub authority: Pubkey, // 32
 
+    pub rebate_manager_bump: [u8; 1], // 1
+
     #[max_len(ADMIN_AUTH_MAX_LEN)]
     pub admin_authority: Vec<Pubkey>,
 
@@ -51,10 +53,11 @@ pub struct RebateManager {
 }
 
 impl RebateManager {
-    pub fn seeds(&self) -> [&[u8]; 2] {
+    pub fn seeds(&self) -> [&[u8]; 3] {
         [
             REBATEMANAGER_SEED.as_bytes(),
             self.quote_token_mint.as_ref(),
+            self.rebate_manager_bump.as_ref(),
         ]
     }
 
@@ -63,10 +66,12 @@ impl RebateManager {
         authority: Pubkey,
         quote_token_mint: Pubkey,
         token_vault: Pubkey,
+        bump: u8
     ) -> Result<()> {
         self.authority = authority;
         self.quote_token_mint = quote_token_mint;
         self.token_vault = token_vault;
+        self.rebate_manager_bump = [bump];
 
         Ok(())
     }
