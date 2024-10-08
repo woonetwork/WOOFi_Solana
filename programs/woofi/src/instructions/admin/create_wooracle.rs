@@ -48,6 +48,7 @@ pub struct CreateWooracle<'info> {
         init,
         payer = admin,
         space = 8 + Wooracle::INIT_SPACE,
+        constraint = wooconfig.authority == admin.key(),
         seeds = [
             WOORACLE_SEED.as_bytes(),
             wooconfig.key().as_ref(),

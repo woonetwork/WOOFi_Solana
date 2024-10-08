@@ -17,6 +17,7 @@ pub struct CreatePool<'info> {
         init,
         payer = authority,
         space = 8 + WooPool::INIT_SPACE,
+        constraint = wooconfig.authority == authority.key(),
         seeds = [
           WOOPOOL_SEED.as_bytes(),
           wooconfig.key().as_ref(),
