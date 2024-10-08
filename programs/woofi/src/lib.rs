@@ -185,7 +185,11 @@ pub mod woofi {
     }
 
     pub fn swap(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
-        instructions::swap::handler(ctx, from_amount, min_to_amount)
+        instructions::swap::swap(ctx, from_amount, min_to_amount)
+    }
+
+    pub fn swap_without_transfer(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+        instructions::swap::swap_without_transfer(ctx, from_amount, min_to_amount)
     }
 
     pub fn deposit(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {

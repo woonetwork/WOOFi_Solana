@@ -95,7 +95,22 @@ pub struct Swap<'info> {
     rebate_to: UncheckedAccount<'info>,
 }
 
-pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+pub fn swap(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+    let token_owner_account_from = &ctx.accounts.token_owner_account_from;
+    let token_vault_from = &ctx.accounts.token_vault_from;
+
+    transfer_from_owner_to_vault(
+        &ctx.accounts.payer,
+        token_owner_account_from,
+        token_vault_from,
+        &ctx.accounts.token_program,
+        from_amount as u64,
+    )?;
+
+    swap_without_transfer(ctx, from_amount, min_to_amount)
+}
+
+pub fn swap_without_transfer(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
     if ctx.accounts.woopool_from.key() == ctx.accounts.woopool_quote.key() {
         sell_quote(ctx, from_amount, min_to_amount)
     } else if ctx.accounts.woopool_to.key() == ctx.accounts.woopool_quote.key() {
@@ -112,14 +127,13 @@ pub fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) ->
     );
 
     let token_owner_account_from = &ctx.accounts.token_owner_account_from;
-    require!(
-        token_owner_account_from.amount as u128 >= from_amount,
-        ErrorCode::NotEnoughBalance
-    );
-
     let woopool_quote = &mut ctx.accounts.woopool_quote;
     let quote_price_update = &mut ctx.accounts.quote_price_update;
     let quote_token_vault = &ctx.accounts.quote_token_vault;
+    require!(
+        (quote_token_vault.amount as u128) - woopool_quote.reserve >= from_amount,
+        ErrorCode::NotEnoughBalance
+    );
     require!(
         (quote_token_vault.amount as u128) + from_amount <= woopool_quote.cap_bal,
         ErrorCode::BalanceCapExceeds
@@ -166,14 +180,6 @@ pub fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) ->
     woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
 
-    transfer_from_owner_to_vault(
-        &ctx.accounts.payer,
-        token_owner_account_from,
-        quote_token_vault,
-        &ctx.accounts.token_program,
-        from_amount as u64,
-    )?;
-
     transfer_from_vault_to_owner(
         woopool_to,
         token_vault_to,
@@ -205,15 +211,14 @@ pub fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> 
     );
 
     let token_owner_account_from = &ctx.accounts.token_owner_account_from;
-    require!(
-        token_owner_account_from.amount as u128 >= from_amount,
-        ErrorCode::NotEnoughBalance
-    );
-
     let wooracle_from = &mut ctx.accounts.wooracle_from;
     let price_update_from = &mut ctx.accounts.price_update_from;
     let woopool_from = &mut ctx.accounts.woopool_from;
     let token_vault_from = &ctx.accounts.token_vault_from;
+    require!(
+        (token_vault_from.amount as u128) - woopool_from.reserve >= from_amount,
+        ErrorCode::NotEnoughBalance
+    );
     require!(
         (token_vault_from.amount as u128) + from_amount <= woopool_from.cap_bal,
         ErrorCode::BalanceCapExceeds
@@ -262,14 +267,6 @@ pub fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> 
     woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
 
-    transfer_from_owner_to_vault(
-        &ctx.accounts.payer,
-        token_owner_account_from,
-        token_vault_from,
-        &ctx.accounts.token_program,
-        from_amount as u64,
-    )?;
-
     transfer_from_vault_to_owner(
         woopool_quote,
         quote_token_vault,
@@ -306,11 +303,6 @@ pub fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u
     let quote_price_update = &mut ctx.accounts.quote_price_update;
 
     let token_owner_account_from = &ctx.accounts.token_owner_account_from;
-    require!(
-        token_owner_account_from.amount as u128 >= from_amount,
-        ErrorCode::NotEnoughBalance
-    );
-
     let token_vault_from = &ctx.accounts.token_vault_from;
     let token_owner_account_to = &ctx.accounts.token_owner_account_to;
     let token_vault_to = &ctx.accounts.token_vault_to;
@@ -324,6 +316,10 @@ pub fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u
     let woopool_to = &mut ctx.accounts.woopool_to;
     let rebate_to = &ctx.accounts.rebate_to;
 
+    require!(
+        (token_vault_from.amount as u128) - woopool_from.reserve >= from_amount,
+        ErrorCode::NotEnoughBalance
+    );
     require!(
         (token_vault_from.amount as u128) + from_amount <= woopool_from.cap_bal,
         ErrorCode::BalanceCapExceeds
@@ -386,14 +382,6 @@ pub fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u
     // record fee into account
     woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
-
-    transfer_from_owner_to_vault(
-        &ctx.accounts.payer,
-        token_owner_account_from,
-        token_vault_from,
-        &ctx.accounts.token_program,
-        from_amount as u64,
-    )?;
 
     transfer_from_vault_to_owner(
         woopool_to,
