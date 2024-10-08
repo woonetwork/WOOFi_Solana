@@ -120,9 +120,10 @@ pub fn swap_without_transfer(ctx: Context<Swap>, from_amount: u128, min_to_amoun
     }
 }
 
-pub fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
     require!(
-        ctx.accounts.woopool_from.token_mint == ctx.accounts.woopool_quote.token_mint,
+        ctx.accounts.woopool_from.token_mint == ctx.accounts.woopool_quote.token_mint
+        && ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_to.token_mint,
         ErrorCode::SwapPoolInvalid
     );
 
@@ -204,9 +205,10 @@ pub fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) ->
     Ok(())
 }
 
-pub fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
     require!(
-        ctx.accounts.woopool_to.token_mint == ctx.accounts.woopool_quote.token_mint,
+        ctx.accounts.woopool_to.token_mint == ctx.accounts.woopool_quote.token_mint
+        && ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_to.token_mint,
         ErrorCode::SwapPoolInvalid
     );
 
@@ -291,10 +293,11 @@ pub fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> 
     Ok(())
 }
 
-pub fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
     require!(
         ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_quote.token_mint
-        && ctx.accounts.woopool_to.token_mint != ctx.accounts.woopool_quote.token_mint,
+        && ctx.accounts.woopool_to.token_mint != ctx.accounts.woopool_quote.token_mint
+        && ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_to.token_mint,
         ErrorCode::SwapPoolInvalid
     );
 
