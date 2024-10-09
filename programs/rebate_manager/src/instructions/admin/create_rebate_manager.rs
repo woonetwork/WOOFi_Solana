@@ -39,8 +39,9 @@ pub fn handler(ctx: Context<CreateRebateManager>) -> Result<()> {
     let authority = ctx.accounts.authority.key();
     let quote_token_mint = ctx.accounts.quote_token_mint.key();
     let token_vault = ctx.accounts.token_vault.key();
+    let bump = ctx.bumps.rebate_manager;
 
     let rebate_manager = &mut ctx.accounts.rebate_manager;
 
-    rebate_manager.initialize(authority, quote_token_mint, token_vault)
+    rebate_manager.initialize(authority, quote_token_mint, token_vault, bump)
 }
