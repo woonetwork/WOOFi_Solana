@@ -451,6 +451,17 @@ describe("woofi_swap", () => {
             // console.log("afterProviderToTokenBalance decimals:" + afterToTokenBalance.value.decimals);
 
 
+      let toPoolDataBefore = null;
+      try {
+        toPoolDataBefore = await program.account.wooPool.fetch(toPoolParams.woopool);
+      } catch (e) {
+          console.log(e);
+          console.log("fetch failed");
+          return;
+      }
+      console.log("toPool reserve before swap:" + toPoolDataBefore.reserve);
+      console.log("toPool unclaimed fee before swap:" + toPoolDataBefore.unclaimedFee);
+
       await program
         .methods
         .swap(new BN(fromAmount), new BN(0))
@@ -479,6 +490,19 @@ describe("woofi_swap", () => {
         const toTokenAccountBalance = await provider.connection.getTokenAccountBalance(usdcTokenAccount);
         console.log("toTokenAccount amount:" + toTokenAccountBalance.value.amount);
         console.log("toTokenAccount decimals:" + toTokenAccountBalance.value.decimals);
+
+        let toPoolDataAfter = null;
+        try {
+          toPoolDataAfter = await program.account.wooPool.fetch(toPoolParams.woopool);
+        } catch (e) {
+            console.log(e);
+            console.log("fetch failed");
+            return;
+        }
+        console.log("toPool reserve after swap:" + toPoolDataAfter.reserve);
+        console.log("toPool unclaimed fee after swap:" + toPoolDataAfter.unclaimedFee);
+
+        assert.equal(toPoolDataAfter.reserve.toNumber(), (toPoolDataBefore.reserve.sub(new BN(toAmount)).sub(new BN(swapFee))).toNumber())
     });
 
     it("swap_from_usdc_to_sol", async ()=> {
@@ -533,6 +557,17 @@ describe("woofi_swap", () => {
       console.log('toAmount:' + toAmount);
       console.log('swapFee:' + swapFee);
 
+      let fromPoolDataBefore = null;
+      try {
+        fromPoolDataBefore = await program.account.wooPool.fetch(fromPoolParams.woopool);
+      } catch (e) {
+          console.log(e);
+          console.log("fetch failed");
+          return;
+      }
+      console.log("fromPool reserve before swap:" + fromPoolDataBefore.reserve);
+      console.log("fromPool unclaimed fee before swap:" + fromPoolDataBefore.unclaimedFee);
+
       await program
         .methods
         .swap(new BN(fromAmount), new BN(0))
@@ -561,6 +596,20 @@ describe("woofi_swap", () => {
         const toTokenAccountBalance = await provider.connection.getTokenAccountBalance(solTokenAccount);
         console.log("toTokenAccount amount:" + toTokenAccountBalance.value.amount);
         console.log("toTokenAccount decimals:" + toTokenAccountBalance.value.decimals);
+
+        let fromPoolDataAfter = null;
+        try {
+          fromPoolDataAfter = await program.account.wooPool.fetch(fromPoolParams.woopool);
+        } catch (e) {
+            console.log(e);
+            console.log("fetch failed");
+            return;
+        }
+        console.log("fromPool reserve after swap:" + fromPoolDataAfter.reserve);
+        console.log("fromPool unclaimed fee after swap:" + fromPoolDataAfter.unclaimedFee);
+
+        assert.equal(fromPoolDataAfter.reserve.toNumber(), (fromPoolDataBefore.reserve.add(new BN(fromAmount)).sub(new BN(swapFee))).toNumber())
+
     });
   });
 

@@ -96,6 +96,214 @@ pub struct Swap<'info> {
 }
 
 pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+    if ctx.accounts.woopool_from.key() == ctx.accounts.woopool_quote.key() {
+        sell_quote(ctx, from_amount, min_to_amount)
+    } else if ctx.accounts.woopool_to.key() == ctx.accounts.woopool_quote.key() {
+        sell_base(ctx, from_amount, min_to_amount)
+    } else {
+        swap_base_to_base(ctx, from_amount, min_to_amount)
+    }
+}
+
+fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+    require!(
+        ctx.accounts.woopool_from.token_mint == ctx.accounts.woopool_quote.token_mint
+        && ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_to.token_mint,
+        ErrorCode::SwapPoolInvalid
+    );
+
+    let token_owner_account_from = &ctx.accounts.token_owner_account_from;
+    require!(
+        token_owner_account_from.amount as u128 >= from_amount,
+        ErrorCode::NotEnoughBalance
+    );
+
+    let woopool_quote = &mut ctx.accounts.woopool_quote;
+    let quote_price_update = &mut ctx.accounts.quote_price_update;
+    let quote_token_vault = &ctx.accounts.quote_token_vault;
+    require!(
+        (quote_token_vault.amount as u128) + from_amount <= woopool_quote.cap_bal,
+        ErrorCode::BalanceCapExceeds
+    );
+
+    let woopool_to = &mut ctx.accounts.woopool_to;
+    let wooracle_to = &mut ctx.accounts.wooracle_to;
+    let price_update_to = &mut ctx.accounts.price_update_to;
+    let token_owner_account_to = &ctx.accounts.token_owner_account_to;
+    let token_vault_to = &ctx.accounts.token_vault_to;
+    let rebate_to = &ctx.accounts.rebate_to;
+
+    let fee_rate: u16 = woopool_to.fee_rate;
+    let swap_fee = checked_mul_div_round_up(from_amount, fee_rate as u128, ONE_E5_U128)?;
+    let quote_amount: u128 = from_amount.checked_sub(swap_fee).unwrap();
+
+    let decimals_to = Decimals::new(
+        wooracle_to.price_decimals as u32,
+        wooracle_to.quote_decimals as u32,
+        woopool_to.base_decimals as u32,
+    );
+
+    let state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
+
+    let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_quote(
+        quote_amount,
+        woopool_to,
+        &decimals_to,
+        &state_to,
+    )?;
+    wooracle_to.post_price(to_new_price)?;
+
+    require!(
+        woopool_to.reserve >= to_amount && token_vault_to.amount as u128 >= to_amount,
+        ErrorCode::NotEnoughOut
+    );
+
+    require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
+
+    woopool_quote.add_reserve(from_amount).unwrap();
+    woopool_to.sub_reserve(to_amount).unwrap();
+
+    // record fee into account
+    woopool_quote.sub_reserve(swap_fee).unwrap();
+    woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
+
+    transfer_from_owner_to_vault(
+        &ctx.accounts.payer,
+        token_owner_account_from,
+        quote_token_vault,
+        &ctx.accounts.token_program,
+        from_amount as u64,
+    )?;
+
+    transfer_from_vault_to_owner(
+        woopool_to,
+        token_vault_to,
+        token_owner_account_to,
+        &ctx.accounts.token_program,
+        to_amount as u64,
+    )?;
+
+    emit!(SwapEvent {
+        sender: ctx.accounts.payer.key(),
+        from_token_mint: woopool_quote.token_mint,
+        to_token_mint: woopool_to.token_mint,
+        from_amount,
+        to_amount,
+        from_account: token_owner_account_from.key(),
+        to_account: token_owner_account_to.key(),
+        rebate_to: rebate_to.key(),
+        swap_vol: quote_amount + swap_fee,
+        swap_fee,
+    });
+
+    Ok(())
+}
+
+fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+    require!(
+        ctx.accounts.woopool_to.token_mint == ctx.accounts.woopool_quote.token_mint
+        && ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_to.token_mint,
+        ErrorCode::SwapPoolInvalid
+    );
+
+    let token_owner_account_from = &ctx.accounts.token_owner_account_from;
+    require!(
+        token_owner_account_from.amount as u128 >= from_amount,
+        ErrorCode::NotEnoughBalance
+    );
+
+    let wooracle_from = &mut ctx.accounts.wooracle_from;
+    let price_update_from = &mut ctx.accounts.price_update_from;
+    let woopool_from = &mut ctx.accounts.woopool_from;
+    let token_vault_from = &ctx.accounts.token_vault_from;
+    require!(
+        (token_vault_from.amount as u128) + from_amount <= woopool_from.cap_bal,
+        ErrorCode::BalanceCapExceeds
+    );
+
+    let woopool_quote = &mut ctx.accounts.woopool_quote;
+    let quote_price_update = &mut ctx.accounts.quote_price_update;
+    let quote_token_vault = &ctx.accounts.quote_token_vault;
+    let token_owner_account_to = &ctx.accounts.token_owner_account_to;
+    let rebate_to = &ctx.accounts.rebate_to;
+
+    let fee_rate: u16 = woopool_from.fee_rate;
+
+    let decimals_from = Decimals::new(
+        wooracle_from.price_decimals as u32,
+        wooracle_from.quote_decimals as u32,
+        woopool_from.base_decimals as u32,
+    );
+
+    let state_from =
+        get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
+
+    let (mut quote_amount, new_base_price) = swap_math::calc_quote_amount_sell_base(
+        from_amount,
+        woopool_from,
+        &decimals_from,
+        &state_from,
+    )?;
+
+    wooracle_from.post_price(new_base_price)?;
+
+    let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
+    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+
+    require!(
+        woopool_quote.reserve >= swap_fee + quote_amount && quote_token_vault.amount as u128 >= swap_fee + quote_amount,
+        ErrorCode::NotEnoughOut
+    );
+
+    require!(quote_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
+
+    woopool_from.add_reserve(from_amount).unwrap();
+    woopool_quote.sub_reserve(quote_amount).unwrap();
+
+    // record fee into account
+    woopool_quote.sub_reserve(swap_fee).unwrap();
+    woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
+
+    transfer_from_owner_to_vault(
+        &ctx.accounts.payer,
+        token_owner_account_from,
+        token_vault_from,
+        &ctx.accounts.token_program,
+        from_amount as u64,
+    )?;
+
+    transfer_from_vault_to_owner(
+        woopool_quote,
+        quote_token_vault,
+        token_owner_account_to,
+        &ctx.accounts.token_program,
+        quote_amount as u64,
+    )?;
+
+    emit!(SwapEvent {
+        sender: ctx.accounts.payer.key(),
+        from_token_mint: woopool_from.token_mint,
+        to_token_mint: woopool_quote.token_mint,
+        from_amount,
+        to_amount: quote_amount,
+        from_account: token_owner_account_from.key(),
+        to_account: token_owner_account_to.key(),
+        rebate_to: rebate_to.key(),
+        swap_vol: quote_amount + swap_fee,
+        swap_fee,
+    });
+
+    Ok(())
+}
+
+fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+    require!(
+        ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_quote.token_mint
+        && ctx.accounts.woopool_to.token_mint != ctx.accounts.woopool_quote.token_mint
+        && ctx.accounts.woopool_from.token_mint != ctx.accounts.woopool_to.token_mint,
+        ErrorCode::SwapPoolInvalid
+    );
+
     let price_update_from = &mut ctx.accounts.price_update_from;
     let price_update_to = &mut ctx.accounts.price_update_to;
     let quote_price_update = &mut ctx.accounts.quote_price_update;
@@ -124,13 +332,7 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         ErrorCode::BalanceCapExceeds
     );
 
-    let fee_rate: u16 = if woopool_from.token_mint == woopool_from.quote_token_mint {
-        woopool_to.fee_rate
-    } else if woopool_to.token_mint == woopool_to.quote_token_mint {
-        woopool_from.fee_rate
-    } else {
-        max(woopool_from.fee_rate, woopool_to.fee_rate)
-    };
+    let fee_rate: u16 = max(woopool_from.fee_rate, woopool_to.fee_rate);
 
     let decimals_from = Decimals::new(
         wooracle_from.price_decimals as u32,
@@ -138,32 +340,25 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         woopool_from.base_decimals as u32,
     );
 
-    let mut quote_amount = from_amount;
-    if woopool_from.token_mint != woopool_from.quote_token_mint {
-        let state_from =
-            get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
+    let state_from =
+        get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
 
-        let (_quote_amount, new_base_price) = swap_math::calc_quote_amount_sell_base(
-            from_amount,
-            woopool_from,
-            &decimals_from,
-            &state_from,
-        )?;
+    let (mut quote_amount, new_base_price) = swap_math::calc_quote_amount_sell_base(
+        from_amount,
+        woopool_from,
+        &decimals_from,
+        &state_from,
+    )?;
 
-        wooracle_from.post_price(new_base_price)?;
-
-        quote_amount = _quote_amount;
-    }
+    wooracle_from.post_price(new_base_price)?;
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
-    if woopool_from.token_mint != woopool_from.quote_token_mint {
-        require!(
-            woopool_quote.reserve >= swap_fee && quote_token_vault.amount as u128 >= swap_fee,
-            ErrorCode::NotEnoughOut
-        );
-    }
+    require!(
+        woopool_quote.reserve >= swap_fee && quote_token_vault.amount as u128 >= swap_fee,
+        ErrorCode::NotEnoughOut
+    );
 
     let decimals_to = Decimals::new(
         wooracle_to.price_decimals as u32,
@@ -171,20 +366,15 @@ pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Re
         woopool_to.base_decimals as u32,
     );
 
-    let mut to_amount = quote_amount;
-    if woopool_to.token_mint != woopool_to.quote_token_mint {
-        let state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
+    let state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
 
-        let (_to_amount, to_new_price) = swap_math::calc_base_amount_sell_quote(
-            quote_amount,
-            woopool_to,
-            &decimals_to,
-            &state_to,
-        )?;
-        wooracle_to.post_price(to_new_price)?;
-
-        to_amount = _to_amount;
-    }
+    let (to_amount, to_new_price) = swap_math::calc_base_amount_sell_quote(
+        quote_amount,
+        woopool_to,
+        &decimals_to,
+        &state_to,
+    )?;
+    wooracle_to.post_price(to_new_price)?;
 
     require!(
         woopool_to.reserve >= to_amount && token_vault_to.amount as u128 >= to_amount,
