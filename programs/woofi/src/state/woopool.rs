@@ -42,8 +42,6 @@ pub struct WooPool {
     pub authority: Pubkey,     // 32
     pub wooracle: Pubkey,      // 32
 
-    // balance reserve
-    pub reserve: u128, // 16
     // 1 in 100000; 10 = 1bp = 0.01%; max = 65535
     pub fee_rate: u16, // 2
     // max range of `balance * k`
@@ -88,7 +86,6 @@ impl WooPool {
         self.authority = authority;
         self.wooracle = wooracle;
 
-        self.reserve = 0;
         self.fee_rate = 0;
         self.unclaimed_fee = 0;
         self.max_gamma = 0;
@@ -128,25 +125,6 @@ impl WooPool {
 
     pub fn set_cap_bal(&mut self, cap_bal: u128) -> Result<()> {
         self.cap_bal = cap_bal;
-
-        Ok(())
-    }
-
-    pub fn add_reserve(&mut self, amount: u128) -> Result<()> {
-        self.reserve = self
-            .reserve
-            .checked_add(amount)
-            .ok_or(ErrorCode::ReserveMaxExceeded)?;
-
-        Ok(())
-    }
-
-    pub fn sub_reserve(&mut self, amount: u128) -> Result<()> {
-        if amount > self.reserve {
-            return Err(ErrorCode::ReserveNotEnough.into());
-        }
-
-        self.reserve -= amount;
 
         Ok(())
     }

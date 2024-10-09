@@ -40,14 +40,10 @@ pub fn deposit(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
     let token_vault = &ctx.accounts.token_vault;
     let woopool = &mut ctx.accounts.woopool;
 
-    let _balance_before = balance(woopool, token_vault)?;
-
     require!(
         token_owner_account.amount as u128 >= amount,
         ErrorCode::NotEnoughBalance
     );
-
-    woopool.add_reserve(amount)?;
 
     transfer_from_owner_to_vault(
         &ctx.accounts.authority,
@@ -71,14 +67,10 @@ pub fn withdraw(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
     let token_vault = &ctx.accounts.token_vault;
     let woopool = &mut ctx.accounts.woopool;
 
-    let _balance_before = balance(woopool, token_vault)?;
-
     require!(
-        woopool.reserve >= amount && token_vault.amount as u128 >= amount,
+        token_vault.amount as u128 >= amount,
         ErrorCode::NotEnoughBalance
     );
-
-    woopool.sub_reserve(amount)?;
 
     transfer_from_vault_to_owner(
         woopool,
