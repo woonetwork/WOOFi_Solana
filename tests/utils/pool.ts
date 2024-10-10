@@ -299,7 +299,6 @@ export class PoolUtils {
     console.log('tokenVault:', woopoolData.tokenVault);
     console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
     console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
-    console.log('reserve', woopoolData.reserve.toNumber());
 
     return woopoolData;
   }

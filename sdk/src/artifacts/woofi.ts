@@ -1162,10 +1162,6 @@ export type Woofi = {
             "type": "publicKey"
           },
           {
-            "name": "reserve",
-            "type": "u128"
-          },
-          {
             "name": "feeRate",
             "type": "u16"
           },
@@ -2875,10 +2871,6 @@ export const IDL: Woofi = {
           {
             "name": "wooracle",
             "type": "publicKey"
-          },
-          {
-            "name": "reserve",
-            "type": "u128"
           },
           {
             "name": "feeRate",

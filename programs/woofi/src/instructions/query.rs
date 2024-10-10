@@ -130,7 +130,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
 
     if woopool_from.token_mint != woopool_from.quote_token_mint {
         require!(
-            woopool_quote.reserve >= swap_fee && quote_token_vault.amount as u128 >= swap_fee,
+            balance(woopool_quote, quote_token_vault)? >= swap_fee,
             ErrorCode::NotEnoughOut
         );
     }
@@ -155,7 +155,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     }
 
     require!(
-        woopool_to.reserve >= to_amount && token_vault_to.amount as u128 >= to_amount,
+        balance(woopool_to, token_vault_to)? >= to_amount,
         ErrorCode::NotEnoughOut
     );
 
