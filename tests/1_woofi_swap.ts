@@ -41,11 +41,9 @@ describe("woofi_swap", () => {
 
   let signers: anchor.web3.Keypair[] = [fromWallet];
   let ataSigner: anchor.web3.Keypair[] = [];
-  let payerWallet = provider.wallet;
   if (getCluster() == 'localnet') {
-    payerWallet = keypair;
     signers.push(keypair);
-    ataSigner.push(payerWallet);
+    ataSigner.push(keypair);
   }
   let payerSolTokenAccount: anchor.web3.PublicKey;
   let payerUsdcTokenAccount: anchor.web3.PublicKey;
@@ -121,7 +119,10 @@ describe("woofi_swap", () => {
     it("deposit usdc pool", async () => {
       const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
-      await program
+      await poolUtils.getLatestBlockHash();
+
+      if (getCluster() == 'localnet') {
+        await program
           .methods
           .setPoolAdmin([keypair.publicKey])
           .accounts({
@@ -130,44 +131,70 @@ describe("woofi_swap", () => {
           })
           .rpc(confirmOptionsRetryTres);
 
-      const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, keypair.publicKey);
+        const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, keypair.publicKey);
 
-      // Deposit 0.2 USDC
-      const depositAmount = new BN(200000);
-      const tx = await program
-      .methods
-      .deposit(depositAmount)
-      .accounts({
-        wooconfig: params.wooconfig,
-        tokenMint: usdcTokenMint,
-        authority: keypair.publicKey,
-        tokenOwnerAccount: providerTokenAccount,
-        woopool: params.woopool,
-        tokenVault: params.tokenVault,
-        tokenProgram: token.TOKEN_PROGRAM_ID,
-      })
-      .signers([keypair])
-      .rpc(confirmOptionsRetryTres);
+        await poolUtils.getLatestBlockHash();
 
-      const logs = await getLogs(provider.connection, tx);
-      console.log(logs);
+        // Deposit 0.2 USDC
+        const depositAmount = new BN(200000);
+        const tx = await program
+                    .methods
+                    .deposit(depositAmount)
+                    .accounts({
+                      wooconfig: params.wooconfig,
+                      tokenMint: usdcTokenMint,
+                      authority: keypair.publicKey,
+                      tokenOwnerAccount: providerTokenAccount,
+                      woopool: params.woopool,
+                      tokenVault: params.tokenVault,
+                      tokenProgram: token.TOKEN_PROGRAM_ID,
+                    })
+                    .signers([keypair])
+                    .rpc(confirmOptionsRetryTres);
+        const logs = await getLogs(provider.connection, tx);
+        console.log(logs);              
+      } else if (getCluster() == 'devnet') {
+        // increase to pool liquidity
+        const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+        const beforeUSDCPoolBalance = await provider.connection.getTokenAccountBalance(params.tokenVault);
+        console.log("beforeUSDCPoolBalance amount:" + beforeUSDCPoolBalance.value.amount);
+        
+        // Deposit 0.2 USDC
+        const depositAmount = new BN(200000);
+        const tx = await program
+                    .methods
+                    .deposit(depositAmount)
+                    .accounts({
+                      wooconfig: params.wooconfig,
+                      tokenMint: usdcTokenMint,
+                      authority: provider.wallet.publicKey,
+                      tokenOwnerAccount: providerTokenAccount,
+                      woopool: params.woopool,
+                      tokenVault: params.tokenVault,
+                      tokenProgram: token.TOKEN_PROGRAM_ID,
+                    })
+                    .rpc(confirmOptionsRetryTres);
+        const logs = await getLogs(provider.connection, tx);
+        console.log(logs);
+
+        const afterUSDCPoolBalance = await provider.connection.getTokenAccountBalance(params.tokenVault);
+        console.log("afterUSDCPoolBalance amount:" + afterUSDCPoolBalance.value.amount);
+
+        assert.equal(parseInt(afterUSDCPoolBalance.value.amount), parseInt(beforeUSDCPoolBalance.value.amount) + depositAmount.toNumber());
+      }
 
       let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
       assert.ok(
         checkUsdcPool.authority.equals(provider.wallet.publicKey)
       );
-
-      // if (getCluster() == 'localnet') {
-      //   assert.ok(
-      //     checkUsdcPool.reserve.eq(depositAmount)
-      //   )
-      // }
     });
   });
 
   describe("#set_pool_fee_rate", async ()=> {
     it("set_pool_fee_rate_sol", async ()=> {
       const poolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+
+      await poolUtils.getLatestBlockHash();
 
       const tx = await program
       .methods
@@ -200,21 +227,26 @@ describe("woofi_swap", () => {
   })
 
   describe("#swap_between_sol_and_usdc", async ()=> {
-    it("swap_exceed_cap_bal", async ()=> {
+    it("increase_wallet_pool_liquidity", async ()=> {
       let fromAmount = 0.001 * LAMPORTS_PER_SOL;
+
+      let payerPubkey = provider.wallet.publicKey;
+      if (getCluster() == 'localnet') {
+        payerPubkey = keypair.publicKey;
+      }
 
       payerSolTokenAccount = await createAssociatedTokenAccount(
         provider,
         solTokenMint,
         fromWallet.publicKey,
-        payerWallet.publicKey,
+        payerPubkey,
         ataSigner
       );
       payerUsdcTokenAccount = await createAssociatedTokenAccount(
         provider,
         usdcTokenMint,
         fromWallet.publicKey,
-        payerWallet.publicKey,
+        payerPubkey,
         ataSigner
       );
       const solTokenAccount = payerSolTokenAccount;
@@ -227,7 +259,7 @@ describe("woofi_swap", () => {
       const transferTranscation = new Transaction().add(
         // transfer SOL to from wallet
         SystemProgram.transfer({
-          fromPubkey: payerWallet.publicKey,
+          fromPubkey: payerPubkey,
           toPubkey: fromWallet.publicKey,
           lamports: fromAmount,
         }),
@@ -240,6 +272,8 @@ describe("woofi_swap", () => {
         // sync wrapped SOL balance
         token.createSyncNativeInstruction(solTokenAccount)
       );
+
+      await poolUtils.getLatestBlockHash();
 
       await provider.sendAndConfirm(transferTranscation, signers, { commitment: "confirmed" });
 
@@ -258,6 +292,13 @@ describe("woofi_swap", () => {
       const tokenBalance = await provider.connection.getTokenAccountBalance(solTokenAccount);
       console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
       console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
+    });
+
+    it ("swap_exceed_cap_bal", async() => {
+      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
+
+      const solTokenAccount = payerSolTokenAccount;
+      const usdcTokenAccount = payerUsdcTokenAccount;
 
       const fromPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       const toPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
@@ -270,31 +311,23 @@ describe("woofi_swap", () => {
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
 
-      const tx = await program
-        .methods
-        .tryQuery(new BN(fromAmount))
-        .accounts({
-          wooconfig: fromPoolParams.wooconfig,
-          wooracleFrom: fromPoolParams.wooracle,
-          woopoolFrom: fromPoolParams.woopool,
-          priceUpdateFrom: solPriceUpdate,
-          wooracleTo: toPoolParams.wooracle,
-          woopoolTo: toPoolParams.woopool,
-          priceUpdateTo: usdcPriceUpdate,
-          quotePriceUpdate: usdcPriceUpdate,
-        })
-        .rpc(confirmOptionsRetryTres);
+      const solPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      const usdcPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
-      let t = await provider.connection.getTransaction(tx, {
-        commitment: "confirmed",
-      })
+      await poolUtils.getLatestBlockHash();
 
-      const [key, data, buffer] = poolUtils.getReturnLog(t);
-      const reader = new borsh.BinaryReader(buffer);
-      const toAmount = reader.readU128().toNumber();
-      const swapFee = reader.readU128().toNumber();
-      console.log('toAmount:' + toAmount);
-      console.log('swapFee:' + swapFee);
+      // init 0 set SOL Pool Max Cap Bal
+      const setSolCapBal = new BN(0);
+      await program
+      .methods
+      .setPoolCapBal(setSolCapBal)
+      .accounts({
+        wooconfig: solPoolParams.wooconfig,
+        woopool: solPoolParams.woopool,
+        authority: provider.wallet.publicKey
+      }).rpc(confirmOptionsRetryTres);
+
+      await poolUtils.getLatestBlockHash();
 
       try {
         await program
@@ -343,8 +376,10 @@ describe("woofi_swap", () => {
       const solPoolParams = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       const usdcPoolParams = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
-      // init set SOL Pool Max Cap Bal
-      const setSolCapBal = new BN(1000000);
+      await poolUtils.getLatestBlockHash();
+
+      // set SOL Pool Max Cap Bal
+      const setSolCapBal = new BN(10).pow(new BN(15));;
       await program
       .methods
       .setPoolCapBal(setSolCapBal)
@@ -358,8 +393,10 @@ describe("woofi_swap", () => {
       console.log('cap_bal:', woopoolData.capBal.toNumber());
       assert(woopoolData.capBal.eq(setSolCapBal));
 
+      await poolUtils.getLatestBlockHash();
+
       // init set SOL Pool Max Cap Bal
-      const setUSDCCapBal = new BN(200000);
+      const setUSDCCapBal = new BN(10).pow(new BN(15));;
       await program
       .methods
       .setPoolCapBal(setUSDCCapBal)
@@ -400,6 +437,8 @@ describe("woofi_swap", () => {
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
 
+      await poolUtils.getLatestBlockHash();
+
       const tx = await program
         .methods
         .tryQuery(new BN(fromAmount))
@@ -426,36 +465,14 @@ describe("woofi_swap", () => {
       console.log('toAmount:' + toAmount);
       console.log('swapFee:' + swapFee);
 
-            // increase to pool liquidity
-            // const providerToTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
-            // const beforeProviderToTokenBalance = await provider.connection.getTokenAccountBalance(providerToTokenAccount);
-            // console.log("beforeProviderToTokenBalance amount:" + beforeProviderToTokenBalance.value.amount);
-            // console.log("beforeProviderToTokenBalance decimals:" + beforeProviderToTokenBalance.value.decimals);
-
-            // const transferToTranscation = new Transaction().add(
-            //   // trasnfer USDC to to account
-            //   token.createTransferCheckedInstruction(
-            //     providerToTokenAccount,
-            //     usdcTokenMint,
-            //     toPoolParams.tokenVault,
-            //     provider.wallet.publicKey,
-            //     0.2 * Math.pow(10, beforeProviderToTokenBalance.value.decimals),
-            //     beforeProviderToTokenBalance.value.decimals
-            //   ),
-            // );
-
-            // await provider.sendAndConfirm(transferToTranscation, [], { commitment: "confirmed" });
-
-            // const afterToTokenBalance = await provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
-            // console.log("afterProviderToTokenBalance amount:" + afterToTokenBalance.value.amount);
-            // console.log("afterProviderToTokenBalance decimals:" + afterToTokenBalance.value.decimals);
-
       const toVaultBalanceBefore = await provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
       console.log("toVault balance amount before:" + toVaultBalanceBefore.value.amount);
       console.log("toVault balance decimals before:" + toVaultBalanceBefore.value.decimals);
 
       let toPoolDataBefore = await program.account.wooPool.fetch(toPoolParams.woopool);
       console.log("toPool unclaimed fee before swap:" + toPoolDataBefore.unclaimedFee);
+
+      await poolUtils.getLatestBlockHash();
 
       await program
         .methods
@@ -493,9 +510,9 @@ describe("woofi_swap", () => {
       console.log("swapToAccount balance amount:" + swapToAccountBalance.value.amount);
       console.log("swapToAccount balance decimals:" + swapToAccountBalance.value.decimals);
 
-      assert.equal(toVaultBalanceAfter.value.amount, toVaultBalanceBefore.value.amount - toAmount);
-      assert.equal(swapToAccountBalance.value.amount, toAmount);
-      assert.equal(toPoolDataAfter.unclaimedFee.toNumber(), swapFee);
+      assert.equal(parseInt(toVaultBalanceAfter.value.amount), parseInt(toVaultBalanceBefore.value.amount) - toAmount);
+      assert.equal(parseInt(swapToAccountBalance.value.amount), toAmount);
+      assert.equal(toPoolDataAfter.unclaimedFee.toNumber(), toPoolDataBefore.unclaimedFee.toNumber() + swapFee);
     });
 
     it("swap_from_usdc_to_sol", async ()=> {
@@ -523,6 +540,8 @@ describe("woofi_swap", () => {
       const [toPrice, toFeasible] = await poolUtils.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
       console.log(`price - ${toPrice}`);
       console.log(`feasible - ${toFeasible}`);
+
+      await poolUtils.getLatestBlockHash();
 
       const tx = await program
         .methods
@@ -564,6 +583,8 @@ describe("woofi_swap", () => {
       let toPoolDataBefore = await program.account.wooPool.fetch(toPoolParams.woopool);
       console.log("toPool unclaimed fee before swap:" + toPoolDataBefore.unclaimedFee);
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .swap(new BN(fromAmount), new BN(0))
@@ -603,9 +624,9 @@ describe("woofi_swap", () => {
         console.log("swapToAccount balance amount after:" + swapToAccountBalanceAfter.value.amount);
         console.log("swapToAccount balance decimals after:" + swapToAccountBalanceAfter.value.decimals);
   
-        assert.equal(toVaultBalanceAfter.value.amount, toVaultBalanceBefore.value.amount - toAmount);
-        assert.equal(swapToAccountBalanceBefore.value.amount, 0);
-        assert.equal(swapToAccountBalanceAfter.value.amount, toAmount);
+        assert.equal(parseInt(toVaultBalanceAfter.value.amount), parseInt(toVaultBalanceBefore.value.amount) - toAmount);
+        assert.equal(parseInt(swapToAccountBalanceBefore.value.amount), 0);
+        assert.equal(parseInt(swapToAccountBalanceAfter.value.amount), toAmount);
         assert.equal(quotePoolDataAfter.unclaimedFee.toNumber(), quotePoolDataBefore.unclaimedFee.toNumber() + swapFee);
       });
   });
