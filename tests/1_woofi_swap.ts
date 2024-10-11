@@ -108,9 +108,9 @@ describe("woofi_swap", () => {
 
   describe("#check_usdc_pool()", async () => {
     it("check usdc pool", async () => {
-      let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      let {woopoolData, } = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
       assert.ok(
-        checkUsdcPool.authority.equals(provider.wallet.publicKey)
+        woopoolData.authority.equals(provider.wallet.publicKey)
       );
     });
   });
@@ -183,9 +183,9 @@ describe("woofi_swap", () => {
         assert.equal(parseInt(afterUSDCPoolBalance.value.amount), parseInt(beforeUSDCPoolBalance.value.amount) + depositAmount.toNumber());
       }
 
-      let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      let {woopoolData, } = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
       assert.ok(
-        checkUsdcPool.authority.equals(provider.wallet.publicKey)
+        woopoolData.authority.equals(provider.wallet.publicKey)
       );
     });
   });

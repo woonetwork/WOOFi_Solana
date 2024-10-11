@@ -1,9 +1,10 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
+import { LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import { assert } from "chai";
 import { getLogs } from "@solana-developers/helpers";
 import { PoolUtils } from "./utils/pool";
-import { usdcTokenMint, usdcPriceUpdate, confirmOptionsRetryTres } from "./utils/test-consts";
+import { usdcTokenMint, usdcPriceUpdate, confirmOptionsRetryTres, solTokenMint, solPriceUpdate } from "./utils/test-consts";
 
 describe("woofi_swap", () => {
   const poolUtils = new PoolUtils();
@@ -77,43 +78,100 @@ describe("woofi_swap", () => {
 //     })
 
 //   })
-  describe("#check_usdc_pool()", async () => {
-    it("check usdc pool", async () => {
-      let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+  describe("#check_pool()", async () => {
+    it("check sol pool", async () => {
+      let {woopoolData, poolVaultBalance} = await poolUtils.checkPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       assert.ok(
-        checkUsdcPool.authority.equals(provider.wallet.publicKey)
+        woopoolData.authority.equals(provider.wallet.publicKey)
       );
+    });
+
+    it("check usdc pool", async () => {
+        let {woopoolData, poolVaultBalance} = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+        assert.ok(
+          woopoolData.authority.equals(provider.wallet.publicKey)
+        );
     });
   });
 
-//   describe("#deposit_usdc_pool()", async () => {
-//     it("deposit usdc pool", async () => {
+  describe("#deposit_sol_pool()", async () => {
+    it("deposit sol pool", async () => {
 
-//       const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      const fromAmount = 0.01 * LAMPORTS_PER_SOL;
 
-//       const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+      const params = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      const providerTokenAccount = token.getAssociatedTokenAddressSync(solTokenMint, provider.wallet.publicKey);
 
-//       const tx = await program
-//       .methods
-//       .deposit(new BN(1000000))
-//       .accounts({
-//         tokenMint: usdcTokenMint,
-//         quoteTokenMint: usdcTokenMint,
-//         authority: provider.wallet.publicKey,
-//         tokenOwnerAccount: providerTokenAccount,
-//         woopool: params.woopool,
-//         tokenVault: params.tokenVault,
-//         tokenProgram: token.TOKEN_PROGRAM_ID,
-//       })
-//       .rpc(confirmOptionsRetryTres);
+      // increase from pool liquidity
+      const transferTranscation = new Transaction().add(
+        // trasnfer SOL to WSOL into ata account
+        SystemProgram.transfer({
+            fromPubkey: provider.wallet.publicKey,
+            toPubkey: providerTokenAccount,
+            lamports: fromAmount,
+        }),
+        // sync wrapped SOL balance
+        token.createSyncNativeInstruction(providerTokenAccount)
+      );
 
-//       const logs = await getLogs(provider.connection, tx);
-//       console.log(logs);
+      await poolUtils.getLatestBlockHash();
+      await provider.sendAndConfirm(transferTranscation);
 
-//       let checkUsdcPool = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-//       assert.ok(
-//         checkUsdcPool.authority.equals(provider.wallet.publicKey)
-//       );
-//     });
-//   });
+      let {woopoolData: woopoolDataBefore, poolVaultBalance: poolVaultBalanceBefore} = await poolUtils.checkPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      
+      const tx = await program
+      .methods
+      .deposit(new BN(fromAmount))
+      .accounts({
+        wooconfig: params.wooconfig,
+        tokenMint: solTokenMint,
+        authority: provider.wallet.publicKey,
+        tokenOwnerAccount: providerTokenAccount,
+        woopool: params.woopool,
+        tokenVault: params.tokenVault,
+        tokenProgram: token.TOKEN_PROGRAM_ID,
+      })
+      .rpc(confirmOptionsRetryTres);
+
+      const logs = await getLogs(provider.connection, tx);
+      console.log(logs);
+
+      let {woopoolData: woopoolDataAfter, poolVaultBalance: poolVaultBalanceAfter} = await poolUtils.checkPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      assert.equal(parseInt(poolVaultBalanceAfter.value.amount), parseInt(poolVaultBalanceBefore.value.amount) + fromAmount);
+    });
+  });
+
+
+  describe("#deposit_usdc_pool()", async () => {
+    it("deposit usdc pool", async () => {
+      const fromAmount = 0.01 * 1000000;
+
+      const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+      const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+
+      let {woopoolData: woopoolDataBefore, poolVaultBalance: poolVaultBalanceBefore} = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+
+      const tx = await program
+      .methods
+      .deposit(new BN(fromAmount))
+      .accounts({
+        wooconfig: params.wooconfig,
+        tokenMint: usdcTokenMint,
+        authority: provider.wallet.publicKey,
+        tokenOwnerAccount: providerTokenAccount,
+        woopool: params.woopool,
+        tokenVault: params.tokenVault,
+        tokenProgram: token.TOKEN_PROGRAM_ID,
+      })
+      .rpc(confirmOptionsRetryTres);
+
+      const logs = await getLogs(provider.connection, tx);
+      console.log(logs);
+
+      let {woopoolData: woopoolDataAfter, poolVaultBalance: poolVaultBalanceAfter} = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      assert.equal(parseInt(poolVaultBalanceAfter.value.amount), parseInt(poolVaultBalanceBefore.value.amount) + fromAmount);
+    });
+  });
 });

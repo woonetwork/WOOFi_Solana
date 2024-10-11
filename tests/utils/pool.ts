@@ -52,7 +52,7 @@ export class PoolUtils {
     this.solFeedAccount = new anchor.web3.PublicKey(this.sol_priceFeed);
     // USDC/USD
     this.usdcFeedAccount = new anchor.web3.PublicKey(this.usdc_priceFeed);
-    this.quoteFeedAccount = this.usdcFeedAccount;    
+    this.quoteFeedAccount = this.usdcFeedAccount;  
   };
 
   public getLatestBlockHash = async () => {
@@ -337,7 +337,11 @@ export class PoolUtils {
     console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
     console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
 
-    return woopoolData;
+    const poolVaultBalance = await this.provider.connection.getTokenAccountBalance(woopoolData.tokenVault);
+    console.log("Pool vault balance amount:" + poolVaultBalance.value.amount);
+    console.log("Pool vault balance decimals:" + poolVaultBalance.value.decimals);
+
+    return {woopoolData, poolVaultBalance};
   }
 
   public generatePoolParams = async(
