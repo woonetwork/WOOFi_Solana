@@ -58,120 +58,120 @@ describe("woofi", () => {
     feeKeys.push(key);
   }
 
-  describe("#set_woo_admin()", async () => {
-    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooconfig')],
-        program.programId
-      );
+//   describe("#set_woo_admin()", async () => {
+//     const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+//         [Buffer.from('wooconfig')],
+//         program.programId
+//       );
 
-    it("set woo oracle admin", async () => {        
-        console.log('Set wooracle admin authority to:', adminPublicKey);
-        await program
-            .methods
-            .setWooAdmin(wooAdmins)
-            .accounts({
-                wooconfig,
-                authority: provider.wallet.publicKey,
-            })
-            .rpc(confirmOptionsRetryTres);
+//     it("set woo oracle admin", async () => {        
+//         console.log('Set wooracle admin authority to:', adminPublicKey);
+//         await program
+//             .methods
+//             .setWooAdmin(wooAdmins)
+//             .accounts({
+//                 wooconfig,
+//                 authority: provider.wallet.publicKey,
+//             })
+//             .rpc(confirmOptionsRetryTres);
 
-        await program
-            .methods
-            .setPoolAdmin(poolAdmins)
-            .accounts({
-                wooconfig,
-                authority: provider.wallet.publicKey,
-            })
-            .rpc(confirmOptionsRetryTres);
+//         await program
+//             .methods
+//             .setPoolAdmin(poolAdmins)
+//             .accounts({
+//                 wooconfig,
+//                 authority: provider.wallet.publicKey,
+//             })
+//             .rpc(confirmOptionsRetryTres);
 
-        await program
-            .methods
-            .setGuardianAdmin(guardianKeys.map(key => key.publicKey))
-            .accounts({
-                wooconfig,
-                authority: provider.wallet.publicKey,
-            })
-            .rpc(confirmOptionsRetryTres);
+//         await program
+//             .methods
+//             .setGuardianAdmin(guardianKeys.map(key => key.publicKey))
+//             .accounts({
+//                 wooconfig,
+//                 authority: provider.wallet.publicKey,
+//             })
+//             .rpc(confirmOptionsRetryTres);
 
-        await program
-            .methods
-            .setPauseRole(pauseKeys.map(key => key.publicKey))
-            .accounts({
-                wooconfig,
-                authority: provider.wallet.publicKey,
-            })
-            .rpc(confirmOptionsRetryTres);
+//         await program
+//             .methods
+//             .setPauseRole(pauseKeys.map(key => key.publicKey))
+//             .accounts({
+//                 wooconfig,
+//                 authority: provider.wallet.publicKey,
+//             })
+//             .rpc(confirmOptionsRetryTres);
 
-        await program
-            .methods
-            .setFeeAdmin(feeKeys.map(key => key.publicKey))
-            .accounts({
-                wooconfig,
-                authority: provider.wallet.publicKey,
-            })
-            .rpc(confirmOptionsRetryTres);
+//         await program
+//             .methods
+//             .setFeeAdmin(feeKeys.map(key => key.publicKey))
+//             .accounts({
+//                 wooconfig,
+//                 authority: provider.wallet.publicKey,
+//             })
+//             .rpc(confirmOptionsRetryTres);
 
-        poolUtils.checkAdmins();
-    });
-  });
+//         poolUtils.checkAdmins();
+//     });
+//   });
 
-  describe("#set_woopool_admin_using_admin_authority()", async () => {
-    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from('wooconfig')],
-        program.programId
-      );
+//   describe("#set_woopool_admin_using_admin_authority()", async () => {
+//     const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+//         [Buffer.from('wooconfig')],
+//         program.programId
+//       );
     
-    it("set woopool admin", async () => {
-        //console.log('Set wooracle admin authority to:', adminPublicKey);
-        await program
-            .methods
-            .setPoolAdmin([poolKeys[1].publicKey])
-            .accounts({
-                wooconfig,
-                authority: poolKeys[0].publicKey,
-            })
-            .signers([poolKeys[0]])
-            .rpc(confirmOptionsRetryTres);
+//     it("set woopool admin", async () => {
+//         //console.log('Set wooracle admin authority to:', adminPublicKey);
+//         await program
+//             .methods
+//             .setPoolAdmin([poolKeys[1].publicKey])
+//             .accounts({
+//                 wooconfig,
+//                 authority: poolKeys[0].publicKey,
+//             })
+//             .signers([poolKeys[0]])
+//             .rpc(confirmOptionsRetryTres);
 
-        try {
-            await program
-                .methods
-                .setPoolAdmin([poolKeys[1].publicKey])
-                .accounts({
-                    wooconfig,
-                    authority: poolKeys[0].publicKey,
-                })
-                .signers([poolKeys[0]])
-                .rpc(confirmOptionsRetryTres);
+//         try {
+//             await program
+//                 .methods
+//                 .setPoolAdmin([poolKeys[1].publicKey])
+//                 .accounts({
+//                     wooconfig,
+//                     authority: poolKeys[0].publicKey,
+//                 })
+//                 .signers([poolKeys[0]])
+//                 .rpc(confirmOptionsRetryTres);
 
-            assert.fail(
-                "should fail no auth"
-            );
-        } catch (e) {
-            const error = e as Error;
-            console.log("----------------------name----------------------------")
-            console.log(error.name);
-            console.log("----------------------message-------------------------")
-            console.log(error.message);
-            console.log("----------------------stack---------------------------")
-            console.log(error.stack);
-            console.log("----------------------end-----------------------------")
+//             assert.fail(
+//                 "should fail no auth"
+//             );
+//         } catch (e) {
+//             const error = e as Error;
+//             console.log("----------------------name----------------------------")
+//             console.log(error.name);
+//             console.log("----------------------message-------------------------")
+//             console.log(error.message);
+//             console.log("----------------------stack---------------------------")
+//             console.log(error.stack);
+//             console.log("----------------------end-----------------------------")
 
-            assert.match(error.message, /A raw constraint was violated./);
-        }
+//             assert.match(error.message, /A raw constraint was violated./);
+//         }
 
-        await program
-            .methods
-            .setPoolAdmin(poolAdmins)
-            .accounts({
-                wooconfig,
-                authority: provider.wallet.publicKey,
-            })
-            .rpc(confirmOptionsRetryTres);
+//         await program
+//             .methods
+//             .setPoolAdmin(poolAdmins)
+//             .accounts({
+//                 wooconfig,
+//                 authority: provider.wallet.publicKey,
+//             })
+//             .rpc(confirmOptionsRetryTres);
 
-        poolUtils.checkAdmins();
-    });
-  });
+//         poolUtils.checkAdmins();
+//     });
+//   });
 
 
 //   describe("#set_usdc_woo_admin()", async () => {

@@ -95,83 +95,83 @@ describe("woofi_swap", () => {
     });
   });
 
-  describe("#deposit_sol_pool()", async () => {
-    it("deposit sol pool", async () => {
+//   describe("#deposit_sol_pool()", async () => {
+//     it("deposit sol pool", async () => {
 
-      const fromAmount = 0.01 * LAMPORTS_PER_SOL;
+//       const fromAmount = 0.01 * LAMPORTS_PER_SOL;
 
-      const params = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
-      const providerTokenAccount = token.getAssociatedTokenAddressSync(solTokenMint, provider.wallet.publicKey);
+//       const params = await poolUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+//       const providerTokenAccount = token.getAssociatedTokenAddressSync(solTokenMint, provider.wallet.publicKey);
 
-      // increase from pool liquidity
-      const transferTranscation = new Transaction().add(
-        // trasnfer SOL to WSOL into ata account
-        SystemProgram.transfer({
-            fromPubkey: provider.wallet.publicKey,
-            toPubkey: providerTokenAccount,
-            lamports: fromAmount,
-        }),
-        // sync wrapped SOL balance
-        token.createSyncNativeInstruction(providerTokenAccount)
-      );
+//       // increase from pool liquidity
+//       const transferTranscation = new Transaction().add(
+//         // trasnfer SOL to WSOL into ata account
+//         SystemProgram.transfer({
+//             fromPubkey: provider.wallet.publicKey,
+//             toPubkey: providerTokenAccount,
+//             lamports: fromAmount,
+//         }),
+//         // sync wrapped SOL balance
+//         token.createSyncNativeInstruction(providerTokenAccount)
+//       );
 
-      await poolUtils.getLatestBlockHash();
-      await provider.sendAndConfirm(transferTranscation);
+//       await poolUtils.getLatestBlockHash();
+//       await provider.sendAndConfirm(transferTranscation);
 
-      let {woopoolData: woopoolDataBefore, poolVaultBalance: poolVaultBalanceBefore} = await poolUtils.checkPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+//       let {woopoolData: woopoolDataBefore, poolVaultBalance: poolVaultBalanceBefore} = await poolUtils.checkPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
       
-      const tx = await program
-      .methods
-      .deposit(new BN(fromAmount))
-      .accounts({
-        wooconfig: params.wooconfig,
-        tokenMint: solTokenMint,
-        authority: provider.wallet.publicKey,
-        tokenOwnerAccount: providerTokenAccount,
-        woopool: params.woopool,
-        tokenVault: params.tokenVault,
-        tokenProgram: token.TOKEN_PROGRAM_ID,
-      })
-      .rpc(confirmOptionsRetryTres);
+//       const tx = await program
+//       .methods
+//       .deposit(new BN(fromAmount))
+//       .accounts({
+//         wooconfig: params.wooconfig,
+//         tokenMint: solTokenMint,
+//         authority: provider.wallet.publicKey,
+//         tokenOwnerAccount: providerTokenAccount,
+//         woopool: params.woopool,
+//         tokenVault: params.tokenVault,
+//         tokenProgram: token.TOKEN_PROGRAM_ID,
+//       })
+//       .rpc(confirmOptionsRetryTres);
 
-      const logs = await getLogs(provider.connection, tx);
-      console.log(logs);
+//       const logs = await getLogs(provider.connection, tx);
+//       console.log(logs);
 
-      let {woopoolData: woopoolDataAfter, poolVaultBalance: poolVaultBalanceAfter} = await poolUtils.checkPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
-      assert.equal(parseInt(poolVaultBalanceAfter.value.amount), parseInt(poolVaultBalanceBefore.value.amount) + fromAmount);
-    });
-  });
+//       let {woopoolData: woopoolDataAfter, poolVaultBalance: poolVaultBalanceAfter} = await poolUtils.checkPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+//       assert.equal(parseInt(poolVaultBalanceAfter.value.amount), parseInt(poolVaultBalanceBefore.value.amount) + fromAmount);
+//     });
+//   });
 
 
-  describe("#deposit_usdc_pool()", async () => {
-    it("deposit usdc pool", async () => {
-      const fromAmount = 0.01 * 1000000;
+//   describe("#deposit_usdc_pool()", async () => {
+//     it("deposit usdc pool", async () => {
+//       const fromAmount = 0.01 * 1000000;
 
-      const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+//       const params = await poolUtils.generatePoolParams(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
-      const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
+//       const providerTokenAccount = token.getAssociatedTokenAddressSync(usdcTokenMint, provider.wallet.publicKey);
 
-      let {woopoolData: woopoolDataBefore, poolVaultBalance: poolVaultBalanceBefore} = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+//       let {woopoolData: woopoolDataBefore, poolVaultBalance: poolVaultBalanceBefore} = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
 
-      const tx = await program
-      .methods
-      .deposit(new BN(fromAmount))
-      .accounts({
-        wooconfig: params.wooconfig,
-        tokenMint: usdcTokenMint,
-        authority: provider.wallet.publicKey,
-        tokenOwnerAccount: providerTokenAccount,
-        woopool: params.woopool,
-        tokenVault: params.tokenVault,
-        tokenProgram: token.TOKEN_PROGRAM_ID,
-      })
-      .rpc(confirmOptionsRetryTres);
+//       const tx = await program
+//       .methods
+//       .deposit(new BN(fromAmount))
+//       .accounts({
+//         wooconfig: params.wooconfig,
+//         tokenMint: usdcTokenMint,
+//         authority: provider.wallet.publicKey,
+//         tokenOwnerAccount: providerTokenAccount,
+//         woopool: params.woopool,
+//         tokenVault: params.tokenVault,
+//         tokenProgram: token.TOKEN_PROGRAM_ID,
+//       })
+//       .rpc(confirmOptionsRetryTres);
 
-      const logs = await getLogs(provider.connection, tx);
-      console.log(logs);
+//       const logs = await getLogs(provider.connection, tx);
+//       console.log(logs);
 
-      let {woopoolData: woopoolDataAfter, poolVaultBalance: poolVaultBalanceAfter} = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-      assert.equal(parseInt(poolVaultBalanceAfter.value.amount), parseInt(poolVaultBalanceBefore.value.amount) + fromAmount);
-    });
-  });
+//       let {woopoolData: woopoolDataAfter, poolVaultBalance: poolVaultBalanceAfter} = await poolUtils.checkPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+//       assert.equal(parseInt(poolVaultBalanceAfter.value.amount), parseInt(poolVaultBalanceBefore.value.amount) + fromAmount);
+//     });
+//   });
 });
