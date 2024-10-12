@@ -154,17 +154,13 @@ fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Res
     wooracle_to.post_price(to_new_price)?;
 
     require!(
-        woopool_to.reserve >= to_amount && token_vault_to.amount as u128 >= to_amount,
+        balance(woopool_to, token_vault_to)? >= to_amount,
         ErrorCode::NotEnoughOut
     );
 
     require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
-    woopool_quote.add_reserve(from_amount).unwrap();
-    woopool_to.sub_reserve(to_amount).unwrap();
-
     // record fee into account
-    woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
 
     transfer_from_owner_to_vault(
@@ -251,17 +247,13 @@ fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Resu
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
     require!(
-        woopool_quote.reserve >= swap_fee + quote_amount && quote_token_vault.amount as u128 >= swap_fee + quote_amount,
+        balance(woopool_quote, quote_token_vault)? >= swap_fee + quote_amount,
         ErrorCode::NotEnoughOut
     );
 
     require!(quote_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
-    woopool_from.add_reserve(from_amount).unwrap();
-    woopool_quote.sub_reserve(quote_amount).unwrap();
-
     // record fee into account
-    woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
 
     transfer_from_owner_to_vault(
@@ -356,7 +348,7 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
 
     require!(
-        woopool_quote.reserve >= swap_fee && quote_token_vault.amount as u128 >= swap_fee,
+        balance(woopool_quote, quote_token_vault)? >= swap_fee,
         ErrorCode::NotEnoughOut
     );
 
@@ -377,17 +369,13 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
     wooracle_to.post_price(to_new_price)?;
 
     require!(
-        woopool_to.reserve >= to_amount && token_vault_to.amount as u128 >= to_amount,
+        balance(woopool_to, token_vault_to)? >= to_amount,
         ErrorCode::NotEnoughOut
     );
 
     require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
-    woopool_from.add_reserve(from_amount).unwrap();
-    woopool_to.sub_reserve(to_amount).unwrap();
-
     // record fee into account
-    woopool_quote.sub_reserve(swap_fee).unwrap();
     woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
 
     transfer_from_owner_to_vault(
