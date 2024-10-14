@@ -151,7 +151,7 @@ fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Res
         &decimals_to,
         &state_to,
     )?;
-    wooracle_to.post_price(to_new_price)?;
+    wooracle_to.post_price_no_ts_update(to_new_price)?;
 
     require!(
         balance(woopool_to, token_vault_to)? >= to_amount,
@@ -241,7 +241,7 @@ fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Resu
         &state_from,
     )?;
 
-    wooracle_from.post_price(new_base_price)?;
+    wooracle_from.post_price_no_ts_update(new_base_price)?;
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
@@ -342,7 +342,7 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
         &state_from,
     )?;
 
-    wooracle_from.post_price(new_base_price)?;
+    wooracle_from.post_price_no_ts_update(new_base_price)?;
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
     quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
@@ -366,7 +366,7 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
         &decimals_to,
         &state_to,
     )?;
-    wooracle_to.post_price(to_new_price)?;
+    wooracle_to.post_price_no_ts_update(to_new_price)?;
 
     require!(
         balance(woopool_to, token_vault_to)? >= to_amount,

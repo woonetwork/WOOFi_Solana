@@ -126,6 +126,12 @@ impl Wooracle {
         Ok(())
     }
 
+    pub fn post_price_no_ts_update(&mut self, price: u128) -> Result<()> {
+        self.update_spread_for_new_price(price)?;
+        self.update_price(price)?;
+        Ok(())
+    }
+
     pub fn update_spread_for_new_price(&mut self, price: u128) -> Result<()> {
         let pre_s = self.spread;
         let pre_p = self.price;
