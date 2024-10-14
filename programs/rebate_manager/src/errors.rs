@@ -6,19 +6,15 @@ use anchor_lang::prelude::*;
 #[derive(PartialEq)]
 pub enum ErrorCode {
     #[msg("Too Many Authorities")]
-    TooManyAuthorities, // 0x1782
+    TooManyAuthorities, // 0x1770
     #[msg("Unable to cast number into BigInt")]
     NumberCastError, //  0x1771
-    #[msg("Rebate pool and vault not match")]
-    RebateVaultNotMatch, // 0x177d
-    #[msg("Pending rebate not match with vault amount")]
-    PendingRebateNotMatch, // 0x177d
     #[msg("Exceeded max rebate fee")]
-    RebateFeeMaxExceeded, // 0x177d
+    RebateFeeMaxExceeded, // 0x1772
     #[msg("Rebate fee not enough")]
-    RebateFeeNotEnough, // 0x177e
+    RebateFeeNotEnough, // 0x1773
     #[msg("Src Balance < LP Deposit Amount.")]
-    NotEnoughBalance, //0x178b
+    NotEnoughBalance, //0x1774
 }
 
 impl From<TryFromIntError> for ErrorCode {
