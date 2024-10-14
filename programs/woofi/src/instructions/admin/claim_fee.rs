@@ -38,7 +38,7 @@ pub fn claim_handler(ctx: Context<ClaimFee>) -> Result<()> {
     let woopool = &mut ctx.accounts.woopool;
 
     require!(
-        woopool.unclaimed_fee > 0 && token_vault.amount as u128 > 0,
+        woopool.unclaimed_fee > 0 && token_vault.amount as u128 >= woopool.unclaimed_fee,
         ErrorCode::ProtocolFeeNotEnough
     );
 
