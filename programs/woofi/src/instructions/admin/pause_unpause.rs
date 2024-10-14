@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::state::wooconfig::*;
+use crate::{events::{PauseEvent, UnPauseEvent}, state::wooconfig::*};
 
 #[derive(Accounts)]
 pub struct Pause<'info> {
@@ -16,7 +16,13 @@ pub struct Pause<'info> {
 }
 
 pub fn pause(ctx: Context<Pause>) -> Result<()> {
-    ctx.accounts.wooconfig.set_paused(true)
+    ctx.accounts.wooconfig.set_paused(true)?;
+    emit!(PauseEvent{
+        wooconfig: ctx.accounts.wooconfig.key(),
+        authority: ctx.accounts.authority.key()
+    });
+
+    Ok(())
 }
 
 #[derive(Accounts)]
@@ -32,5 +38,11 @@ pub struct UnPause<'info> {
 }
 
 pub fn unpause(ctx: Context<UnPause>) -> Result<()> {
-    ctx.accounts.wooconfig.set_paused(false)
+    ctx.accounts.wooconfig.set_paused(false)?;
+    emit!(UnPauseEvent{
+        wooconfig: ctx.accounts.wooconfig.key(),
+        authority: ctx.accounts.authority.key()
+    });
+
+    Ok(())
 }
