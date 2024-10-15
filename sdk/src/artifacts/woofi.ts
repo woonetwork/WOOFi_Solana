@@ -1349,6 +1349,36 @@ export type Woofi = {
   ],
   "events": [
     {
+      "name": "PauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UnPauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "DepositEvent",
       "fields": [
         {
@@ -3059,6 +3089,36 @@ export const IDL: Woofi = {
     }
   ],
   "events": [
+    {
+      "name": "PauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UnPauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
     {
       "name": "DepositEvent",
       "fields": [

@@ -1349,6 +1349,36 @@
   ],
   "events": [
     {
+      "name": "PauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UnPauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "DepositEvent",
       "fields": [
         {
@@ -1706,8 +1736,5 @@
       "name": "SwapPoolInvalid",
       "msg": "Swap pool invalid"
     }
-  ],
-  "metadata": {
-    "address": "66xmavQK2TERkHMxUPca1QV9CzcYHqUYvfFHfE8UekBN"
-  }
+  ]
 }
