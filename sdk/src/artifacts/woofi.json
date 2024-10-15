@@ -1736,5 +1736,8 @@
       "name": "SwapPoolInvalid",
       "msg": "Swap pool invalid"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "66xmavQK2TERkHMxUPca1QV9CzcYHqUYvfFHfE8UekBN"
+  }
 }
