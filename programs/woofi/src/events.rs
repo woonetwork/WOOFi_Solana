@@ -1,6 +1,19 @@
 use anchor_lang::prelude::*;
 
 #[event]
+pub struct PauseEvent {
+    pub wooconfig: Pubkey,
+    pub authority: Pubkey,
+}
+
+#[event]
+pub struct UnPauseEvent {
+    pub wooconfig: Pubkey,
+    pub authority: Pubkey,
+}
+
+
+#[event]
 pub struct DepositEvent {
     pub token_mint: Pubkey,
     pub authority: Pubkey,
