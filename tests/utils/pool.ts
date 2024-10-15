@@ -8,9 +8,14 @@ import { getLogs } from "@solana-developers/helpers";
 import { Woofi } from "../../target/types/woofi";
 import { getPythPrice } from "./pyth";
 import { quotePriceUpdate, quoteTokenMint, SupportedToken } from "./test-consts";
+import { getCluster } from "../global";
+
+const sleep = async (ms: number) => {
+  return new Promise(r => setTimeout(r, ms));
+};
 
 export class PoolUtils {
-  public provider;
+  public provider: anchor.AnchorProvider;
   public program: Program<Woofi>;
   public sol_priceFeed;
   public usdc_priceFeed;
@@ -47,8 +52,26 @@ export class PoolUtils {
     this.solFeedAccount = new anchor.web3.PublicKey(this.sol_priceFeed);
     // USDC/USD
     this.usdcFeedAccount = new anchor.web3.PublicKey(this.usdc_priceFeed);
-    this.quoteFeedAccount = this.usdcFeedAccount;    
+    this.quoteFeedAccount = this.usdcFeedAccount;  
   };
+
+  public getLatestBlockHash = async () => {
+    if (getCluster() == 'localnet') {
+      return;
+    }
+
+    const blockhashResponse = await this.provider.connection.getLatestBlockhash();
+    const lastValidBlockHeight = blockhashResponse.lastValidBlockHeight - 150;
+    let blockheight = await this.provider.connection.getBlockHeight();
+    console.log("blockhashResponse", blockhashResponse);
+    console.log("current blockheight", blockheight);
+
+    while (blockheight <= lastValidBlockHeight) {
+      await sleep(500);
+      blockheight = await this.provider.connection.getBlockHeight();
+      console.log("current blockheight", blockheight);
+    }
+  }
 
   public getReturnLog = (confirmedTransaction) => {
     const prefix = "Program return: ";
@@ -68,6 +91,8 @@ export class PoolUtils {
     quotePriceUpdate: anchor.web3.PublicKey
   ) => {
     const confirmOptions: ConfirmOptions = { commitment: "confirmed", maxRetries: 3 };
+
+    await this.getLatestBlockHash();
 
     const tx = await this.program
       .methods
@@ -104,6 +129,8 @@ export class PoolUtils {
     } catch (e) {
       const error = e as Error;
       if (error.message.indexOf("Account does not exist") >= 0) {
+          await this.getLatestBlockHash();
+
           const tx = await this.program
             .methods
             .createConfig()
@@ -142,6 +169,8 @@ export class PoolUtils {
     } catch (e) {
       const error = e as Error;
       if (error.message.indexOf("Account does not exist") >= 0) {
+          await this.getLatestBlockHash();
+
           // TODO Prince: need notice here
           // set maximum age to larger seconds due to pyth oracled push in 20mins in Dev env.
           const quoteFeedAccount = this.quoteFeedAccount;
@@ -172,6 +201,8 @@ export class PoolUtils {
 
     // init set wooracle range min and max
     const pythPrice = await getPythPrice(token);
+
+    await this.getLatestBlockHash();
 
     await this.program
       .methods
@@ -215,6 +246,8 @@ export class PoolUtils {
         const tokenVaultKeypair = anchor.web3.Keypair.generate();
         console.log('tokenVault Keypair:' + tokenVaultKeypair.publicKey);
 
+        await this.getLatestBlockHash();
+
         await this.program
         .methods
         .createPool()
@@ -235,6 +268,8 @@ export class PoolUtils {
       }
     }
 
+    await this.getLatestBlockHash();
+
     // init set Pool Max Notional Swap
     await this.program
     .methods
@@ -244,6 +279,8 @@ export class PoolUtils {
       woopool: woopool,
       authority: this.provider.wallet.publicKey
     }).rpc(this.confirmOptionsRetryTres);
+
+    await this.getLatestBlockHash();
 
     // init set Pool Max Notional Swap
     await this.program
@@ -300,7 +337,11 @@ export class PoolUtils {
     console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
     console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
 
-    return woopoolData;
+    const poolVaultBalance = await this.provider.connection.getTokenAccountBalance(woopoolData.tokenVault);
+    console.log("Pool vault balance amount:" + poolVaultBalance.value.amount);
+    console.log("Pool vault balance decimals:" + poolVaultBalance.value.decimals);
+
+    return {woopoolData, poolVaultBalance};
   }
 
   public generatePoolParams = async(
