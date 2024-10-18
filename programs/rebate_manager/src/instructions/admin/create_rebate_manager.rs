@@ -17,6 +17,7 @@ pub struct CreateRebateManager<'info> {
         space = 8 + RebateManager::INIT_SPACE,
         seeds = [
           REBATEMANAGER_SEED.as_bytes(),
+          authority.key().as_ref(),
           quote_token_mint.key().as_ref()
         ],
         bump)]

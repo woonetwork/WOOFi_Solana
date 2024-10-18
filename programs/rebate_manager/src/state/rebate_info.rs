@@ -48,14 +48,6 @@ pub struct RebateInfo {
 }
 
 impl RebateInfo {
-    pub fn seeds(&self) -> [&[u8]; 3] {
-        [
-            REBATEINFO_SEED.as_bytes(),
-            self.rebate_manager.as_ref(),
-            self.rebate_authority.as_ref(),
-        ]
-    }
-
     pub fn add_pending_rebate(&mut self, fee: u128) -> Result<()> {
         self.pending_rebate = self
             .pending_rebate
