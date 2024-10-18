@@ -34,7 +34,6 @@ pub struct Swap<'info> {
     )]
     woopool_from: Box<Account<'info, WooPool>>,
     #[account(mut,
-        constraint = token_owner_account_from.owner == payer.key(),
         constraint = token_owner_account_from.mint == woopool_from.token_mint
     )]
     token_owner_account_from: Box<Account<'info, TokenAccount>>,
