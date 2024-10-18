@@ -36,3 +36,7 @@ pub fn set_max_gamma_handler(ctx: Context<SetPoolState>, max_gamma: u128) -> Res
 pub fn set_cap_bal_handler(ctx: Context<SetPoolState>, cap_bal: u128) -> Result<()> {
     ctx.accounts.woopool.set_cap_bal(cap_bal)
 }
+
+pub fn set_min_swap_amount_handler(ctx: Context<SetPoolState>, min_swap_amount: u128) -> Result<()> {
+    ctx.accounts.woopool.set_min_swap_amount(min_swap_amount)
+}
