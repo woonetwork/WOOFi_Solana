@@ -53,9 +53,10 @@ pub struct RebateManager {
 }
 
 impl RebateManager {
-    pub fn seeds(&self) -> [&[u8]; 3] {
+    pub fn seeds(&self) -> [&[u8]; 4] {
         [
             REBATEMANAGER_SEED.as_bytes(),
+            self.authority.as_ref(),
             self.quote_token_mint.as_ref(),
             self.rebate_manager_bump.as_ref(),
         ]
