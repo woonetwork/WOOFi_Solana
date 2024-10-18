@@ -8,9 +8,9 @@ pub struct Decimals {
 impl Decimals {
     pub fn new(price: u32, quote: u32, base: u32) -> Self {
         Decimals {
-            price_dec: 10_u64.pow(price),
-            quote_dec: 10_u64.pow(quote),
-            base_dec: 10_u64.pow(base),
+            price_dec: 10_u64.checked_pow(price).unwrap(),
+            quote_dec: 10_u64.checked_pow(quote).unwrap(),
+            base_dec: 10_u64.checked_pow(base).unwrap(),
         }
     }
 }
