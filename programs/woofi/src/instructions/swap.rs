@@ -95,6 +95,12 @@ pub struct Swap<'info> {
 }
 
 pub fn handler(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
+    // skip swap when from amount less than min swap amount
+    // do not fail directly, due to consider third party call will fail in this situration
+    if from_amount <= ctx.accounts.woopool_from.min_swap_amount {
+        return Ok(());
+    }
+
     if ctx.accounts.woopool_from.key() == ctx.accounts.woopool_quote.key() {
         sell_quote(ctx, from_amount, min_to_amount)
     } else if ctx.accounts.woopool_to.key() == ctx.accounts.woopool_quote.key() {
