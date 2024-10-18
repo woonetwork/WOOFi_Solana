@@ -31,7 +31,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-use crate::{constants::*, errors::ErrorCode};
+use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
 
 #[account]
