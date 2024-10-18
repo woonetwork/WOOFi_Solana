@@ -91,6 +91,14 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     let wooracle_to = &ctx.accounts.wooracle_to;
     let woopool_to = &ctx.accounts.woopool_to;
 
+    if from_amount <= woopool_from.min_swap_amount {
+        return 
+            Ok(QueryResult {
+                to_amount: 0,
+                swap_fee: 0,
+            });
+    }
+
     require!(
         (token_vault_from.amount as u128) + from_amount <= woopool_from.cap_bal,
         ErrorCode::BalanceCapExceeds
