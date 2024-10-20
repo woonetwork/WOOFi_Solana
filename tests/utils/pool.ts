@@ -27,8 +27,12 @@ export class PoolUtils {
   public quoteFeedAccount: anchor.web3.PublicKey;
 
   public confirmOptionsRetryTres: ConfirmOptions = { maxRetries: 3, commitment: "confirmed" };
+  public tenpow28 = new BN(10).pow(new BN(28));
   public tenpow18 = new BN(10).pow(new BN(18));
   public tenpow16 = new BN(10).pow(new BN(16));
+  public tenpow15 = new BN(10).pow(new BN(15));
+  public tenpow12 = new BN(10).pow(new BN(12));
+  public tenpow14 = new BN(10).pow(new BN(14));
 
   public initEnv = () => {
     this.provider = anchor.AnchorProvider.env();
@@ -273,7 +277,7 @@ export class PoolUtils {
     // init set Pool Max Notional Swap
     await this.program
     .methods
-    .setPoolMaxNotionalSwap(new BN(1000*LAMPORTS_PER_SOL))
+    .setPoolMaxNotionalSwap(new BN(100*LAMPORTS_PER_SOL))
     .accounts({
       wooconfig,
       woopool: woopool,
@@ -285,7 +289,7 @@ export class PoolUtils {
     // init set Pool Max Notional Swap
     await this.program
     .methods
-    .setPoolMaxGamma(new BN(1000))
+    .setPoolMaxGamma(this.tenpow28) // same as ARB on arbitrum
     .accounts({
       wooconfig,
       woopool: woopool,
@@ -300,7 +304,7 @@ export class PoolUtils {
     console.log('tokenMint:' + woopoolData.tokenMint);
     console.log('tokenVault:' + woopoolData.tokenVault);
     console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
-    console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
+    console.log('setMaxGamma', woopoolData.maxGamma);
 
     return woopoolData;
   }
@@ -335,7 +339,7 @@ export class PoolUtils {
     console.log('tokenMint:', woopoolData.tokenMint);
     console.log('tokenVault:', woopoolData.tokenVault);
     console.log('setPoolMaxNotionalSwap:', woopoolData.maxNotionalSwap.toNumber());
-    console.log('setMaxGamma', woopoolData.maxGamma.toNumber());
+    console.log('setMaxGamma', woopoolData.maxGamma);
 
     const poolVaultBalance = await this.provider.connection.getTokenAccountBalance(woopoolData.tokenVault);
     console.log("Pool vault balance amount:" + poolVaultBalance.value.amount);
