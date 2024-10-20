@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { PoolUtils } from "./utils/pool";
 import { confirmOptionsRetryTres } from "./utils/test-consts";
 
-describe("woofi", async () => {
+describe("woofi_authority", () => {
   const poolUtils = new PoolUtils();
   poolUtils.initEnv();
 
@@ -16,29 +16,25 @@ describe("woofi", async () => {
   const usdcFeedAccount = poolUtils.usdcFeedAccount;
   const quoteFeedAccount = usdcFeedAccount;
 
-  const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
-    [Buffer.from('wooconfig')],
-    program.programId
-  );
-
   const adminPublicKey = new anchor.web3.PublicKey("EW4E3yBnijzDjoyBpDkgQkJ48Yd6cmponxRsuUT2Cinn");
+  const adminPublicKey2 = new anchor.web3.PublicKey("GG4ZxC4a5fukCSxbFUCHWyYDHybmhMXrs5wTf9BDAnRb");
 
   const oracleKeys: anchor.web3.Keypair[] = [];
-  for (let i = 0; i < 4; ++i) {
+  for (let i = 0; i < 3; ++i) {
     const key = anchor.web3.Keypair.generate();
     console.log('Oracle Keypair:' + i + ':' + key.publicKey);
     oracleKeys.push(key);
   }
-  const wooAdmins: anchor.web3.PublicKey[] = [adminPublicKey];
+  const wooAdmins: anchor.web3.PublicKey[] = [adminPublicKey, adminPublicKey2];
   oracleKeys.every(key => wooAdmins.push(key.publicKey))
 
   const poolKeys: anchor.web3.Keypair[] = [];
-  for (let i = 0; i < 4; ++i) {
+  for (let i = 0; i < 3; ++i) {
     const key = anchor.web3.Keypair.generate();
     console.log('WooPool Keypair:' + i + ':' + key.publicKey);
     poolKeys.push(key);
   }
-  const poolAdmins: anchor.web3.PublicKey[] = [adminPublicKey];
+  const poolAdmins: anchor.web3.PublicKey[] = [adminPublicKey, adminPublicKey2];
   poolKeys.every(key => poolAdmins.push(key.publicKey))
 
   const guardianKeys: anchor.web3.Keypair[] = [];
@@ -62,8 +58,13 @@ describe("woofi", async () => {
     feeKeys.push(key);
   }
 
-  describe("#set_woo_admin()", async () => {
-    it("set woo oracle admin", async () => {
+  describe("#set_woo_admin()", () => {
+    it("set woo oracle admin", async () => {    
+        const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from('wooconfig')],
+            program.programId
+          );
+        
         console.log('Set wooracle admin authority to:', adminPublicKey);
         await program
             .methods
@@ -114,8 +115,13 @@ describe("woofi", async () => {
     });
   });
 
-  describe("#set_woopool_admin_using_admin_authority()", async () => {
+  describe("#set_woopool_admin_using_admin_authority()", () => {
     it("set woopool admin", async () => {
+        const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+            [Buffer.from('wooconfig')],
+            program.programId
+          );
+    
         //console.log('Set wooracle admin authority to:', adminPublicKey);
         await program
             .methods
