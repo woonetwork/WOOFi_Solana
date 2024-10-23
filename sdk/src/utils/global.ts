@@ -4,7 +4,7 @@ import 'dotenv/config';
 export type Cluster = 'localnet' | 'devnet' | 'mainnet';
 
 export function getCluster(_cluster?: string): Cluster {
-  let cluster = _cluster ? _cluster : process.env.ANCHOR_PROVIDER_URL;
+  let cluster = _cluster ? _cluster : process.env.ANCHOR_PROVIDER_URL!;
   if (cluster.toLowerCase().indexOf("devnet") >= 0) {
       cluster = 'devnet'
   } else if (cluster.toLowerCase().indexOf("mainnet") >= 0) {
