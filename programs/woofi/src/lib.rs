@@ -211,4 +211,16 @@ pub mod woofi {
     pub fn incase_token_got_stuck(ctx: Context<IncaseTokenGotStuck>, amount: u128) -> Result<()> {
         instructions::incase_token_got_stuck_handler(ctx, amount)
     }
+
+    pub fn set_wooconfig_authority(ctx: Context<SetOnlyOwnerAuthorityConfig>, new_authority: Pubkey) -> Result<()> {
+        instructions::set_wooconfig_authority(ctx, new_authority)
+    }
+
+    pub fn set_wooracle_authority(ctx: Context<SetOnlyOwnerAuthorityWooracle>, new_authority: Pubkey) -> Result<()> {
+        instructions::set_wooracle_authority(ctx, new_authority)
+    }
+
+    pub fn set_woopool_authority(ctx: Context<SetOnlyOwnerAuthorityPool>, new_authority: Pubkey) -> Result<()> {
+        instructions::set_woopool_authority(ctx, new_authority)
+    }
 }

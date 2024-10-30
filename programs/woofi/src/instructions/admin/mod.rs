@@ -9,6 +9,7 @@ pub mod set_only_admin_config;
 pub mod set_only_owner_config;
 pub mod set_pool_state;
 pub mod set_woo_state;
+pub mod set_only_owner_authority;
 
 pub use claim_fee::*;
 pub use create_config::*;
@@ -21,3 +22,4 @@ pub use set_only_admin_config::*;
 pub use set_only_owner_config::*;
 pub use set_pool_state::*;
 pub use set_woo_state::*;
+pub use set_only_owner_authority::*;
