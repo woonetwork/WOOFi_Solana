@@ -41,7 +41,7 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, instructions::*, state::*};
 
-declare_id!("CiN1PGA8248UiSiF2zGFGftASxjfZU6h9rJnY4NSHgce");
+declare_id!("HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH");
 
 #[program]
 pub mod woofi {
@@ -212,7 +212,7 @@ pub mod woofi {
         instructions::incase_token_got_stuck_handler(ctx, amount)
     }
 
-    pub fn set_wooconfig_new_authority(ctx: Context<SetOnlyOnwerNewAuthority>) -> Result<()> {
+    pub fn set_wooconfig_new_authority(ctx: Context<SetNewAuthority>) -> Result<()> {
         instructions::set_wooconfig_new_authority_handler(ctx)
     }
 

@@ -6,7 +6,7 @@ use crate::Wooracle;
 use crate::WooPool;
 
 #[derive(Accounts)]
-pub struct SetOnlyOnwerNewAuthority<'info> {
+pub struct SetNewAuthority<'info> {
     pub authority: Signer<'info>,
 
     #[account(mut, has_one = authority @ ErrorCode::InvalidAuthority)]
@@ -52,7 +52,7 @@ pub struct ClaimAuthorityWoopool<'info> {
     pub woopool: Account<'info, WooPool>,
 }
 
-pub fn set_wooconfig_new_authority_handler(ctx: Context<SetOnlyOnwerNewAuthority>) -> Result<()> {
+pub fn set_wooconfig_new_authority_handler(ctx: Context<SetNewAuthority>) -> Result<()> {
     ctx.accounts.wooconfig.new_authority = ctx.accounts.new_authority.key();
 
     Ok(())
