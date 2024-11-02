@@ -212,15 +212,19 @@ pub mod woofi {
         instructions::incase_token_got_stuck_handler(ctx, amount)
     }
 
-    pub fn set_wooconfig_authority(ctx: Context<SetOnlyOwnerAuthorityConfig>, new_authority: Pubkey) -> Result<()> {
-        instructions::set_wooconfig_authority(ctx, new_authority)
+    pub fn set_wooconfig_new_authority(ctx: Context<SetOnlyOnwerNewAuthority>) -> Result<()> {
+        instructions::set_wooconfig_new_authority_handler(ctx)
     }
 
-    pub fn set_wooracle_authority(ctx: Context<SetOnlyOwnerAuthorityWooracle>, new_authority: Pubkey) -> Result<()> {
-        instructions::set_wooracle_authority(ctx, new_authority)
+    pub fn claim_wooconfig_authority(ctx: Context<ClaimAuthorityConfig>) -> Result<()> {
+        instructions::claim_wooconfig_authority_handler(ctx)
     }
 
-    pub fn set_woopool_authority(ctx: Context<SetOnlyOwnerAuthorityPool>, new_authority: Pubkey) -> Result<()> {
-        instructions::set_woopool_authority(ctx, new_authority)
+    pub fn claim_wooracle_authority(ctx: Context<ClaimAuthorityWooracle>) -> Result<()> {
+        instructions::claim_wooracle_authority_handler(ctx)
+    }
+
+    pub fn claim_woopool_authority(ctx: Context<ClaimAuthorityWoopool>) -> Result<()> {
+        instructions::claim_woopool_authority_handler(ctx)
     }
 }

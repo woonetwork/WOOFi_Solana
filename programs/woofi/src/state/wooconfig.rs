@@ -28,6 +28,8 @@ pub struct WooConfig {
 
     #[max_len(PAUSE_AUTH_MAX_LEN)]
     pub pause_authority: Vec<Pubkey>,
+
+    pub new_authority: Pubkey,
 }
 
 impl WooConfig {
@@ -83,6 +85,12 @@ impl WooConfig {
             ErrorCode::TooManyAuthorities
         );
         self.pause_authority = pause_authority;
+
+        Ok(())
+    }
+
+    pub fn set_new_authority(&mut self, new_authority: Pubkey) -> Result<()> {
+        self.new_authority = new_authority;
 
         Ok(())
     }
