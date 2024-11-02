@@ -636,6 +636,32 @@
       ]
     },
     {
+      "name": "setPoolMinSwapAmount",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "minSwapAmount",
+          "type": "u128"
+        }
+      ]
+    },
+    {
       "name": "tryQuery",
       "accounts": [
         {
@@ -1178,6 +1204,10 @@
             "type": "u128"
           },
           {
+            "name": "minSwapAmount",
+            "type": "u128"
+          },
+          {
             "name": "unclaimedFee",
             "type": "u128"
           },
@@ -1348,6 +1378,36 @@
     }
   ],
   "events": [
+    {
+      "name": "PauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "UnPauseEvent",
+      "fields": [
+        {
+          "name": "wooconfig",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
     {
       "name": "DepositEvent",
       "fields": [
@@ -1548,166 +1608,126 @@
     },
     {
       "code": 6002,
-      "name": "NumberDownCastError",
-      "msg": "Unable to down cast number"
-    },
-    {
-      "code": 6003,
       "name": "FeeRateMaxExceeded",
       "msg": "Exceeded max fee rate"
     },
     {
-      "code": 6004,
-      "name": "CapBalanceSmallerThanTargetBalance",
-      "msg": "Cap balance smaller than 2 times target balance"
-    },
-    {
-      "code": 6005,
-      "name": "IntegerOverflow",
-      "msg": "Integer overflow"
-    },
-    {
-      "code": 6006,
-      "name": "ConversionFailure",
-      "msg": "Conversion failure"
-    },
-    {
-      "code": 6007,
+      "code": 6003,
       "name": "MathOverflow",
       "msg": "Mathematical operation with overflow"
     },
     {
-      "code": 6008,
+      "code": 6004,
       "name": "MulDivOverflow",
       "msg": "Muldiv overflow"
     },
     {
-      "code": 6009,
-      "name": "MulDivInvalidInput",
-      "msg": "Invalid div_u256 input"
-    },
-    {
-      "code": 6010,
-      "name": "MultiplicationOverflow",
-      "msg": "Multiplication overflow"
-    },
-    {
-      "code": 6011,
+      "code": 6005,
       "name": "ProtocolFeeMaxExceeded",
       "msg": "Exceeded max protocol fee"
     },
     {
-      "code": 6012,
+      "code": 6006,
       "name": "ProtocolFeeNotEnough",
       "msg": "Protocol fee not enough"
     },
     {
-      "code": 6013,
+      "code": 6007,
       "name": "RebateFeeMaxExceeded",
       "msg": "Exceeded max rebate fee"
     },
     {
-      "code": 6014,
+      "code": 6008,
       "name": "RebateFeeNotEnough",
       "msg": "Rebate fee not enough"
     },
     {
-      "code": 6015,
+      "code": 6009,
       "name": "ReserveMaxExceeded",
       "msg": "Exceeded max reserve"
     },
     {
-      "code": 6016,
+      "code": 6010,
       "name": "ReserveNotEnough",
       "msg": "Reserve not enough"
     },
     {
-      "code": 6017,
+      "code": 6011,
       "name": "ReserveLessThanFee",
       "msg": "Reserve less than fee"
     },
     {
-      "code": 6018,
+      "code": 6012,
       "name": "TooManyAuthorities",
       "msg": "Too Many Authorities"
     },
     {
-      "code": 6019,
+      "code": 6013,
       "name": "WooOracleBoundLimit",
       "msg": "Woo oracle bound exceed limit"
     },
     {
-      "code": 6020,
+      "code": 6014,
       "name": "WooOracleNotFeasible",
       "msg": "Woo oracle is not feasible"
     },
     {
-      "code": 6021,
+      "code": 6015,
       "name": "WooOraclePriceNotValid",
       "msg": "Woo oracle price is not valid"
     },
     {
-      "code": 6022,
+      "code": 6016,
       "name": "WooOraclePriceRangeMin",
       "msg": "Woo oracle price below range MIN"
     },
     {
-      "code": 6023,
+      "code": 6017,
       "name": "WooOraclePriceRangeMax",
       "msg": "Woo oracle price exceed range MAX"
     },
     {
-      "code": 6024,
+      "code": 6018,
       "name": "WooOracleSpreadExceed",
       "msg": "Woo oracle spread exceed 1E18"
     },
     {
-      "code": 6025,
+      "code": 6019,
       "name": "WooPoolExceedMaxNotionalValue",
       "msg": "Woo pp exceed max notional value"
     },
     {
-      "code": 6026,
+      "code": 6020,
       "name": "WooPoolExceedMaxGamma",
       "msg": "Woo pp exceed max gamma"
     },
     {
-      "code": 6027,
+      "code": 6021,
       "name": "NotEnoughBalance",
       "msg": "Src Balance < LP Deposit Amount."
     },
     {
-      "code": 6028,
-      "name": "NoPoolMintOutput",
-      "msg": "Pool Mint Amount < 0 on LP Deposit"
-    },
-    {
-      "code": 6029,
-      "name": "BurnTooMuch",
-      "msg": "Trying to burn too much"
-    },
-    {
-      "code": 6030,
+      "code": 6022,
       "name": "NotEnoughOut",
       "msg": "Not enough out"
     },
     {
-      "code": 6031,
+      "code": 6023,
       "name": "AmountOutBelowMinimum",
       "msg": "Amount out below minimum threshold"
     },
     {
-      "code": 6032,
+      "code": 6024,
       "name": "BalanceCapExceeds",
       "msg": "Amount exceeds max balance cap"
     },
     {
-      "code": 6033,
+      "code": 6025,
       "name": "SwapPoolInvalid",
       "msg": "Swap pool invalid"
     }
   ],
   "metadata": {
-    "address": "B5iGPpZyhhJrmidqrDLSrUYXBKwXTTm3WatKMjnrneaA"
+    "address": "CiN1PGA8248UiSiF2zGFGftASxjfZU6h9rJnY4NSHgce"
   }
 }

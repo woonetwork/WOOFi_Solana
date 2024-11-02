@@ -10,13 +10,15 @@ import Decimal from "decimal.js";
 import moment from "moment";
 import * as global from "./global";
 import { runQuery } from "./utils/pyth";
+import { PoolUtils } from "./utils/pool";
 
 describe("woofi", () => {
   // Configure the client to use the local cluster.
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
+  const poolUtils = new PoolUtils();
+  poolUtils.initEnv();
 
-  const program = anchor.workspace.Woofi as Program<Woofi>;
+  const provider = poolUtils.provider;
+  const program = poolUtils.program;
 
   const solTokenMint = new anchor.web3.PublicKey("So11111111111111111111111111111111111111112");
   const usdcTokenMint = new anchor.web3.PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
@@ -116,6 +118,8 @@ describe("woofi", () => {
       } catch (e) {
         const error = e as Error;
         if (error.message.indexOf("Account does not exist") >= 0) {
+            await poolUtils.getLatestBlockHash();
+
             const tx = await program
               .methods
               .createConfig()
@@ -166,6 +170,8 @@ describe("woofi", () => {
       } catch (e) {
         const error = e as Error;
         if (error.message.indexOf("Account does not exist") >= 0) {
+          await poolUtils.getLatestBlockHash();
+
           // TODO Prince: need notice here
           // set maximum age to larger seconds due to pyth oracled push in 20mins in Dev env.
           console.log('try create')
@@ -241,6 +247,8 @@ describe("woofi", () => {
 
       const setStaleDuration = new BN(1200);
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .setStaleDuration(setStaleDuration)
@@ -267,6 +275,8 @@ describe("woofi", () => {
       const setPrice = traderSetPrice;
       const setCoeff = new BN(100);
       const setSpread = new BN(200);
+
+      await poolUtils.getLatestBlockHash();
 
       await program
         .methods
@@ -301,6 +311,8 @@ describe("woofi", () => {
       const setPrice = traderSetPrice;
       const setRangeMax = setPrice.sub(new BN(100));
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .setWooRange(rangeMin, setRangeMax)
@@ -322,6 +334,8 @@ describe("woofi", () => {
       assert.ok(
         result.rangeMax.eq(setRangeMax), "wooracle rangeMax should be the same with setted"
       );
+
+      await poolUtils.getLatestBlockHash();
 
       try {
         await program
@@ -358,6 +372,8 @@ describe("woofi", () => {
       const setPrice = traderSetPrice;
       const setRangeMin = setPrice.add(new BN(100));
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .setWooRange(setRangeMin, rangeMax)
@@ -379,6 +395,8 @@ describe("woofi", () => {
       assert.ok(
         result.rangeMax.eq(rangeMax), "wooracle rangeMax should be the same with setted"
       );
+
+      await poolUtils.getLatestBlockHash();
 
       try {
         await program
@@ -413,6 +431,8 @@ describe("woofi", () => {
   describe("#set_woo_range()", async () => {
     it("set woo oracle range", async () => {
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .setWooRange(rangeMin, rangeMax)
@@ -439,6 +459,8 @@ describe("woofi", () => {
 
   describe("#get_price()", async () => {
     it("get oracle price result", async () => {
+
+      await poolUtils.getLatestBlockHash();
 
       const setPrice = traderSetPrice;
       const setCoeff = new BN(100);
@@ -492,6 +514,8 @@ describe("woofi", () => {
   describe("#set_woo_bound()", async () => {
     it("set woo oracle bound", async () => {
 
+      await poolUtils.getLatestBlockHash();
+
       // 1e16 means 1%, 2.5%
       const bound = new BN(25).mul(tenpow15);
       await program
@@ -533,6 +557,8 @@ describe("woofi", () => {
       // TODO Prince: Failed here, double check later
       const setPrice = upper_bound;
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .setWooPrice(setPrice)
@@ -571,6 +597,8 @@ describe("woofi", () => {
       // TODO Prince: Failed here, double check later
       const setPrice = upper_bound;
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .setWooPrice(setPrice)
@@ -607,6 +635,8 @@ describe("woofi", () => {
       console.log(`upper_bound: ${upper_bound}`);
 
       const setPrice = low_bound;
+
+      await poolUtils.getLatestBlockHash();
 
       await program
         .methods
@@ -646,6 +676,8 @@ describe("woofi", () => {
 
       const setPrice = low_bound;
 
+      await poolUtils.getLatestBlockHash();
+
       await program
         .methods
         .setWooPrice(setPrice)
@@ -670,6 +702,8 @@ describe("woofi", () => {
     it("set wooracle price back to pyth price", async () => {
 
       const setPrice = pythoracle_price;
+
+      await poolUtils.getLatestBlockHash();
 
       await program
         .methods
