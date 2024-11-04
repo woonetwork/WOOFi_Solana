@@ -62,6 +62,9 @@ pub enum ErrorCode {
     BalanceCapExceeds, //0x1788
     #[msg("Swap pool invalid")]
     SwapPoolInvalid, //0x1789
+
+    #[msg("invalid authority")]
+    InvalidAuthority,
 }
 
 impl From<TryFromIntError> for ErrorCode {

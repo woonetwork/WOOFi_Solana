@@ -1112,6 +1112,85 @@
           "type": "u128"
         }
       ]
+    },
+    {
+      "name": "setWooconfigNewAuthority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWooconfigAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWooracleAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracle",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWoopoolAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -1157,6 +1236,10 @@
             "type": {
               "vec": "publicKey"
             }
+          },
+          {
+            "name": "newAuthority",
+            "type": "publicKey"
           }
         ]
       }
@@ -1725,9 +1808,14 @@
       "code": 6025,
       "name": "SwapPoolInvalid",
       "msg": "Swap pool invalid"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidAuthority",
+      "msg": "invalid authority"
     }
   ],
   "metadata": {
-    "address": "CiN1PGA8248UiSiF2zGFGftASxjfZU6h9rJnY4NSHgce"
+    "address": "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
   }
 }

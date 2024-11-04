@@ -1112,6 +1112,85 @@ export type Woofi = {
           "type": "u128"
         }
       ]
+    },
+    {
+      "name": "setWooconfigNewAuthority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWooconfigAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWooracleAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracle",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWoopoolAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -1157,6 +1236,10 @@ export type Woofi = {
             "type": {
               "vec": "publicKey"
             }
+          },
+          {
+            "name": "newAuthority",
+            "type": "publicKey"
           }
         ]
       }
@@ -1725,6 +1808,11 @@ export type Woofi = {
       "code": 6025,
       "name": "SwapPoolInvalid",
       "msg": "Swap pool invalid"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidAuthority",
+      "msg": "invalid authority"
     }
   ]
 };
@@ -2843,6 +2931,85 @@ export const IDL: Woofi = {
           "type": "u128"
         }
       ]
+    },
+    {
+      "name": "setWooconfigNewAuthority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWooconfigAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWooracleAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracle",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimWoopoolAuthority",
+      "accounts": [
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopool",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -2888,6 +3055,10 @@ export const IDL: Woofi = {
             "type": {
               "vec": "publicKey"
             }
+          },
+          {
+            "name": "newAuthority",
+            "type": "publicKey"
           }
         ]
       }
@@ -3456,6 +3627,11 @@ export const IDL: Woofi = {
       "code": 6025,
       "name": "SwapPoolInvalid",
       "msg": "Swap pool invalid"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidAuthority",
+      "msg": "invalid authority"
     }
   ]
 };

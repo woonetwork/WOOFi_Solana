@@ -41,7 +41,7 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, instructions::*, state::*};
 
-declare_id!("CiN1PGA8248UiSiF2zGFGftASxjfZU6h9rJnY4NSHgce");
+declare_id!("HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH");
 
 #[program]
 pub mod woofi {
@@ -210,5 +210,21 @@ pub mod woofi {
 
     pub fn incase_token_got_stuck(ctx: Context<IncaseTokenGotStuck>, amount: u128) -> Result<()> {
         instructions::incase_token_got_stuck_handler(ctx, amount)
+    }
+
+    pub fn set_wooconfig_new_authority(ctx: Context<SetNewAuthority>) -> Result<()> {
+        instructions::set_wooconfig_new_authority_handler(ctx)
+    }
+
+    pub fn claim_wooconfig_authority(ctx: Context<ClaimAuthorityConfig>) -> Result<()> {
+        instructions::claim_wooconfig_authority_handler(ctx)
+    }
+
+    pub fn claim_wooracle_authority(ctx: Context<ClaimAuthorityWooracle>) -> Result<()> {
+        instructions::claim_wooracle_authority_handler(ctx)
+    }
+
+    pub fn claim_woopool_authority(ctx: Context<ClaimAuthorityWoopool>) -> Result<()> {
+        instructions::claim_woopool_authority_handler(ctx)
     }
 }
