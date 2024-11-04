@@ -46,10 +46,10 @@ pub struct Withdraw<'info> {
     pub authority: Signer<'info>,
 
     #[account(mut,
-        constraint = token_owner_account.owner == authority.key(),
-        constraint = token_owner_account.mint == token_mint.key()
+        constraint = to_token_account.owner == authority.key(),
+        constraint = to_token_account.mint == token_mint.key()
     )]
-    token_owner_account: Box<Account<'info, TokenAccount>>,
+    to_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(mut,
         has_one = wooconfig,
@@ -96,7 +96,7 @@ pub fn deposit(ctx: Context<Deposit>, amount: u128) -> Result<()> {
 }
 
 pub fn withdraw(ctx: Context<Withdraw>, amount: u128) -> Result<()> {
-    let token_owner_account = &ctx.accounts.token_owner_account;
+    let to_token_account = &ctx.accounts.to_token_account;
     let token_vault = &ctx.accounts.token_vault;
     let woopool = &mut ctx.accounts.woopool;
 
@@ -108,7 +108,7 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u128) -> Result<()> {
     transfer_from_vault_to_owner(
         woopool,
         token_vault,
-        token_owner_account,
+        to_token_account,
         &ctx.accounts.token_program,
         amount as u64,
     )?;
