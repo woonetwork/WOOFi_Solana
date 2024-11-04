@@ -192,11 +192,11 @@ pub mod woofi {
         instructions::swap::handler(ctx, from_amount, min_to_amount)
     }
 
-    pub fn deposit(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
+    pub fn deposit(ctx: Context<Deposit>, amount: u128) -> Result<()> {
         instructions::deposit_withdraw::deposit(ctx, amount)
     }
 
-    pub fn withdraw(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u128) -> Result<()> {
         instructions::deposit_withdraw::withdraw(ctx, amount)
     }
 
