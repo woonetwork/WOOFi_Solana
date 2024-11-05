@@ -14,16 +14,21 @@ rebate_manager = "Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B"
 woofi = "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
 rebate_manager = "Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B"
 
+[programs.mainnet]
+woofi = "woocYbcZkJ1ryopvtNP7Lr367wbW4WrMgxmzroe6VWU"
+rebate_manager = "Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "mainnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 test_sdk = "yarn run ts-mocha -p sdk/tests/tsconfig.json -t 1000000 sdk/tests/**/*.test.ts"
+spread = "npx tsx sdk/src/spread.ts"
 
 [test.validator]
 url = "https://api.devnet.solana.com"
