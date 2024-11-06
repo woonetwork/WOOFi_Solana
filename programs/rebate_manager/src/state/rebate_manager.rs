@@ -44,7 +44,7 @@ pub struct RebateManager {
 
     pub rebate_manager_bump: [u8; 1], // 1
 
-    #[max_len(ADMIN_AUTH_MAX_LEN)]
+    #[max_len(5)]
     pub admin_authority: Vec<Pubkey>,
 
     pub quote_token_mint: Pubkey, // 32

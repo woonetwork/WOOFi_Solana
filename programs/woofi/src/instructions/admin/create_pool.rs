@@ -57,11 +57,11 @@ pub fn handler(ctx: Context<CreatePool>) -> Result<()> {
     let base_decimals = ctx.accounts.token_mint.decimals;
 
     let woopool = &mut ctx.accounts.woopool;
-    let bump = ctx.bumps.woopool;
+    let bump = ctx.bumps.get("woopool").unwrap();
     let wooracle = ctx.accounts.wooracle.key();
 
     woopool.initialize(
-        bump,
+        *bump,
         wooconfig,
         authority,
         wooracle,
