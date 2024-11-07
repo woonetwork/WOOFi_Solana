@@ -30,19 +30,48 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-use solana_sdk::{instruction::AccountMeta, pubkey::Pubkey};
+use anyhow::Result;
+use constants::ONE_E5_U128;
+use spl_token::state::Account as TokenAccount;
+use state::{woopool, WooPool, Wooracle};
+use util::{checked_mul_div_round_up, decimals, get_price, swap_math, Decimals, GetStateResult};
+use std::{cmp::max, collections::HashMap, convert::TryInto};
+use solana_sdk::{program_pack::Pack, pubkey, pubkey::Pubkey};
 
 use jupiter_amm_interface::{
-    try_get_account_data, AccountMap, Amm, AmmContext, KeyedAccount, Quote, QuoteParams, Swap,
-    SwapAndAccountMetas, SwapParams,
+    try_get_account_data, AccountMap, Amm, AmmContext, KeyedAccount, Quote, QuoteParams, Swap, SwapAndAccountMetas, SwapMode, SwapParams
 };
+
+use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
+
+mod state;
+mod util;
+mod constants;
 
 pub struct WoofiSwap {
     key: Pubkey,
     label: String,
-    reserve_mints: [Pubkey; 2],
-    reserves: [u128; 2],
+    quote_mint: Pubkey,    
+    token_a_mint: Pubkey,
+    token_b_mint: Pubkey,
     program_id: Pubkey,
+
+    wooconfig: Pubkey,
+    token_a_wooracle: Pubkey,
+    token_a_woopool: Pubkey,
+    token_a_price_update: Pubkey,
+    token_b_wooracle: Pubkey,
+    token_b_woopool: Pubkey,
+    token_b_price_update: Pubkey,
+    quote_price_update: Pubkey,
+
+    fee_rate: u16,
+    decimals_a: Decimals,
+    state_a: GetStateResult,
+    woopool_a: WooPool,
+    decimals_b: Decimals,
+    state_b: GetStateResult,
+    woopool_b: WooPool
 }
 
 impl WoofiSwap {
@@ -71,19 +100,125 @@ impl Amm for WoofiSwap {
     }
     
     fn get_reserve_mints(&self) -> Vec<Pubkey> {
-        // vec![self.base_mint, self.quote_mint]
+        vec![self.token_a_mint, self.token_b_mint]
     }
     
     fn get_accounts_to_update(&self) -> Vec<Pubkey> {
-        todo!()
+        vec![self.token_a_wooracle, self.token_a_woopool, self.token_a_price_update,
+             self.token_b_wooracle, self.token_b_woopool, self.token_b_price_update
+            ]
     }
     
     fn update(&mut self, account_map: &AccountMap) -> Result<()> {
-        todo!()
+        let token_a_wooracle_data = try_get_account_data(account_map, &self.token_a_wooracle)?;
+        let token_a_wooracle = Wooracle::unpack(token_a_wooracle_data)?;
+
+        let token_a_woopool_data = try_get_account_data(account_map, &self.token_a_woopool)?;
+        let token_a_woopool = WooPool::unpack(token_a_woopool_data)?;
+
+        let token_a_price_update_data = try_get_account_data(account_map, &self.token_a_price_update)?;
+        let token_a_price_update = PriceUpdateV2::unpack(token_a_price_update_data)?;
+
+        let token_b_wooracle_data = try_get_account_data(account_map, &self.token_b_wooracle)?;
+        let token_b_wooracle = Wooracle::unpack(token_b_wooracle_data)?;
+
+        let token_b_woopool_data = try_get_account_data(account_map, &self.token_b_woopool)?;
+        let token_b_woopool = WooPool::unpack(token_b_woopool_data)?;
+    
+        let token_b_price_update_data = try_get_account_data(account_map, &self.token_b_price_update)?;
+        let token_b_price_update = PriceUpdateV2::unpack(token_b_price_update_data)?;
+
+        let quote_price_update_data = try_get_account_data(account_map, &self.quote_price_update)?;
+        let quote_price_update = PriceUpdateV2::unpack(quote_price_update_data)?;
+
+        let fee_rate: u16 = if self.token_a_mint == self.quote_mint {
+            token_b_woopool.fee_rate
+        } else if self.token_b_mint == self.quote_mint {
+            token_a_woopool.fee_rate
+        } else {
+            max(token_a_woopool.fee_rate, token_b_woopool.fee_rate)
+        };
+    
+        let decimals_a = Decimals::new(
+            token_a_wooracle.price_decimals as u32,
+            token_a_wooracle.quote_decimals as u32,
+            token_a_wooracle.base_decimals as u32,
+        );
+        let state_a =
+            get_price::get_state_impl(token_a_wooracle, token_a_price_update, quote_price_update)?;
+
+        let decimals_b = Decimals::new(
+            token_b_wooracle.price_decimals as u32,
+            token_b_wooracle.quote_decimals as u32,
+            token_b_wooracle.base_decimals as u32,
+        );
+        let state_b =
+            get_price::get_state_impl(token_b_wooracle, token_b_price_update, quote_price_update)?;    
+
+        self.fee_rate = fee_rate;
+        self.decimals_a = decimals_a;
+        self.state_a = state_a;
+        self.woopool_a = token_a_woopool;
+        self.decimals_b = decimals_b;
+        self.state_b = state_b;
+        self.woopool_b = token_b_woopool;
+
+        Ok(())
     }
     
     fn quote(&self, quote_params: &QuoteParams) -> Result<Quote> {
-        todo!()
+        if quote_params.swap_mode == SwapMode::ExactIn {
+            let decimals_a = &self.decimals_a;
+            let state_a = &self.state_a;
+            let woopool_a = &self.woopool_a;
+            let decimals_b = &self.decimals_b;
+            let state_b = &self.state_b;
+            let woopool_b = &self.woopool_b;
+            if self.token_b_mint == quote_params.input_mint {
+                decimals_a = &self.decimals_b;
+                decimals_b = &self.decimals_a;
+                state_a = &self.state_b;
+                state_b = &self.state_a;
+                woopool_a = &self.woopool_b;
+                woopool_b = &self.woopool_a;
+            }
+
+            let mut quote_amount = quote_params.amount;
+            if quote_params.input_mint != self.quote_mint {
+        
+                let (_quote_amount, _) = swap_math::calc_quote_amount_sell_base(
+                    quote_params.amount,
+                    woopool_a,
+                    decimals_a,
+                    state_a,
+                )?;
+        
+                quote_amount = _quote_amount;
+            }
+        
+            let swap_fee = checked_mul_div_round_up(quote_amount, self.fee_rate as u128, ONE_E5_U128)?;
+            quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+        
+            let mut to_amount = quote_amount;
+            if quote_params.output_mint != self.quote_mint {
+                let (_to_amount, _) = swap_math::calc_base_amount_sell_quote(
+                    quote_amount,
+                    woopool_b,
+                    decimals_b,
+                    state_b,
+                )?;
+                to_amount = _to_amount;
+            }
+        
+            Ok(Quote {
+                fee_pct: self.fee_rate,
+                in_amount: quote_params.input_amount.try_into()?,
+                out_amount: to_amount,
+                fee_amount: swap_fee,
+                fee_mint: self.quote_mint,
+                ..Quote::default()
+            })
+        }
     }
     
     fn get_swap_and_account_metas(&self, swap_params: &SwapParams) -> Result<SwapAndAccountMetas> {
@@ -94,128 +229,4 @@ impl Amm for WoofiSwap {
         Box::new(self.clone())
     }
     
-    // fn get_accounts_to_update(&self) -> Vec<Pubkey> {
-    //     vec![self.market_key]
-    // }
-
-    // fn update(&mut self, accounts_map: &HashMap<Pubkey, PartialAccount>) -> Result<()> {
-    //     let market_account = accounts_map.get(&self.market_key).unwrap();
-    //     let (header_bytes, bytes) = &market_account.data.split_at(size_of::<MarketHeader>());
-    //     let header = bytemuck::try_from_bytes::<MarketHeader>(header_bytes).unwrap();
-    //     let market = load_with_dispatch(&header.market_size_params, bytes)?;
-    //     self.ladder = market.inner.get_ladder(u64::MAX);
-    //     Ok(())
-    // }
-
-    // fn quote(&self, quote_params: &QuoteParams) -> Result<Quote> {
-    //     let mut out_amount = 0;
-    //     if quote_params.input_mint == self.base_mint {
-    //         let mut base_lot_budget = quote_params.in_amount / self.base_atoms_per_base_lot;
-    //         for LadderOrder {
-    //             price_in_ticks,
-    //             size_in_base_lots,
-    //         } in self.ladder.bids.iter()
-    //         {
-    //             if base_lot_budget == 0 {
-    //                 break;
-    //             }
-    //             out_amount += self.base_lots_and_price_to_quote_atoms(
-    //                 *size_in_base_lots.min(&base_lot_budget),
-    //                 *price_in_ticks,
-    //             );
-    //             base_lot_budget = base_lot_budget.saturating_sub(*size_in_base_lots);
-    //         }
-    //     } else {
-    //         let mut quote_lot_budget = quote_params.in_amount / self.quote_atoms_per_quote_lot;
-    //         for LadderOrder {
-    //             price_in_ticks,
-    //             size_in_base_lots,
-    //         } in self.ladder.asks.iter()
-    //         {
-    //             if quote_lot_budget == 0 {
-    //                 break;
-    //             }
-    //             let book_amount_in_quote_lots =
-    //                 self.base_lots_and_price_to_quote_atoms(*size_in_base_lots, *price_in_ticks);
-
-    //             out_amount += size_in_base_lots.min(
-    //                 &((quote_lot_budget * self.num_base_lots_per_base_unit)
-    //                     / (self.tick_size_in_quote_atoms_per_base_unit * price_in_ticks)),
-    //             ) * self.base_atoms_per_base_lot;
-    //             quote_lot_budget = quote_lot_budget.saturating_sub(book_amount_in_quote_lots);
-    //         }
-    //     };
-
-    //     // Not 100% accurate, but it's a reasoanble enough approximation
-    //     Ok(Quote {
-    //         out_amount: (out_amount * (10000 - self.taker_fee_bps as u64)) / 10000,
-    //         ..Quote::default()
-    //     })
-    // }
-
-    // fn get_swap_leg_and_account_metas(
-    //     &self,
-    //     swap_params: &SwapParams,
-    // ) -> Result<SwapAndAccountMetas> {
-    //     let SwapParams {
-    //         destination_mint,
-    //         source_mint,
-    //         user_destination_token_account,
-    //         user_source_token_account,
-    //         user_transfer_authority,
-    //         ..
-    //     } = swap_params;
-
-    //     let log_authority = Pubkey::find_program_address(&["log".as_ref()], &self.program_id).0;
-
-    //     let (side, base_account, quote_account) = if source_mint == &self.base_mint {
-    //         if destination_mint != &self.quote_mint {
-    //             return Err(Error::msg("Invalid quote mint"));
-    //         }
-    //         (
-    //             Side::Ask,
-    //             user_source_token_account,
-    //             user_destination_token_account,
-    //         )
-    //     } else {
-    //         if destination_mint != &self.base_mint {
-    //             return Err(Error::msg("Invalid base mint"));
-    //         }
-    //         (
-    //             Side::Bid,
-    //             user_destination_token_account,
-    //             user_source_token_account,
-    //         )
-    //     };
-
-    //     let base_vault = Pubkey::find_program_address(
-    //         &[b"vault", self.market_key.as_ref(), self.base_mint.as_ref()],
-    //         &self.program_id,
-    //     )
-    //     .0;
-
-    //     let quote_vault = Pubkey::find_program_address(
-    //         &[b"vault", self.market_key.as_ref(), self.quote_mint.as_ref()],
-    //         &self.program_id,
-    //     )
-    //     .0;
-
-    //     let account_metas = vec![
-    //         AccountMeta::new(self.market_key, false),
-    //         AccountMeta::new(*user_transfer_authority, true),
-    //         AccountMeta::new_readonly(log_authority, false),
-    //         AccountMeta::new_readonly(self.program_id, false),
-    //         AccountMeta::new(*base_account, false),
-    //         AccountMeta::new(*quote_account, false),
-    //         AccountMeta::new(base_vault, false),
-    //         AccountMeta::new(quote_vault, false),
-    //         AccountMeta::new_readonly(spl_token::id(), false),
-    //     ];
-
-    //     Ok(SwapAndAccountMetas {
-    //         swap: Swap::Serum { side },
-    //         account_metas,
-    //     })
-    // }
-
 }
