@@ -52,10 +52,8 @@ pub fn calc_quote_amount_sell_base(
 
     let calc_a: u128 = checked_mul_div(base_amount, state.price_out, decimals.price_dec as u128)?;
     let calc_b: u128 = ONE_E18_U128
-        .checked_sub(gamma)
-        .unwrap()
-        .checked_sub(state.spread as u128)
-        .unwrap();
+        .checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
+        .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
     let calc_c = checked_mul_div(calc_a, calc_b, ONE_E18_U128)?;
     let quote_amount = checked_mul_div(
         calc_c,
@@ -65,7 +63,7 @@ pub fn calc_quote_amount_sell_base(
 
     // newPrice = oracle.price * (1 - k * oracle.price * baseAmount)
     let new_price: u128 = checked_mul_div(
-        ONE_E18_U128.checked_sub(gamma).unwrap(),
+        ONE_E18_U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?,
         state.price_out,
         ONE_E18_U128,
     )?;
@@ -102,18 +100,16 @@ pub fn calc_base_amount_sell_quote(
         .ok_or(ErrorCode::MathOverflow)?;
     let calc_b: u128 = checked_mul_div(calc_a, decimals.price_dec as u128, state.price_out)?;
     let calc_c: u128 = ONE_E18_U128
-        .checked_sub(gamma)
-        .unwrap()
-        .checked_sub(state.spread as u128)
-        .unwrap();
+        .checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?
+        .checked_sub(state.spread as u128).ok_or(ErrorCode::MathOverflow)?;
     let calc_d: u128 = checked_mul_div(calc_b, calc_c, ONE_E18_U128)?;
-    let base_amount = calc_d.checked_div(decimals.quote_dec as u128).unwrap();
+    let base_amount = calc_d.checked_div(decimals.quote_dec as u128).ok_or(ErrorCode::MathOverflow)?;
 
     // new_price = oracle.price / (1 - k * quoteAmount)
     let new_price: u128 = checked_mul_div(
         ONE_E18_U128,
         state.price_out,
-        ONE_E18_U128.checked_sub(gamma).unwrap(),
+        ONE_E18_U128.checked_sub(gamma).ok_or(ErrorCode::MathOverflow)?,
     )?;
 
     Ok((base_amount, new_price))

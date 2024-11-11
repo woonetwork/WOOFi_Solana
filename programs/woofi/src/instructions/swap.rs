@@ -140,7 +140,7 @@ fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Res
 
     let fee_rate: u16 = woopool_to.fee_rate;
     let swap_fee = checked_mul_div_round_up(from_amount, fee_rate as u128, ONE_E5_U128)?;
-    let quote_amount: u128 = from_amount.checked_sub(swap_fee).unwrap();
+    let quote_amount: u128 = from_amount.checked_sub(swap_fee).ok_or(ErrorCode::MathOverflow)?;
 
     let decimals_to = Decimals::new(
         wooracle_to.price_decimals as u32,
@@ -166,7 +166,7 @@ fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Res
     require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
     // record fee into account
-    woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
+    woopool_quote.add_unclaimed_fee(swap_fee)?;
 
     transfer_from_owner_to_vault(
         &ctx.accounts.payer,
@@ -249,7 +249,7 @@ fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Resu
     wooracle_from.post_price_no_ts_update(new_base_price)?;
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
-    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+    quote_amount = quote_amount.checked_sub(swap_fee).ok_or(ErrorCode::MathOverflow)?;
 
     require!(
         balance(woopool_quote, quote_token_vault)? >= swap_fee + quote_amount,
@@ -259,7 +259,7 @@ fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Resu
     require!(quote_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
     // record fee into account
-    woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
+    woopool_quote.add_unclaimed_fee(swap_fee)?;
 
     transfer_from_owner_to_vault(
         &ctx.accounts.payer,
@@ -350,7 +350,7 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
     wooracle_from.post_price_no_ts_update(new_base_price)?;
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
-    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+    quote_amount = quote_amount.checked_sub(swap_fee).ok_or(ErrorCode::MathOverflow)?;
 
     require!(
         balance(woopool_quote, quote_token_vault)? >= swap_fee,
@@ -381,7 +381,7 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
     require!(to_amount >= min_to_amount, ErrorCode::AmountOutBelowMinimum);
 
     // record fee into account
-    woopool_quote.add_unclaimed_fee(swap_fee).unwrap();
+    woopool_quote.add_unclaimed_fee(swap_fee)?;
 
     transfer_from_owner_to_vault(
         &ctx.accounts.payer,

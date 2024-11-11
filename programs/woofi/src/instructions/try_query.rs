@@ -2,7 +2,7 @@ use std::cmp::max;
 
 use anchor_lang::prelude::*;
 
-use crate::{constants::*, instructions::*, state::*, util::*};
+use crate::{constants::*, errors::ErrorCode, instructions::*, state::*, util::*};
 
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
@@ -101,7 +101,7 @@ pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult>
     }
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
-    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+    quote_amount = quote_amount.checked_sub(swap_fee).ok_or(ErrorCode::MathOverflow)?;
 
     let decimals_to = Decimals::new(
         wooracle_to.price_decimals as u32,

@@ -1,3 +1,5 @@
+use crate::error::ErrorCode;
+
 #[derive(Clone, Default, Copy)]
 pub struct Decimals {
     pub price_dec: u64, // 10 ** 8
@@ -8,9 +10,9 @@ pub struct Decimals {
 impl Decimals {
     pub fn new(price: u32, quote: u32, base: u32) -> Self {
         Decimals {
-            price_dec: 10_u64.checked_pow(price).unwrap(),
-            quote_dec: 10_u64.checked_pow(quote).unwrap(),
-            base_dec: 10_u64.checked_pow(base).unwrap(),
+            price_dec: 10_u64.checked_pow(price).ok_or(ErrorCode::MathOverflow)?,
+            quote_dec: 10_u64.checked_pow(quote).ok_or(ErrorCode::MathOverflow)?,
+            base_dec: 10_u64.checked_pow(base).ok_or(ErrorCode::MathOverflow)?,
         }
     }
 }

@@ -147,10 +147,10 @@ impl Wooracle {
         let anti_s = checked_mul_div(
             ONE_E18_U128,
             calc_a,
-            ONE_E18_U128.checked_sub(pre_s as u128).unwrap(),
+            ONE_E18_U128.checked_sub(pre_s as u128).ok_or(ErrorCode::MathOverflow)?,
         )?;
         if anti_s < ONE_E18_U128 {
-            let new_s = ONE_E18_U128.checked_sub(anti_s).unwrap() as u64;
+            let new_s = ONE_E18_U128.checked_sub(anti_s).ok_or(ErrorCode::MathOverflow)? as u64;
             if new_s > pre_s {
                 self.update_spread(new_s)?;
             }
@@ -180,10 +180,10 @@ impl Wooracle {
         let anti_s = checked_mul_div(
             ONE_E18_U128,
             calc_a,
-            ONE_E18_U128.checked_sub(pre_s as u128).unwrap(),
+            ONE_E18_U128.checked_sub(pre_s as u128).ok_or(ErrorCode::MathOverflow)?,
         )?;
         if anti_s < ONE_E18_U128 {
-            let new_s = ONE_E18_U128.checked_sub(anti_s).unwrap() as u64;
+            let new_s = ONE_E18_U128.checked_sub(anti_s).ok_or(ErrorCode::MathOverflow)? as u64;
             self.update_spread(max(new_s, spread))
         } else {
             self.update_spread(spread)

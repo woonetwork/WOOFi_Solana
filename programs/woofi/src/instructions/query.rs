@@ -134,7 +134,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
     }
 
     let swap_fee = checked_mul_div_round_up(quote_amount, fee_rate as u128, ONE_E5_U128)?;
-    quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+    quote_amount = quote_amount.checked_sub(swap_fee).ok_or(ErrorCode::MathOverflow)?;
 
     if woopool_from.token_mint != woopool_from.quote_token_mint {
         require!(
