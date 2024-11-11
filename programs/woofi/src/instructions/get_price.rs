@@ -63,7 +63,7 @@ pub fn get_price_impl<'info>(
 
     let base_price = pyth_result.price as u128;
     let quote_price = quote_price_result.price as u128;
-    let quote_decimal = quote_price_result.exponent.abs() as u32;
+    let quote_decimal = quote_price_result.exponent.unsigned_abs();
     let clo_price = base_price
         .checked_mul(10_u128.pow(quote_decimal)).ok_or(ErrorCode::MathOverflow)?
         .checked_div(quote_price).ok_or(ErrorCode::MathOverflow)?;
