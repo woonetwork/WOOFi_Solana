@@ -146,7 +146,7 @@ fn sell_quote(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Res
         wooracle_to.price_decimals as u32,
         wooracle_to.quote_decimals as u32,
         woopool_to.base_decimals as u32,
-    );
+    )?;
 
     let state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
 
@@ -234,7 +234,7 @@ fn sell_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Resu
         wooracle_from.price_decimals as u32,
         wooracle_from.quote_decimals as u32,
         woopool_from.base_decimals as u32,
-    );
+    )?;
 
     let state_from =
         get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
@@ -335,7 +335,7 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
         wooracle_from.price_decimals as u32,
         wooracle_from.quote_decimals as u32,
         woopool_from.base_decimals as u32,
-    );
+    )?;
 
     let state_from =
         get_price::get_state_impl(wooracle_from, price_update_from, quote_price_update)?;
@@ -361,7 +361,7 @@ fn swap_base_to_base(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128)
         wooracle_to.price_decimals as u32,
         wooracle_to.quote_decimals as u32,
         woopool_to.base_decimals as u32,
-    );
+    )?;
 
     let state_to = get_price::get_state_impl(wooracle_to, price_update_to, quote_price_update)?;
 

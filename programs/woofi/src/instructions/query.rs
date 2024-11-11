@@ -116,7 +116,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
         wooracle_from.price_decimals as u32,
         wooracle_from.quote_decimals as u32,
         woopool_from.base_decimals as u32,
-    );
+    )?;
 
     let mut quote_amount = from_amount;
     if woopool_from.token_mint != woopool_from.quote_token_mint {
@@ -147,7 +147,7 @@ pub fn handler(ctx: Context<Query>, from_amount: u128, min_to_amount: u128) -> R
         wooracle_to.price_decimals as u32,
         wooracle_to.quote_decimals as u32,
         woopool_to.base_decimals as u32,
-    );
+    )?;
 
     let mut to_amount = quote_amount;
     if woopool_to.token_mint != woopool_to.quote_token_mint {
