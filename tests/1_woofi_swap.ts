@@ -135,7 +135,7 @@ describe("woofi_swap", () => {
 
         await poolUtils.getLatestBlockHash();
 
-        // Deposit 0.2 USDC
+        // Deposit 1.0 USDC
         const depositAmount = new BN(1000000);
         const tx = await program
                     .methods
@@ -159,7 +159,7 @@ describe("woofi_swap", () => {
         const beforeUSDCPoolBalance = await provider.connection.getTokenAccountBalance(params.tokenVault);
         console.log("beforeUSDCPoolBalance amount:" + beforeUSDCPoolBalance.value.amount);
         
-        // Deposit 0.2 USDC
+        // Deposit 1.0 USDC
         const depositAmount = new BN(1000000);
         const tx = await program
                     .methods
