@@ -44,9 +44,10 @@ use jupiter_amm_interface::{
 
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
+mod constants;
+mod errors;
 mod state;
 mod util;
-mod constants;
 
 pub struct WoofiSwap {
     key: Pubkey,
@@ -197,7 +198,7 @@ impl Amm for WoofiSwap {
             }
         
             let swap_fee = checked_mul_div_round_up(quote_amount, self.fee_rate as u128, ONE_E5_U128)?;
-            quote_amount = quote_amount.checked_sub(swap_fee).unwrap();
+            quote_amount = quote_amount.checked_sub(swap_fee)?;
         
             let mut to_amount = quote_amount;
             if quote_params.output_mint != self.quote_mint {
