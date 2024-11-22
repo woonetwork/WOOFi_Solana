@@ -958,7 +958,7 @@
           "isSigner": true
         },
         {
-          "name": "tokenOwnerAccount",
+          "name": "toTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1816,6 +1816,6 @@
     }
   ],
   "metadata": {
-    "address": "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
+    "address": "713cHmw2uUCQ9WJXRuY1RboAp74bYtnWuNH5mQexgNM8"
   }
 }
