@@ -6,40 +6,52 @@ solana_version = "1.17.31"
 seeds = false
 skip-lint = false
 
-[programs.localnet]
-woofi = "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
-rebate_manager = "Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B"
-
 [programs.devnet]
-woofi = "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
+rebate_manager = "964aSwabN1qjm67ZFgTCd1pcnQnk88irRMJbYQfUwj2u"
+woofi = "713cHmw2uUCQ9WJXRuY1RboAp74bYtnWuNH5mQexgNM8"
+
+[programs.localnet]
 rebate_manager = "Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B"
+woofi = "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-wallet = "~/.config/solana/id.json"
+cluster = "Devnet"
+wallet = "/Users/zhangchi/.config/solana/id.json"
 
 [scripts]
+admin_tool = "npx tsx sdk/src/admin_tool.ts $2"
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 test_sdk = "yarn run ts-mocha -p sdk/tests/tsconfig.json -t 1000000 sdk/tests/**/*.test.ts"
 
-[test.validator]
-url = "https://api.devnet.solana.com"
+[test]
+startup_wait = 5000
+shutdown_wait = 2000
+upgradeable = false
 
-[[test.validator.clone]]
-address = "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
-[[test.validator.clone]]
-address = "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX"
-[[test.validator.clone]]
-address = "So11111111111111111111111111111111111111112"
+[test.validator]
+bind_address = "0.0.0.0"
+url = "https://api.devnet.solana.com"
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
+
 [[test.validator.account]]
 address = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
 filename = "usdc-mock.json"
-# usdc token owner with keypair
+
+[[test.validator.clone]]
+address = "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
+
+[[test.validator.clone]]
+address = "Dpw1EAVrSB1ibxiDQyTAW6Zip3J4Btk2x4SgApQCeFbX"
+
+[[test.validator.clone]]
+address = "So11111111111111111111111111111111111111112"
+
 [[test.validator.clone]]
 address = "C8kqb6a3SAMCkH8cFncUiwCMGjvVkwmunrukyaZhpaKJ"
-# usdc token ata account
+
 [[test.validator.clone]]
 address = "4nKk6134yRHy6c6L2qR47oUC3tCy6Vu4ryjPv81fpXt3"
