@@ -41,7 +41,7 @@ use anchor_lang::prelude::*;
 
 use crate::{constants::*, instructions::*, state::*};
 
-declare_id!("HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH");
+declare_id!("WooFiGFK9x5FBYdvMg3pJBpAkPA8EEYiLcopwrxJvDG");
 
 #[program]
 pub mod woofi {

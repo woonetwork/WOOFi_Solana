@@ -7,11 +7,11 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-woofi = "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
+woofi = "WooFiGFK9x5FBYdvMg3pJBpAkPA8EEYiLcopwrxJvDG"
 rebate_manager = "Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B"
 
 [programs.devnet]
-woofi = "HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH"
+woofi = "WooFiGFK9x5FBYdvMg3pJBpAkPA8EEYiLcopwrxJvDG"
 rebate_manager = "Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B"
 
 [registry]
