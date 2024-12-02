@@ -34,7 +34,7 @@ import {
 
 // Accounts.
 export type SendInstructionAccounts = {
-  signer: Signer;
+  signer: PublicKey;
   peer: PublicKey | Pda;
   oftStore: PublicKey | Pda;
   tokenSource: PublicKey | Pda;

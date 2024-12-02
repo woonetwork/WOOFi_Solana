@@ -6,6 +6,11 @@ import { WoofiContext } from "../src";
 import { PYTH_FEED_ACCOUNT, PYTH_PRICE_UPDATE_ACCOUNT, QuoteTokenMint, TOKEN_MINTS, WOOFI_TOKENS } from '../src/utils/constants'
 import { Transaction, TransactionResponse } from "@solana/web3.js";
 import { generatePoolParams, getOraclePrice } from "../src/utils/contract";
+import { publicKey } from '@metaplex-foundation/umi'
+import { fromWeb3JsPublicKey } from '@metaplex-foundation/umi-web3js-adapters'
+import { hexZeroPad, arrayify } from '@ethersproject/bytes';
+import { getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { oft } from "../src/oft";
 
 describe("woofi_sdk", async () => {
 
@@ -84,4 +89,73 @@ describe("woofi_sdk", async () => {
     console.log('TryQuery to_amount:', to_amount);
     console.log('TryQuery swap_fee:', swap_fee);
   })
+
+  it("send_oft", async ()=> {
+
+    const amount = 1000000000
+    const to = publicKey("0xc031C368b51c28266396273b0C6ce2489b00969d")
+
+    const toEid = 30101
+    const oftProgramId = publicKey("woo98ny1QLULqdTzpNM8PiJpwfzL5MJ9pAmLw1rfvk7")
+    const tokenMint = new anchor.web3.PublicKey("Dz8VutERqbHR2aFL5A3s1Ky4dG1unJT1jUFXXPaY9ytX");
+    const mint = fromWeb3JsPublicKey(tokenMint)
+    const umiEscrowPublicKey = publicKey("22ag34UbSzp2d4ekBLkekLHX1woPLDYZHqLGPY7e3ybu")
+    const recipientAddressBytes32 = addressToBytes32(to)
+    const tokenProgramId = fromWeb3JsPublicKey(TOKEN_PROGRAM_ID)
+
+    const tokenPublicKey = getAssociatedTokenAddressSync(tokenMint, provider.wallet.publicKey)
+    const tokenAccount = fromWeb3JsPublicKey(tokenPublicKey)
+
+    const ix = await oft.send(
+      {
+          payer: fromWeb3JsPublicKey(provider.wallet.publicKey),
+          tokenMint: mint,
+          tokenEscrow: umiEscrowPublicKey,
+          tokenSource: tokenAccount,
+      },
+      {
+          to: Buffer.from(recipientAddressBytes32),
+          dstEid: toEid,
+          amountLd: BigInt(amount),
+          minAmountLd: (BigInt(amount) * BigInt(9)) / BigInt(10),
+          options: Buffer.from(''),
+          composeMsg: undefined,
+          nativeFee: BigInt(0),
+          //nativeFee,
+      },
+      {
+          oft: oftProgramId,
+          token: tokenProgramId,
+      }
+    )
+  })
 });
+
+// src/utils/hex.ts
+function hexZeroPadTo32(addr: string) {
+  return hexZeroPad(addr, 32);
+}
+// function bytes32ToEthAddress(bytes32: Uint8Array) {
+//   if (bytes32 instanceof Uint8Array) {
+//     bytes32 = hexlify(bytes32);
+//   }
+//   return getAddress(bytes32.slice(-40));
+// }
+function trim0x(str: string) {
+  return str.replace(/^0x/, "");
+}
+var solanaAddressRegex = /^([1-9A-HJ-NP-Za-km-z]{32,44})$/;
+function isSolanaAddress(address: string) {
+  return solanaAddressRegex.test(address);
+}
+
+function addressToBytes32(address: string) {
+  const base58 = require('bs58')
+
+  if (isSolanaAddress(address)) {
+    return base58.decode(address);
+  } else if (address.startsWith("0x") && address.length <= 66) {
+    return arrayify(hexZeroPadTo32(address));
+  }
+  throw new Error("Invalid address");
+}

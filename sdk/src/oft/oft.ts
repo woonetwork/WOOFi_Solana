@@ -4,31 +4,21 @@
 // 2. init adapter OFT from existing mint, optionally an existing escrow
 // 3. Wire a peer
 // 4. Set the DVN etc. options
-import { hexlify } from '@ethersproject/bytes'
 import {
-    Instruction,
     ProgramRepositoryInterface,
     PublicKey,
-    RpcInterface,
     Signer,
     WrappedInstruction,
     createNullRpc,
-    defaultPublicKey,
-    none,
-    publicKeyBytes,
-    some,
 } from '@metaplex-foundation/umi'
 import { createDefaultProgramRepository } from '@metaplex-foundation/umi-program-repository'
 import {
-    fromWeb3JsInstruction,
     fromWeb3JsPublicKey,
-    toWeb3JsInstruction,
-    toWeb3JsPublicKey,
 } from '@metaplex-foundation/umi-web3js-adapters'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { AccountMeta, ComputeBudgetProgram, Connection } from '@solana/web3.js'
+import { AccountMeta } from '@solana/web3.js'
 
-import { accounts as OFTAccounts, OFT_DECIMALS, OftPDA, instructions, programs, types } from '.'
+import { accounts as OFTAccounts, OftPDA, instructions, programs } from '.'
 import { web3 } from '@coral-xyz/anchor'
 
 
@@ -71,9 +61,8 @@ export function createOFTProgramRepo(oftProgram: PublicKey): ProgramRepositoryIn
 }
 
 export async function send(
-    rpc: RpcInterface,
     accounts: {
-        payer: Signer
+        payer: PublicKey
         tokenMint: PublicKey
         tokenEscrow: PublicKey
         tokenSource: PublicKey
@@ -102,8 +91,6 @@ export async function send(
     const [oftStore] = deriver.oftStore(tokenEscrow)
     const [peer] = deriver.peer(oftStore, dstEid)
 
-    const connection = new Connection(rpc.getEndpoint())
-    console.log('remainingAccounts:', remainingAccounts)
     // if (remainingAccounts === undefined || remainingAccounts.length === 0) {
     //     const peerAddr: Uint8Array =
     //         accounts.peerAddr ??
