@@ -81,7 +81,7 @@ export type ResolvedAccounts = Record<string, ResolvedAccount>;
  */
 export type ResolvedAccountsWithIndices = Record<
   string,
-  ResolvedAccount & { index: number }
+  ResolvedAccount & { index: number, isSigner: boolean }
 >;
 
 /**
@@ -89,7 +89,7 @@ export type ResolvedAccountsWithIndices = Record<
  * @internal
  */
 export function getAccountMetasAndSigners(
-  accounts: ResolvedAccount[],
+  accounts: (ResolvedAccount & { isSigner: boolean })[],
   optionalAccountStrategy: 'omitted' | 'programId',
   programId: PublicKey
 ): [AccountMeta[], Signer[]] {
@@ -108,7 +108,7 @@ export function getAccountMetasAndSigners(
     }
     keys.push({
       pubkey: publicKey(account.value, false),
-      isSigner: isSigner(account.value),
+      isSigner: account.isSigner,
       isWritable: account.isWritable,
     });
   });

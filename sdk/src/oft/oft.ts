@@ -14,6 +14,7 @@ import {
 import { createDefaultProgramRepository } from '@metaplex-foundation/umi-program-repository'
 import {
     fromWeb3JsPublicKey,
+    toWeb3JsInstruction,
 } from '@metaplex-foundation/umi-web3js-adapters'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { AccountMeta } from '@solana/web3.js'
@@ -84,7 +85,7 @@ export async function send(
         token?: PublicKey // default is TOKEN_PROGRAM_ID(TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA)
     },
     remainingAccounts?: AccountMeta[]
-): Promise<WrappedInstruction> {
+): Promise<web3.TransactionInstruction> {
     const { payer, tokenMint, tokenEscrow, tokenSource } = accounts
     const { dstEid, to, amountLd, minAmountLd, options, composeMsg, nativeFee, lzTokenFee } = sendParams
     const deriver = new OftPDA(programs.oft)
@@ -168,5 +169,6 @@ export async function send(
     //         }
     //     })
     // ).items[0]
-    return txBuilder.items[0]
+    const tx = txBuilder.items[0];
+    return toWeb3JsInstruction(tx.instruction)
 }

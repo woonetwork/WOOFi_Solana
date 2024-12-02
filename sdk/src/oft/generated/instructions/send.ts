@@ -111,42 +111,55 @@ export function send(
     signer: {
       index: 0,
       isWritable: false as boolean,
+      isSigner: true,
       value: input.signer ?? null,
     },
-    peer: { index: 1, isWritable: true as boolean, value: input.peer ?? null },
+    peer: {
+      index: 1,
+      isWritable: true as boolean,
+      isSigner: false,
+      value: input.peer ?? null
+    },
     oftStore: {
       index: 2,
       isWritable: true as boolean,
+      isSigner: false,
       value: input.oftStore ?? null,
     },
     tokenSource: {
       index: 3,
       isWritable: true as boolean,
+      isSigner: false,
       value: input.tokenSource ?? null,
     },
     tokenEscrow: {
       index: 4,
       isWritable: true as boolean,
+      isSigner: false,
       value: input.tokenEscrow ?? null,
     },
     tokenMint: {
       index: 5,
       isWritable: true as boolean,
+      isSigner: false,
       value: input.tokenMint ?? null,
     },
     tokenProgram: {
       index: 6,
       isWritable: false as boolean,
+      isSigner: false,
       value: input.tokenProgram ?? null,
     },
     eventAuthority: {
       index: 7,
       isWritable: false as boolean,
+      isSigner: false,
       value: input.eventAuthority ?? null,
     },
     program: {
       index: 8,
       isWritable: false as boolean,
+      isSigner: false,
       value: input.program ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
@@ -164,7 +177,7 @@ export function send(
   }
 
   // Accounts in order.
-  const orderedAccounts: ResolvedAccount[] = Object.values(
+  const orderedAccounts: (ResolvedAccount & { isSigner: boolean })[] = Object.values(
     resolvedAccounts
   ).sort((a, b) => a.index - b.index);
 
