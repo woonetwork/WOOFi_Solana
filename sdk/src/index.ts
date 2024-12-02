@@ -7,6 +7,7 @@ export * from "./common";
 export * from "./context";
 export * from "./client";
 export * from "./instructions";
+export * from "./oft";
 
 // Global rules for Decimals
 //  - 40 digits of precision for the largest number

@@ -958,7 +958,7 @@ export type Woofi = {
           "isSigner": true
         },
         {
-          "name": "tokenOwnerAccount",
+          "name": "toTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -2777,7 +2777,7 @@ export const IDL: Woofi = {
           "isSigner": true
         },
         {
-          "name": "tokenOwnerAccount",
+          "name": "toTokenAccount",
           "isMut": true,
           "isSigner": false
         },
