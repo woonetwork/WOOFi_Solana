@@ -93,13 +93,14 @@ describe("woofi_sdk", async () => {
   it("send_oft", async ()=> {
 
     const amount = 1000000000
-    const to = publicKey("0xc031C368b51c28266396273b0C6ce2489b00969d")
+    const to = "0xc031C368b51c28266396273b0C6ce2489b00969d"
 
     const toEid = 30101
     const oftProgramId = publicKey("woo98ny1QLULqdTzpNM8PiJpwfzL5MJ9pAmLw1rfvk7")
     const tokenMint = new anchor.web3.PublicKey("Dz8VutERqbHR2aFL5A3s1Ky4dG1unJT1jUFXXPaY9ytX");
     const mint = fromWeb3JsPublicKey(tokenMint)
     const umiEscrowPublicKey = publicKey("22ag34UbSzp2d4ekBLkekLHX1woPLDYZHqLGPY7e3ybu")
+
     const recipientAddressBytes32 = addressToBytes32(to)
     const tokenProgramId = fromWeb3JsPublicKey(TOKEN_PROGRAM_ID)
 
@@ -128,6 +129,8 @@ describe("woofi_sdk", async () => {
           token: tokenProgramId,
       }
     )
+
+    console.log(ix);
   })
 });
 
