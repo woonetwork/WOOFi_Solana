@@ -1,0 +1,9 @@
+{
+  "name": "endpoint",
+  "network": "solana-mainnet",
+  "address": "76y77prsiCMvXMjuoZ5VRrhG5qYBrUMYTE5WgHqgjEn6",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "BJW9hG6tku5cL736Yof7bcEi3dQCpmoYwean1U3rftdf"
+}

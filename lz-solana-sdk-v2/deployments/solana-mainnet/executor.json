@@ -1,0 +1,9 @@
+{
+  "name": "executor",
+  "network": "solana-mainnet",
+  "address": "6doghB248px58JSSwG4qejQ46kFMW4AMj7vzJnWZHNZn",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "HktSDu56oc42jxL6sWwUgbyJsq6v59d8VJtguK7wof5R"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "dvn-gcda",
+  "network": "solana-sandbox-local",
+  "address": "D5mVdHmD21yPS3p4utgp54wTUPqt7d7qCXt4oqCYsaBo",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "2AmbLgAgTeK9Bp3bQmGnw1RkxaxmJZ23bSNDB7A3Fj5x"
+}

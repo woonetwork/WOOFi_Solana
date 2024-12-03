@@ -1,0 +1,9 @@
+{
+  "name": "pricefeed",
+  "network": "solana-mainnet",
+  "address": "8ahPGPjEbpgGaZx2NV1iG5Shj7TDwvsjkEDcGWjt94TP",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "BJW9hG6tku5cL736Yof7bcEi3dQCpmoYwean1U3rftdf"
+}

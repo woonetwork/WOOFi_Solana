@@ -1,0 +1,9 @@
+{
+  "name": "oft",
+  "network": "solana-sandbox-local",
+  "address": "9UovNrJD8pQyBLheeHNayuG1wJSEAoxkmM14vw5gcsTT",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
+}

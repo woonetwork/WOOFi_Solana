@@ -1,0 +1,9 @@
+{
+  "name": "dvn-gcda",
+  "network": "solana-testnet",
+  "address": "D5mVdHmD21yPS3p4utgp54wTUPqt7d7qCXt4oqCYsaBo",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "8Av75SWJqZtUt3Jm1NPLedAiQyGg4ayp6pf2AoWUhJ3n"
+}

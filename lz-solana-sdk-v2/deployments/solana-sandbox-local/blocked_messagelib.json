@@ -1,0 +1,9 @@
+{
+  "name": "blocked_messagelib",
+  "network": "solana-sandbox-local",
+  "address": "2XrYqmhBMPJgDsb4SVbjV1PnJBprurd5bzRCkHwiFCJB",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
+}

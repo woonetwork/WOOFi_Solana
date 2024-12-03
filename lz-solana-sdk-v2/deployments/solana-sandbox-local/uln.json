@@ -1,0 +1,9 @@
+{
+  "name": "uln",
+  "network": "solana-sandbox-local",
+  "address": "7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "uln",
+  "network": "solana-testnet",
+  "address": "7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "9RGGtNGMJDSG4w6Nx7DpYPmbpvV1G1f9e4q6nhDWmgcc"
+}

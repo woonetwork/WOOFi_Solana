@@ -1,0 +1,9 @@
+{
+  "name": "simple_messagelib",
+  "network": "solana-sandbox-local",
+  "address": "6GsmxMTHAAiFKfemuM4zBjumTjNSX5CAiw4xSSXM2Toy",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
+}

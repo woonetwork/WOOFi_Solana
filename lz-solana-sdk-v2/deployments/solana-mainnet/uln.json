@@ -1,0 +1,9 @@
+{
+  "name": "uln",
+  "network": "solana-mainnet",
+  "address": "7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "BJW9hG6tku5cL736Yof7bcEi3dQCpmoYwean1U3rftdf"
+}

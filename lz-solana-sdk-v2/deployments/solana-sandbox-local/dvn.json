@@ -1,0 +1,9 @@
+{
+  "name": "dvn",
+  "network": "solana-sandbox-local",
+  "address": "HtEYV4xB4wvsj5fgTkcfuChYpvGYzgzwvNhgDZQNh7wW",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "2AmbLgAgTeK9Bp3bQmGnw1RkxaxmJZ23bSNDB7A3Fj5x"
+}

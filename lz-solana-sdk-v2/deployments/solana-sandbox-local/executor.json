@@ -1,0 +1,9 @@
+{
+  "name": "executor",
+  "network": "solana-sandbox-local",
+  "address": "6doghB248px58JSSwG4qejQ46kFMW4AMj7vzJnWZHNZn",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "9uLJKWXinBXUrtWnWxs4VsGmumNdEkyg8BY3TD9Bnrg7"
+}

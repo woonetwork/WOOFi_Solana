@@ -1,0 +1,9 @@
+{
+  "name": "pricefeed",
+  "network": "solana-sandbox-local",
+  "address": "8ahPGPjEbpgGaZx2NV1iG5Shj7TDwvsjkEDcGWjt94TP",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "9uLJKWXinBXUrtWnWxs4VsGmumNdEkyg8BY3TD9Bnrg7"
+}

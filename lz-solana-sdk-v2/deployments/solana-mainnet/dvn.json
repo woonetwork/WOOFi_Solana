@@ -1,0 +1,9 @@
+{
+  "name": "dvn",
+  "network": "solana-mainnet",
+  "address": "HtEYV4xB4wvsj5fgTkcfuChYpvGYzgzwvNhgDZQNh7wW",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "BJW9hG6tku5cL736Yof7bcEi3dQCpmoYwean1U3rftdf"
+}

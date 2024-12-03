@@ -1,0 +1,9 @@
+{
+  "name": "dvn-nethermind",
+  "network": "solana-mainnet",
+  "address": "4fs6aL12L18K5giDy9Dgxgrb3aNRYiuRV2a7JPPj3e7F",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "BmLG36ME5rcEEQ1VQvAo2WHERGw5PUBuuSn9q8a35hgx"
+}

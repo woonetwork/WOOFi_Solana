@@ -1,0 +1,9 @@
+{
+  "name": "dvn-horizen",
+  "network": "solana-mainnet",
+  "address": "4Z436PCb83Ft9dMRtwZ2mK7ZQtqVhbFEC3BYna9qB7B9",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "3aRdyCavVWhxSvV7vUjndhhSqVJJjGBsLEFjoc2ok1y8"
+}

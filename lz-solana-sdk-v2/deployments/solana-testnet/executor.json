@@ -1,0 +1,9 @@
+{
+  "name": "executor",
+  "network": "solana-testnet",
+  "address": "6doghB248px58JSSwG4qejQ46kFMW4AMj7vzJnWZHNZn",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "9RGGtNGMJDSG4w6Nx7DpYPmbpvV1G1f9e4q6nhDWmgcc"
+}

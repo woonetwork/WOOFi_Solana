@@ -1,0 +1,9 @@
+{
+  "name": "endpoint",
+  "network": "solana-sandbox-local",
+  "address": "76y77prsiCMvXMjuoZ5VRrhG5qYBrUMYTE5WgHqgjEn6",
+  "compatibleVersions": [
+    "v2"
+  ],
+  "deployer": "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
+}
