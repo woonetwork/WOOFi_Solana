@@ -4,20 +4,31 @@
 // 2. init adapter OFT from existing mint, optionally an existing escrow
 // 3. Wire a peer
 // 4. Set the DVN etc. options
+import { hexlify } from '@ethersproject/bytes'
 import {
     ProgramRepositoryInterface,
     PublicKey,
-    Signer,
-    WrappedInstruction,
+    publicKeyBytes,
     createNullRpc,
 } from '@metaplex-foundation/umi'
+import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { createDefaultProgramRepository } from '@metaplex-foundation/umi-program-repository'
 import {
     fromWeb3JsPublicKey,
     toWeb3JsInstruction,
+    toWeb3JsPublicKey,
 } from '@metaplex-foundation/umi-web3js-adapters'
+import {
+    EndpointProgram,
+    SimpleMessageLibProgram,
+    UlnProgram,
+} from '@layerzerolabs/lz-solana-sdk-v2'
+import { PacketPath } from '@layerzerolabs/lz-v2-utilities'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { AccountMeta } from '@solana/web3.js'
+import { AccountMeta, Connection } from '@solana/web3.js'
+
+const ENDPOINT_PROGRAM_ID = fromWeb3JsPublicKey(EndpointProgram.PROGRAM_ID)
+const ULN_PROGRAM_ID = fromWeb3JsPublicKey(UlnProgram.PROGRAM_ID)
 
 import { accounts as OFTAccounts, OftPDA, instructions, programs } from '.'
 import { web3 } from '@coral-xyz/anchor'
@@ -62,6 +73,7 @@ export function createOFTProgramRepo(oftProgram: PublicKey): ProgramRepositoryIn
 }
 
 export async function send(
+    connection: Connection,
     accounts: {
         payer: PublicKey
         tokenMint: PublicKey
@@ -92,45 +104,48 @@ export async function send(
     const [oftStore] = deriver.oftStore(tokenEscrow)
     const [peer] = deriver.peer(oftStore, dstEid)
 
-    // if (remainingAccounts === undefined || remainingAccounts.length === 0) {
-    //     const peerAddr: Uint8Array =
-    //         accounts.peerAddr ??
-    //         (await OFTAccounts.fetchPeerConfig({ rpc }, peer).then((peerInfo) => peerInfo.peerAddress))
+    const umi = createUmi(connection)
+    const rpc = umi.rpc
 
-    //     console.log('peerAddr', peerAddr)
+    if (remainingAccounts === undefined || remainingAccounts.length === 0) {
+        const peerAddr: Uint8Array =
+            accounts.peerAddr ??
+            (await OFTAccounts.fetchPeerConfig({ rpc }, peer).then((peerInfo) => peerInfo.peerAddress))
 
-    //     const endpoint = new EndpointProgram.Endpoint(toWeb3JsPublicKey(programs.endpoint ?? ENDPOINT_PROGRAM_ID))
-    //     const msgLibProgram = await getSendLibraryProgram(connection, endpoint, payer.publicKey, oftStore, dstEid)
-    //     const packetPath: PacketPath = {
-    //         srcEid: 0,
-    //         dstEid,
-    //         sender: hexlify(publicKeyBytes(oftStore)),
-    //         receiver: hexlify(peerAddr),
-    //     }
-    //     console.log('endpoint', endpoint)
-    //     console.log('msgLibProgram', msgLibProgram)
-    //     console.log('packetPath', packetPath)
+        console.log('peerAddr', peerAddr)
 
-    //     // const [endpointSettings] = endpoint.deriver.setting()
-    //     // invariant(await isAccountInitialized(connection, endpointSettings), 'endpointSettings account not initialized')
-    //     // invariant(await isAccountInitialized(connection, peer), 'peer account not initialized')
-    //     // invariant(await isAccountInitialized(connection, payer), 'payer account not initialized')
-    //     // invariant(
-    //     //     await isAccountInitialized(
-    //     //         connection,
-    //     //         endpoint.deriver.nonce(oftStore, dstEid, Uint8Array.from(peerAddr))[0]
-    //     //     ),
-    //     //     'nonce account not initialized'
-    //     // )
-    //     remainingAccounts = await endpoint.getSendIXAccountMetaForCPI(
-    //         connection,
-    //         toWeb3JsPublicKey(payer.publicKey),
-    //         packetPath,
-    //         msgLibProgram
-    //     )
+        const endpoint = new EndpointProgram.Endpoint(toWeb3JsPublicKey(programs.endpoint ?? ENDPOINT_PROGRAM_ID))
+        const msgLibProgram = await getSendLibraryProgram(connection, endpoint, payer, oftStore, dstEid)
+        const packetPath: PacketPath = {
+            srcEid: 0,
+            dstEid,
+            sender: hexlify(publicKeyBytes(oftStore)),
+            receiver: hexlify(peerAddr),
+        }
+        console.log('endpoint', endpoint)
+        console.log('msgLibProgram', msgLibProgram)
+        console.log('packetPath', packetPath)
+
+        // const [endpointSettings] = endpoint.deriver.setting()
+        // invariant(await isAccountInitialized(connection, endpointSettings), 'endpointSettings account not initialized')
+        // invariant(await isAccountInitialized(connection, peer), 'peer account not initialized')
+        // invariant(await isAccountInitialized(connection, payer), 'payer account not initialized')
+        // invariant(
+        //     await isAccountInitialized(
+        //         connection,
+        //         endpoint.deriver.nonce(oftStore, dstEid, Uint8Array.from(peerAddr))[0]
+        //     ),
+        //     'nonce account not initialized'
+        // )
+        remainingAccounts = await endpoint.getSendIXAccountMetaForCPI(
+            connection,
+            toWeb3JsPublicKey(payer),
+            packetPath,
+            msgLibProgram
+        )
         
-    //     console.log('remainingAccounts', remainingAccounts)
-    // }
+        console.log('remainingAccounts', remainingAccounts)
+    }
 
     //const [eventAuthorityPDA] = new EventPDADeriver(toWeb3JsPublicKey(programs.oft)).eventAuthority()
     const eventAuthorityPDA = new web3.PublicKey("9yVEnLRugBF5rkKa97uZUWBUwB2ZRjTgi62j4b816XNt");
@@ -160,15 +175,86 @@ export async function send(
     )
 
     // Get remaining accounts from msgLib(simple_msgLib or uln)
-    // return txBuilder.addRemainingAccounts(
-    //     remainingAccounts.map((acc) => {
-    //         return {
-    //             pubkey: fromWeb3JsPublicKey(acc.pubkey),
-    //             isSigner: acc.isSigner,
-    //             isWritable: acc.isWritable,
-    //         }
-    //     })
-    // ).items[0]
-    const tx = txBuilder.items[0];
+    const tx = txBuilder.addRemainingAccounts(
+        remainingAccounts.map((acc) => {
+            return {
+                pubkey: fromWeb3JsPublicKey(acc.pubkey),
+                isSigner: acc.isSigner,
+                isWritable: acc.isWritable,
+            }
+        })
+    ).items[0]
     return toWeb3JsInstruction(tx.instruction)
 }
+
+async function getSendLibraryProgram(
+    connection: Connection,
+    endpoint: EndpointProgram.Endpoint,
+    payer: PublicKey,
+    oftStore: PublicKey,
+    remoteEid: number
+): Promise<SimpleMessageLibProgram.SimpleMessageLib | UlnProgram.Uln> {
+    const sendLibInfo = await endpoint.getSendLibrary(connection, toWeb3JsPublicKey(oftStore), remoteEid)
+    if (!sendLibInfo?.programId) {
+        throw new Error('Send library not initialized or blocked message library')
+    }
+    const { programId: msgLibProgram } = sendLibInfo
+    const msgLibVersion = await endpoint.getMessageLibVersion(connection, toWeb3JsPublicKey(payer), msgLibProgram)
+    if (msgLibVersion?.major.toString() === '0' && msgLibVersion.minor == 0 && msgLibVersion.endpointVersion == 2) {
+        return new SimpleMessageLibProgram.SimpleMessageLib(msgLibProgram)
+    } else if (
+        msgLibVersion?.major.toString() === '3' &&
+        msgLibVersion.minor == 0 &&
+        msgLibVersion.endpointVersion == 2
+    ) {
+        return new UlnProgram.Uln(msgLibProgram)
+    }
+    throw new Error(`Unsupported message library version: ${JSON.stringify(msgLibVersion, null, 2)}`)
+}
+
+  /***
+   * Get the account meta of the send instruction for CPI(Cross-Program Invocation )
+   */
+// export async function getSendIXAccountMetaForCPI(
+//     payer: PublicKey, path: PacketPath, msgLibProgram: MessageLibInterface, commitmentOrConfig?: Commitment | GetAccountInfoConfig): Promise<AccountMeta[]> {
+//     const { sender: sender_, dstEid, receiver: receiver_ } = path;
+//     const sender = new PublicKey(arrayify(sender_));
+//     const receiver = addressToBytes32(receiver_);
+//     const info = await this.getSendLibrary(connection, sender, dstEid, commitmentOrConfig);
+//     if (!info?.programId) {
+//       throw new Error("default send library not initialized or blocked message lib");
+//     }
+//     const sendLibrary = info.msgLib;
+//     const [sendLibraryInfo] = this.deriver.messageLibraryInfo(sendLibrary);
+//     const remainingAccounts = await msgLibProgram.getSendIXAccountMetaForCPI(connection, payer, path);
+//     const [defaultSendLibraryConfig] = this.deriver.defaultSendLibraryConfig(dstEid);
+//     const [sendLibraryConfig] = this.deriver.sendLibraryConfig(sender, dstEid);
+//     const [nonce] = this.deriver.nonce(sender, dstEid, receiver);
+//     const accounts = createSendInstructionAccounts(
+//       {
+//         sender,
+//         //signer
+//         /// this account should be derived from message lib
+//         sendLibraryProgram: info.programId,
+//         sendLibraryConfig,
+//         defaultSendLibraryConfig,
+//         sendLibraryInfo,
+//         endpoint: this.deriver.setting()[0],
+//         program: this.program,
+//         nonce,
+//         eventAuthority: this.eventAuthorityPDA,
+//         anchorRemainingAccounts: remainingAccounts
+//       },
+//       this.program
+//     );
+//     accounts.forEach((item) => {
+//       item.isSigner = false;
+//     });
+//     return [
+//       {
+//         pubkey: this.program,
+//         isSigner: false,
+//         isWritable: false
+//       }
+//     ].concat(accounts);
+//   }

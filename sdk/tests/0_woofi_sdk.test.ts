@@ -108,6 +108,7 @@ describe("woofi_sdk", async () => {
     const tokenAccount = fromWeb3JsPublicKey(tokenPublicKey)
 
     const ix = await oft.send(
+      provider.connection,
       {
           payer: fromWeb3JsPublicKey(provider.wallet.publicKey),
           tokenMint: mint,
