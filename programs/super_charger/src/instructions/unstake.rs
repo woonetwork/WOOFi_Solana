@@ -60,8 +60,22 @@ pub struct Unstake<'info> {
     pub lp_token_program: Program<'info, Token>,
 }
 
-pub fn hanlder(ctx: Context<Unstake>, lp_token_amount: u64) -> Result<()> {
-    require!(lp_token_amount != 0, ErrorCode::UnstakeZero);
+pub fn hanlder(ctx: Context<Unstake>, reserve_amount: u64) -> Result<()> {
+    require!(reserve_amount != 0, ErrorCode::UnstakeZero);
+
+    let super_charger = &mut ctx.accounts.super_charger;
+    let reserve_vault = &mut ctx.accounts.reserve_vault;
+    let user_state = &mut ctx.accounts.user_state;
+
+    require!(
+        reserve_vault.amount >= reserve_amount,
+        ErrorCode::NotEnoughOut
+    );
+
+    // TODO Prince:
+    // calculate reserve amount by lp_token_amount
+    // consider decimals
+    let lp_token_amount = reserve_amount;
 
     let user_lp_account = &ctx.accounts.user_lp_account;
     require!(
@@ -69,22 +83,8 @@ pub fn hanlder(ctx: Context<Unstake>, lp_token_amount: u64) -> Result<()> {
         ErrorCode::NotEnoughBalance
     );
 
-    let super_charger = &mut ctx.accounts.super_charger;
-    let reserve_vault = &mut ctx.accounts.reserve_vault;
-    let user_state = &mut ctx.accounts.user_state;
-
-    // TODO Prince:
-    // calculate reserve amount by lp_token_amount
-    // consider decimals
-    let reserve_amount = lp_token_amount;
-
-    require!(
-        reserve_vault.amount >= reserve_amount,
-        ErrorCode::NotEnoughOut
-    );
-
     let total_staked_amount = super_charger.total_staked_amount;
-    super_charger.total_staked_amount = total_staked_amount.checked_add(reserve_amount).ok_or(ErrorCode::MathOverflow)?;
+    super_charger.total_staked_amount = total_staked_amount.checked_sub(reserve_amount).ok_or(ErrorCode::MathOverflow)?;
 
     // TODO Prince:
     // update user_state.cost_share_price
