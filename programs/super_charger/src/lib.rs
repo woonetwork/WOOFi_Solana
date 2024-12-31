@@ -62,12 +62,12 @@ pub mod rebate_manager {
         instructions::initialize_user::handler(ctx)
     }
 
-    pub fn stake(ctx: Context<Stake>, reserve_amount: u64) -> Result<()> {
-        instructions::stake::hanlder(ctx, reserve_amount)
+    pub fn deposit(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
+        instructions::deposit::hanlder(ctx, deposit_amount)
     }
 
-    pub fn unstake(ctx: Context<Unstake>, reserve_amount: u64) -> Result<()> {
-        instructions::unstake::hanlder(ctx, reserve_amount)
+    pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64) -> Result<()> {
+        instructions::withdraw::hanlder(ctx, withdraw_amount)
     }
 
 }

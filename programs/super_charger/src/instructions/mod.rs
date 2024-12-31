@@ -1,9 +1,9 @@
 pub mod admin;
 pub mod initialize_user;
-pub mod stake;
-pub mod unstake;
+pub mod deposit;
+pub mod withdraw;
 
 pub use admin::*;
 pub use initialize_user::*;
-pub use stake::*;
-pub use unstake::*;
+pub use deposit::*;
+pub use withdraw::*;

@@ -19,76 +19,76 @@ pub struct CreateSuperCharger<'info> {
         seeds = [
           SUPER_CHARGER_SEED.as_bytes(),
           super_charger_config.key().as_ref(),
-          reserve_mint.key().as_ref()
+          stake_token_mint.key().as_ref()
         ],
         bump)]
     pub super_charger: Box<Account<'info, SuperCharger>>,
 
     #[account(
-        mint::token_program = reserve_token_program,
+        mint::token_program = stake_token_program,
     )]
-    pub reserve_mint: Account<'info, Mint>,
+    pub stake_token_mint: Account<'info, Mint>,
 
     #[account(
         init,
         seeds = [
-            SUPER_CHARGER_RESERVE_VAULT_SEED.as_bytes(),
+            SUPER_CHARGER_STAKE_VAULT_SEED.as_bytes(),
             super_charger.key().as_ref(),
-            reserve_mint.key().as_ref()
+            stake_token_mint.key().as_ref()
         ],
         bump,
         payer = authority,
-        token::mint = reserve_mint,
+        token::mint = stake_token_mint,
         token::authority = super_charger,
-        token::token_program = reserve_token_program
+        token::token_program = stake_token_program
       )]
-    pub reserve_vault: Box<Account<'info, TokenAccount>>,
+    pub stake_vault: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
         seeds = [
-            SUPER_CHARGER_LP_MINT_SEED.as_bytes(),
+            SUPER_CHARGER_WE_MINT_SEED.as_bytes(),
             super_charger.key().as_ref(),
-            reserve_mint.key().as_ref()
+            stake_token_mint.key().as_ref()
         ],
         bump,
         payer = authority,
-        mint::decimals = 6,
+        mint::decimals = 9,
         mint::authority = super_charger,
-        mint::token_program = lp_token_program,
+        mint::token_program = we_token_program,
     )]
-    pub lp_token_mint: Box<Account<'info, Mint>>,
+    pub we_token_mint: Box<Account<'info, Mint>>,
 
     #[account(
         init,
         seeds = [
-            SUPER_CHARGER_LP_VAULT_SEED.as_bytes(),
+            SUPER_CHARGER_WE_VAULT_SEED.as_bytes(),
             super_charger.key().as_ref(),
-            reserve_mint.key().as_ref()
+            stake_token_mint.key().as_ref()
         ],
         bump,
         payer = authority,
-        token::mint = lp_token_mint,
+        token::mint = we_token_mint,
         token::authority = super_charger,
-        token::token_program = lp_token_program,
+        token::token_program = we_token_program,
     )]
-    pub lp_token_vault: Box<Account<'info, TokenAccount>>,
+    pub we_token_vault: Box<Account<'info, TokenAccount>>,
 
-    pub reserve_token_program: Program<'info, Token>,
-    pub lp_token_program: Program<'info, Token>,
+    pub stake_token_program: Program<'info, Token>,
+    pub we_token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
 pub fn handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
     let super_charger_config = ctx.accounts.super_charger_config.key();
     let authority = ctx.accounts.authority.key();
-    let reserve_mint = ctx.accounts.reserve_mint.key();
-    let reserve_decimals = ctx.accounts.reserve_mint.decimals;
-    let reserve_vault = ctx.accounts.reserve_vault.key();
-    let lp_token_mint = ctx.accounts.lp_token_mint.key();
-    let lp_token_vault = ctx.accounts.lp_token_vault.key();
-    let reserve_token_program = ctx.accounts.reserve_token_program.key();
-    let lp_token_program = ctx.accounts.lp_token_program.key();
+    let stake_token_mint = ctx.accounts.stake_token_mint.key();
+    let stake_token_decimals = ctx.accounts.stake_token_mint.decimals;
+    let stake_vault = ctx.accounts.stake_vault.key();
+    let we_token_mint = ctx.accounts.we_token_mint.key();
+    let we_token_vault = ctx.accounts.we_token_vault.key();
+    let stake_token_program = ctx.accounts.stake_token_program.key();
+    let we_token_program = ctx.accounts.we_token_program.key();
 
     let super_charger = &mut ctx.accounts.super_charger;
     let bump = ctx.bumps.super_charger;
@@ -97,12 +97,12 @@ pub fn handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
         bump,
         super_charger_config,
         authority,
-        reserve_mint,
-        reserve_decimals,
-        reserve_vault,
-        lp_token_mint,
-        lp_token_vault,
-        reserve_token_program,
-        lp_token_program
+        stake_token_mint,
+        stake_token_decimals,
+        stake_vault,
+        we_token_mint,
+        we_token_vault,
+        stake_token_program,
+        we_token_program
     )
 }

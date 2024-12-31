@@ -46,15 +46,16 @@ pub struct SuperCharger {
     pub num_users: u64,
     pub total_staked_amount: u64,
 
-    pub reserve_mint: Pubkey,
-    pub reserve_decimals: u8,
-    pub reserve_vault: Pubkey,
+    pub stake_token_mint: Pubkey,  // stake_token_mint
+    pub stake_token_decimals: u8,  // 
+    pub stake_vault: Pubkey,
 
-    pub lp_token_mint: Pubkey,
-    pub lp_token_vault: Pubkey,
+    pub we_token_mint: Pubkey,  // woofi earn token
+    pub we_token_vault: Pubkey,
+    // cost share price 
 
-    pub reserve_token_program: Pubkey,
-    pub lp_token_program: Pubkey,
+    pub stake_token_program: Pubkey,
+    pub we_token_program: Pubkey,
 }
 
 impl SuperCharger {
@@ -62,7 +63,7 @@ impl SuperCharger {
         [
             SUPER_CHARGER_SEED.as_bytes(),
             self.super_charger_config.as_ref(),
-            self.reserve_mint.as_ref(),
+            self.stake_token_mint.as_ref(),
             self.super_charger_bump.as_ref(),
         ]
     }
@@ -73,24 +74,24 @@ impl SuperCharger {
         bump: u8,
         super_charger_config: Pubkey,
         authority: Pubkey,
-        reserve_mint: Pubkey,
-        reserve_decimals: u8,
-        reserve_vault: Pubkey,
-        lp_token_mint: Pubkey,
-        lp_token_vault: Pubkey,
-        reserve_token_program: Pubkey,
-        lp_token_program: Pubkey
+        stake_token_mint: Pubkey,
+        stake_token_decimals: u8,
+        stake_vault: Pubkey,
+        we_token_mint: Pubkey,
+        we_token_vault: Pubkey,
+        stake_token_program: Pubkey,
+        we_token_program: Pubkey
     ) -> Result<()> {
         self.super_charger_bump = [bump];
         self.super_charger_config = super_charger_config;
         self.authority = authority;
-        self.reserve_mint = reserve_mint;
-        self.reserve_decimals = reserve_decimals;
-        self.reserve_vault = reserve_vault;
-        self.lp_token_mint = lp_token_mint;
-        self.lp_token_vault = lp_token_vault;
-        self.reserve_token_program = reserve_token_program;
-        self.lp_token_program = lp_token_program;
+        self.stake_token_mint = stake_token_mint;
+        self.stake_token_decimals = stake_token_decimals;
+        self.stake_vault = stake_vault;
+        self.we_token_mint = we_token_mint;
+        self.we_token_vault = we_token_vault;
+        self.stake_token_program = stake_token_program;
+        self.we_token_program = we_token_program;
 
         self.num_users = 0;
         self.total_staked_amount = 0;
