@@ -85,7 +85,7 @@ pub fn hanlder(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
 
     // TODO Prince:
     // update user_state.cost_share_price
-    // update user_state.last_stake_ts
+    user_state.update_stake_now()?;
 
     transfer_from_user(
         deposit_amount,

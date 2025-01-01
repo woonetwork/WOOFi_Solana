@@ -49,7 +49,7 @@ pub struct UserState {
     pub pending_withdrawal_unstake_scaled: u128,
     pub pending_withdrawal_unstake_ts: u64,
 
-    pub last_stake_ts: u64,
+    pub last_stake_ts: i64,
 }
 
 impl UserState {
@@ -76,6 +76,11 @@ impl UserState {
         self.pending_withdrawal_unstake_ts = 0;
         self.last_stake_ts = 0;
 
+        Ok(())
+    }
+
+    pub fn update_stake_now(&mut self) -> Result<()> {
+        self.last_stake_ts = Clock::get()?.unix_timestamp;
         Ok(())
     }
 }
