@@ -71,7 +71,7 @@ pub fn mint_decimals(account: &AccountInfo) -> Result<u8> {
     Ok(u8::from_le_bytes(amount_bytes))
 }
 
-pub fn mint_lp_token<'info>(
+pub fn mint_we_token<'info>(
     token_program: AccountInfo<'info>,
     token_mint: AccountInfo<'info>,
     token_mint_authority: AccountInfo<'info>,
@@ -95,7 +95,7 @@ pub fn mint_lp_token<'info>(
     Ok(())
 }
 
-pub fn burn_lp_token<'info>(
+pub fn burn_we_token<'info>(
     token_mint: AccountInfo<'info>,
     user_token_ata: AccountInfo<'info>,
     user: AccountInfo<'info>,
