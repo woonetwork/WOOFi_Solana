@@ -45,6 +45,8 @@ pub struct SuperCharger {
 
     pub num_users: u64,
     pub total_staked_amount: u64,
+    pub instant_withdraw_cap: u64,
+    pub instant_withdraw_amount: u64,
 
     pub stake_token_mint: Pubkey,  // stake_token_mint
     pub stake_token_decimals: u8,  // 
@@ -95,6 +97,8 @@ impl SuperCharger {
 
         self.num_users = 0;
         self.total_staked_amount = 0;
+        self.instant_withdraw_cap = 0;
+        self.instant_withdraw_amount = 0;
 
         Ok(())
     }

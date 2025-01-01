@@ -8,7 +8,7 @@ use anchor_spl::token::Token;
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
 #[derive(Accounts)]
-pub struct Withdraw<'info> {
+pub struct InstantWithdraw<'info> {
     pub user: Signer<'info>,
 
     #[account(mut,
@@ -61,7 +61,7 @@ pub struct Withdraw<'info> {
     pub we_token_program: Program<'info, Token>,
 }
 
-pub fn hanlder(ctx: Context<Withdraw>, withdraw_amount: u64) -> Result<()> {
+pub fn hanlder(ctx: Context<InstantWithdraw>, withdraw_amount: u64) -> Result<()> {
     require!(withdraw_amount != 0, ErrorCode::UnstakeZero);
 
     let super_charger = &mut ctx.accounts.super_charger;
@@ -69,8 +69,18 @@ pub fn hanlder(ctx: Context<Withdraw>, withdraw_amount: u64) -> Result<()> {
     let user_state = &mut ctx.accounts.user_state;
 
     require!(
-        stake_vault.amount >= withdraw_amount,
+        super_charger.instant_withdraw_amount <= super_charger.instant_withdraw_cap,
+        ErrorCode::NoMoreInstantWithdrawQuota
+    );
+
+    require!(
+        withdraw_amount <= stake_vault.amount,
         ErrorCode::NotEnoughOut
+    );
+
+    require!(
+        withdraw_amount <= super_charger.instant_withdraw_cap - super_charger.instant_withdraw_amount,
+        ErrorCode::OutOfInstantWithdrawCap
     );
 
     let share_price = get_price_per_full_share(
@@ -85,7 +95,13 @@ pub fn hanlder(ctx: Context<Withdraw>, withdraw_amount: u64) -> Result<()> {
     );
 
     let total_staked_amount = super_charger.total_staked_amount;
-    super_charger.total_staked_amount = total_staked_amount.checked_sub(withdraw_amount).ok_or(ErrorCode::MathOverflow)?;
+    super_charger.total_staked_amount = total_staked_amount
+                                            .checked_sub(withdraw_amount)
+                                            .ok_or(ErrorCode::MathOverflow)?;
+
+    super_charger.instant_withdraw_amount = super_charger.instant_withdraw_amount
+                                                .checked_add(withdraw_amount)
+                                                .ok_or(ErrorCode::MathOverflow)?;
 
     // TODO Prince:
     // update user_state.cost_share_price

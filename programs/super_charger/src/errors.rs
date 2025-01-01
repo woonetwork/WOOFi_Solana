@@ -29,7 +29,10 @@ pub enum ErrorCode {
     NotEnoughBalance,
     #[msg("Not enough out")]
     NotEnoughOut,
-
+    #[msg("No more instant withdraw quota")]
+    NoMoreInstantWithdrawQuota,
+    #[msg("Out of instant withdraw cap")]
+    OutOfInstantWithdrawCap,
 }
 
 impl From<TryFromIntError> for ErrorCode {

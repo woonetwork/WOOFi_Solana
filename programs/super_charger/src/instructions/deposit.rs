@@ -81,8 +81,14 @@ pub fn hanlder(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
     };
 
     let total_staked_amount = super_charger.total_staked_amount;
-    super_charger.total_staked_amount = total_staked_amount.checked_add(deposit_amount).ok_or(ErrorCode::MathOverflow)?;
-
+    super_charger.total_staked_amount = total_staked_amount
+                                            .checked_add(deposit_amount)
+                                            .ok_or(ErrorCode::MathOverflow)?;
+    super_charger.instant_withdraw_cap = super_charger.instant_withdraw_cap
+                                            .checked_add(
+                                                deposit_amount.checked_div(10).unwrap()
+                                            )
+                                            .ok_or(ErrorCode::MathOverflow)?;
     // TODO Prince:
     // update user_state.cost_share_price
     user_state.update_stake_now()?;

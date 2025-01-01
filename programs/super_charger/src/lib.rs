@@ -66,8 +66,8 @@ pub mod rebate_manager {
         instructions::deposit::hanlder(ctx, deposit_amount)
     }
 
-    pub fn withdraw(ctx: Context<Withdraw>, withdraw_amount: u64) -> Result<()> {
-        instructions::withdraw::hanlder(ctx, withdraw_amount)
+    pub fn instant_withdraw(ctx: Context<InstantWithdraw>, withdraw_amount: u64) -> Result<()> {
+        instructions::instant_withdraw::hanlder(ctx, withdraw_amount)
     }
 
 }
