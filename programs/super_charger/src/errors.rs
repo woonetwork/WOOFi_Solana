@@ -21,10 +21,10 @@ pub enum ErrorCode {
     MathOverflow,
     #[msg("Muldiv overflow")]
     MulDivOverflow,
-    #[msg("User ata and reserve token have different mints")]
-    UserAtaReserveTokenMintMissmatch,
-    #[msg("Token mint and reserve token have different mints")]
-    ReserveTokenMintMissmatch,
+    #[msg("User ata and stake token have different mints")]
+    UserAtaStakeTokenMintMissmatch,
+    #[msg("Token mint and stake token have different mints")]
+    StakeTokenMintMissmatch,
     #[msg("Src Balance < LP Deposit Amount.")]
     NotEnoughBalance,
     #[msg("Not enough out")]

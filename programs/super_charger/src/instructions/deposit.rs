@@ -36,25 +36,25 @@ pub struct Deposit<'info> {
 
     #[account(mut,
         constraint = user_deposit_account.owner == user.key(),
-        constraint = user_deposit_account.mint == stake_token_mint.key() @ ErrorCode::UserAtaReserveTokenMintMissmatch,
+        constraint = user_deposit_account.mint == stake_token_mint.key() @ ErrorCode::UserAtaStakeTokenMintMissmatch,
     )]
     pub user_deposit_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
-        constraint = stake_token_mint.key() == super_charger.stake_token_mint @ ErrorCode::ReserveTokenMintMissmatch,
+        constraint = stake_token_mint.key() == super_charger.stake_token_mint @ ErrorCode::StakeTokenMintMissmatch,
     )]
     pub stake_token_mint: Box<InterfaceAccount<'info, Mint>>,
 
     pub token_program: Program<'info, Token>,
 
     #[account(
-        constraint = we_token_mint.key() == super_charger.we_token_mint @ ErrorCode::ReserveTokenMintMissmatch,
+        constraint = we_token_mint.key() == super_charger.we_token_mint @ ErrorCode::StakeTokenMintMissmatch,
     )]
     pub we_token_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(mut,
         constraint = user_we_account.owner == user.key(),
-        constraint = user_we_account.mint == we_token_mint.key() @ ErrorCode::UserAtaReserveTokenMintMissmatch,
+        constraint = user_we_account.mint == we_token_mint.key() @ ErrorCode::UserAtaStakeTokenMintMissmatch,
     )]
     pub user_we_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
