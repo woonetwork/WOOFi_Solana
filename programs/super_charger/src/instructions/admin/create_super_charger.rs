@@ -90,6 +90,10 @@ pub struct CreateSuperCharger<'info> {
     pub stake_token_program: Program<'info, Token>,
     pub we_token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
+
+    // TODO Prince: represents token vault of woopool
+    //              see whether there's better way to init this
+    pub woopool_token_vault: AccountInfo<'info>,
 }
 
 pub fn handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
@@ -127,7 +131,8 @@ pub fn handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
         super_charger_config, 
         authority, 
         super_charger.key(), 
-        stake_token_mint, 
+        ctx.accounts.woopool_token_vault.key(),
+        stake_token_mint,
         stake_token_decimals, 
         stake_vault, 
         stake_token_program

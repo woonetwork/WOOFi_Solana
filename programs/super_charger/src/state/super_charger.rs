@@ -50,7 +50,7 @@ pub struct SuperCharger {
     pub instant_withdraw_amount: u64,
 
     pub stake_token_mint: Pubkey,  // stake_token_mint
-    pub stake_token_decimals: u8,  // 
+    pub stake_token_decimals: u8,
     pub stake_vault: Pubkey,
 
     pub we_token_mint: Pubkey,  // woofi earn token

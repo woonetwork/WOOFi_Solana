@@ -76,6 +76,13 @@ pub mod rebate_manager {
         instructions::set_pause_role_handler(ctx, pause_authority)
     }
 
+    pub fn set_lending_manager_woopool(
+        ctx: Context<SetOnlyOwnerLendingManager>,
+        woopool_token_vault: Pubkey
+    ) -> Result<()> {
+        instructions::set_lending_manager_woopool_handler(ctx, woopool_token_vault)
+    }
+
     pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
         instructions::initialize_user::handler(ctx)
     }
@@ -84,7 +91,10 @@ pub mod rebate_manager {
         instructions::deposit::hanlder(ctx, deposit_amount)
     }
 
-    pub fn instant_withdraw(ctx: Context<InstantWithdraw>, withdraw_amount: u64) -> Result<()> {
+    pub fn instant_withdraw(
+        ctx: Context<InstantWithdraw>,
+        withdraw_amount: u64
+    ) -> Result<()> {
         instructions::instant_withdraw::hanlder(ctx, withdraw_amount)
     }
 

@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::{
-    events::{PauseRoleUpdatedEvent, BorrowerRoleUpdatedEvent},
+    events::PauseRoleUpdatedEvent,
     SuperChargerConfig,
 };
 

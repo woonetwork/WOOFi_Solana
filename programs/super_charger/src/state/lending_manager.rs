@@ -43,6 +43,7 @@ pub struct LendingManager {
 
     pub super_charger_config: Pubkey,
     pub super_charger: Pubkey,
+    pub woopool_token_vault: Pubkey,
 
     pub borrowed_principal: u64,
     pub borrowed_interest: u64,
@@ -53,7 +54,7 @@ pub struct LendingManager {
     pub last_accured_ts: i64, // Timestamp of last accured interests
 
     pub stake_token_mint: Pubkey,  // stake_token_mint
-    pub stake_token_decimals: u8,  // 
+    pub stake_token_decimals: u8, 
     pub super_charger_vault: Pubkey,
     pub treasury_vault: Pubkey,
 
@@ -77,6 +78,7 @@ impl LendingManager {
         super_charger_config: Pubkey,
         authority: Pubkey,
         super_charger: Pubkey,
+        woopool_token_vault: Pubkey,
         stake_token_mint: Pubkey,
         stake_token_decimals: u8,
         stake_vault: Pubkey,
@@ -86,6 +88,7 @@ impl LendingManager {
         self.super_charger_config = super_charger_config;
         self.authority = authority;
         self.super_charger = super_charger;
+        self.woopool_token_vault = woopool_token_vault;
         self.stake_token_mint = stake_token_mint;
         self.stake_token_decimals = stake_token_decimals;
         // TODO Prince: check following vault setted in correct way
@@ -99,6 +102,11 @@ impl LendingManager {
         self.interest_rate = 0;
         self.last_accured_ts = Clock::get()?.unix_timestamp;
     
+        Ok(())
+    }
+
+    pub fn set_woopool_token_vault(&mut self, woopool_token_vault: Pubkey) -> Result<()> {
+        self.woopool_token_vault = woopool_token_vault;
         Ok(())
     }
 
