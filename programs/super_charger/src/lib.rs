@@ -54,6 +54,10 @@ pub mod rebate_manager {
         instructions::create_super_charger::handler(ctx)
     }
 
+    pub fn create_lending_manager(ctx: Context<CreateLendingManager>) -> Result<()> {
+        instructions::create_lending_manager::handler(ctx)
+    }
+
     pub fn set_admin(ctx: Context<SetAdmin>, admins: Vec<Pubkey>) -> Result<()> {
         instructions::set_admin::handler(ctx, admins)
     }

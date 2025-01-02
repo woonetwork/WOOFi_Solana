@@ -1,4 +1,4 @@
-use crate::constants::{ONE_E18_U128, SUPER_CHARGER_STAKE_VAULT_SEED};
+use crate::constants::SUPER_CHARGER_STAKE_VAULT_SEED;
 use crate::util::{get_price_per_full_share, mint_we_token, shares, transfer_from_user};
 use crate::SuperCharger;
 use crate::{errors::ErrorCode, UserState};
@@ -47,7 +47,7 @@ pub struct Deposit<'info> {
 
     pub token_program: Program<'info, Token>,
 
-    #[account(
+    #[account(mut,
         constraint = we_token_mint.key() == super_charger.we_token_mint @ ErrorCode::StakeTokenMintMissmatch,
     )]
     pub we_token_mint: Box<InterfaceAccount<'info, Mint>>,

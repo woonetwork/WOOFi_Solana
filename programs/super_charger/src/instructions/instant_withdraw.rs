@@ -47,7 +47,7 @@ pub struct InstantWithdraw<'info> {
 
     pub token_program: Program<'info, Token>,
 
-    #[account(
+    #[account(mut,
         constraint = we_token_mint.key() == super_charger.we_token_mint @ ErrorCode::StakeTokenMintMissmatch,
     )]
     pub we_token_mint: Box<InterfaceAccount<'info, Mint>>,
