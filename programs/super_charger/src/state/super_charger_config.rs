@@ -36,6 +36,7 @@ use anchor_lang::prelude::*;
 
 pub const ADMIN_AUTH_MAX_LEN: usize = 5;
 pub const PAUSE_AUTH_MAX_LEN: usize = 5;
+pub const BORROWER_AUTH_MAX_LEN: usize = 5;
 
 #[account]
 #[derive(InitSpace)]
@@ -49,6 +50,9 @@ pub struct SuperChargerConfig {
 
     #[max_len(PAUSE_AUTH_MAX_LEN)]
     pub pause_authority: Vec<Pubkey>,
+
+    #[max_len(BORROWER_AUTH_MAX_LEN)]
+    pub borrower_authority: Vec<Pubkey>,
 
     pub new_authority: Pubkey,
 }
@@ -76,6 +80,16 @@ impl SuperChargerConfig {
             ErrorCode::TooManyAuthorities
         );
         self.pause_authority = pause_authority;
+
+        Ok(())
+    }
+
+    pub fn set_borrower_authority(&mut self, borrower_authority: Vec<Pubkey>) -> Result<()> {
+        require!(
+            borrower_authority.len() <= BORROWER_AUTH_MAX_LEN,
+            ErrorCode::TooManyAuthorities
+        );
+        self.borrower_authority = borrower_authority;
 
         Ok(())
     }

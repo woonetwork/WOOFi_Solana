@@ -44,8 +44,8 @@ pub struct LendingManager {
     pub super_charger_config: Pubkey,
     pub super_charger: Pubkey,
 
-    pub principals: u64,
-    pub interests: u64,
+    pub borrowed_principal: u64,
+    pub borrowed_interest: u64,
 
     pub perf_rate: u64, // 1 in 10000th. 1000 = 10%
 
@@ -93,13 +93,21 @@ impl LendingManager {
         self.treasury_vault = stake_vault;
         self.stake_token_program = stake_token_program;
 
-        self.principals = 0;
-        self.interests = 0;
+        self.borrowed_principal = 0;
+        self.borrowed_interest = 0;
         self.perf_rate = 1000;
         self.interest_rate = 0;
         self.last_accured_ts = Clock::get()?.unix_timestamp;
     
         Ok(())
+    }
+
+    pub fn debt(&mut self) -> Result<u64> {
+        Ok(
+            self.borrowed_principal
+                .checked_add(self.borrowed_interest)
+                .ok_or(ErrorCode::MathOverflow)?
+        )
     }
 
     pub fn accure_interest(&mut self) -> Result<()> {
@@ -110,16 +118,18 @@ impl LendingManager {
         }
 
         let duration = current_ts - self.last_accured_ts;
-        let interest = (self.principals as u128).checked_mul(self.interest_rate as u128)
-                                      .ok_or(ErrorCode::MathOverflow)?
-                                      .checked_mul(duration as u128)
-                                      .ok_or(ErrorCode::MathOverflow)?
-                                      .checked_div(31536000)
-                                      .ok_or(ErrorCode::MathOverflow)?
-                                      .checked_div(10000)
-                                      .ok_or(ErrorCode::MathOverflow)?;
-        self.interests = self.interests.checked_add(interest as u64)
-                                       .ok_or(ErrorCode::MathOverflow)?;
+        let interest = (self.borrowed_principal as u128)
+                                    .checked_mul(self.interest_rate as u128)
+                                    .ok_or(ErrorCode::MathOverflow)?
+                                    .checked_mul(duration as u128)
+                                    .ok_or(ErrorCode::MathOverflow)?
+                                    .checked_div(31536000)
+                                    .ok_or(ErrorCode::MathOverflow)?
+                                    .checked_div(10000)
+                                    .ok_or(ErrorCode::MathOverflow)?;
+        self.borrowed_interest = self.borrowed_interest
+                                    .checked_add(interest as u64)
+                                    .ok_or(ErrorCode::MathOverflow)?;
         self.last_accured_ts = current_ts;
 
         Ok(())

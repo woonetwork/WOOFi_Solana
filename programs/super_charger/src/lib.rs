@@ -32,6 +32,7 @@
 */
 mod constants;
 mod errors;
+mod events;
 mod instructions;
 mod state;
 mod util;
@@ -54,8 +55,25 @@ pub mod rebate_manager {
         instructions::create_super_charger::handler(ctx)
     }
 
-    pub fn set_admin(ctx: Context<SetAdmin>, admins: Vec<Pubkey>) -> Result<()> {
-        instructions::set_admin::handler(ctx, admins)
+    pub fn set_super_charger_admin(
+        ctx: Context<SetOnlyOwnerConfig>,
+        admin_authority: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_super_charger_admin_handler(ctx, admin_authority)
+    }
+
+    pub fn set_borrower_role(
+        ctx: Context<SetOnlyOwnerConfig>,
+        admin_authority: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_borrower_role_handler(ctx, admin_authority)
+    }
+
+    pub fn set_pause_role(
+        ctx: Context<SetOnlyAdminConfig>,
+        pause_authority: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_pause_role_handler(ctx, pause_authority)
     }
 
     pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
