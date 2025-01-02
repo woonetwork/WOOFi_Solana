@@ -98,4 +98,11 @@ pub mod rebate_manager {
         instructions::instant_withdraw::hanlder(ctx, withdraw_amount)
     }
 
+    pub fn borrow(
+        ctx: Context<BorrowOnlyBorrower>,
+        borrow_amount: u64
+    ) -> Result<()> {
+        instructions::borrow_only_borrower_handler(ctx, borrow_amount)
+    }
+
 }
