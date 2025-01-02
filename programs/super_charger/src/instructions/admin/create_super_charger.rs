@@ -25,6 +25,19 @@ pub struct CreateSuperCharger<'info> {
     pub super_charger: Box<Account<'info, SuperCharger>>,
 
     #[account(
+        init,
+        payer = authority,
+        space = 8 + LendingManager::INIT_SPACE,
+        constraint = super_charger_config.authority == authority.key(),
+        seeds = [
+          LENDING_MANAGER_SEED.as_bytes(),
+          super_charger_config.key().as_ref(),
+          stake_token_mint.key().as_ref(),
+        ],
+        bump)]
+    pub lending_manager: Box<Account<'info, LendingManager>>,
+
+    #[account(
         mint::token_program = stake_token_program,
     )]
     pub stake_token_mint: Account<'info, Mint>,
@@ -90,13 +103,16 @@ pub fn handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
     let stake_token_program = ctx.accounts.stake_token_program.key();
     let we_token_program = ctx.accounts.we_token_program.key();
 
+    let lending_manager = &mut ctx.accounts.lending_manager;
+    let lending_manager_bump = ctx.bumps.lending_manager;
     let super_charger = &mut ctx.accounts.super_charger;
-    let bump = ctx.bumps.super_charger;
+    let super_charger_bump = ctx.bumps.super_charger;
 
     super_charger.initialize(
-        bump,
+        super_charger_bump,
         super_charger_config,
         authority,
+        lending_manager.key(),
         stake_token_mint,
         stake_token_decimals,
         stake_vault,
@@ -104,5 +120,18 @@ pub fn handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
         we_token_vault,
         stake_token_program,
         we_token_program
-    )
+    )?;
+
+    lending_manager.initialize(
+        lending_manager_bump, 
+        super_charger_config, 
+        authority, 
+        super_charger.key(), 
+        stake_token_mint, 
+        stake_token_decimals, 
+        stake_vault, 
+        stake_token_program
+    )?;
+
+    Ok(())
 }

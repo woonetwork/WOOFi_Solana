@@ -31,7 +31,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-use crate::{constants::SUPER_CHARGER_USER_STATE_SEED, errors::ErrorCode};
+use crate::constants::SUPER_CHARGER_USER_STATE_SEED;
 use anchor_lang::prelude::*;
 
 #[account]

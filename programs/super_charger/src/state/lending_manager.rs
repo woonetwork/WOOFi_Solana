@@ -31,7 +31,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-use crate::{constants::{LENDING_MANAGER_SEED, SUPER_CHARGER_SEED}, errors::ErrorCode};
+use crate::{constants::LENDING_MANAGER_SEED, errors::ErrorCode};
 use anchor_lang::prelude::*;
 
 #[account]
@@ -65,7 +65,7 @@ impl LendingManager {
         [
             LENDING_MANAGER_SEED.as_bytes(),
             self.super_charger_config.as_ref(),
-            self.super_charger.as_ref(),
+            self.stake_token_mint.as_ref(),
             self.lending_manager_bump.as_ref(),
         ]
     }
@@ -101,4 +101,28 @@ impl LendingManager {
     
         Ok(())
     }
+
+    pub fn accure_interest(&mut self) -> Result<()> {
+        let current_ts = Clock::get()?.unix_timestamp;
+
+        if current_ts <= self.last_accured_ts {
+            return Ok(());
+        }
+
+        let duration = current_ts - self.last_accured_ts;
+        let interest = (self.principals as u128).checked_mul(self.interest_rate as u128)
+                                      .ok_or(ErrorCode::MathOverflow)?
+                                      .checked_mul(duration as u128)
+                                      .ok_or(ErrorCode::MathOverflow)?
+                                      .checked_div(31536000)
+                                      .ok_or(ErrorCode::MathOverflow)?
+                                      .checked_div(10000)
+                                      .ok_or(ErrorCode::MathOverflow)?;
+        self.interests = self.interests.checked_add(interest as u64)
+                                       .ok_or(ErrorCode::MathOverflow)?;
+        self.last_accured_ts = current_ts;
+
+        Ok(())
+    }
+
 }

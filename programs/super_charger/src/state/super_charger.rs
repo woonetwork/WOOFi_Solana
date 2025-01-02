@@ -31,7 +31,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-use crate::{constants::SUPER_CHARGER_SEED, errors::ErrorCode};
+use crate::constants::SUPER_CHARGER_SEED;
 use anchor_lang::prelude::*;
 
 #[account]
@@ -42,6 +42,7 @@ pub struct SuperCharger {
     pub authority: Pubkey,
 
     pub super_charger_config: Pubkey,
+    pub lending_manager: Pubkey,
 
     pub num_users: u64,
     pub total_staked_amount: u64,
@@ -76,6 +77,7 @@ impl SuperCharger {
         bump: u8,
         super_charger_config: Pubkey,
         authority: Pubkey,
+        lending_manager: Pubkey,
         stake_token_mint: Pubkey,
         stake_token_decimals: u8,
         stake_vault: Pubkey,
@@ -87,6 +89,7 @@ impl SuperCharger {
         self.super_charger_bump = [bump];
         self.super_charger_config = super_charger_config;
         self.authority = authority;
+        self.lending_manager = lending_manager;
         self.stake_token_mint = stake_token_mint;
         self.stake_token_decimals = stake_token_decimals;
         self.stake_vault = stake_vault;
