@@ -60,6 +60,8 @@ pub fn borrow_only_borrower_handler(
 
     // Borrow the fund from super charger and then deposit directly into WooPP.
     // transfer from super_charger to woopool
+
+    // TODO Prince:
     // require(!isSettling, "IN SETTLING");
     // require(amount <= maxBorrowableAmount(), "INSUFF_AMOUNT_FOR_BORROW");
 

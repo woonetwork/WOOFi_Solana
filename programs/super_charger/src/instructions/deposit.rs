@@ -1,6 +1,6 @@
 use crate::constants::SUPER_CHARGER_STAKE_VAULT_SEED;
 use crate::util::{get_price_per_full_share, mint_we_token, shares, transfer_from_user};
-use crate::SuperCharger;
+use crate::{LendingManager, SuperCharger};
 use crate::{errors::ErrorCode, UserState};
 use anchor_lang::prelude::*;
 use anchor_lang::ToAccountInfo;
@@ -19,10 +19,16 @@ pub struct Deposit<'info> {
 
     #[account(mut,
         has_one = stake_vault,
+        has_one = lending_manager,
         has_one = stake_token_mint,
         has_one = we_token_mint,
     )]
     pub super_charger: Account<'info, SuperCharger>,
+
+    #[account(mut,
+        has_one = super_charger
+    )]
+    pub lending_manager:Account<'info, LendingManager>,
 
     #[account(mut,
         seeds = [
@@ -71,6 +77,7 @@ pub fn hanlder(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
     );
 
     let super_charger = &mut ctx.accounts.super_charger;
+    let lending_manager = &mut ctx.accounts.lending_manager;
     let stake_vault = &ctx.accounts.stake_vault;
     let user_state = &mut ctx.accounts.user_state;
 
@@ -101,8 +108,7 @@ pub fn hanlder(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
         &ctx.accounts.token_program,
     )?;
 
-    // TODO Prince:
-    // calculate mint amount based on lending manager
+    lending_manager.accure_interest()?;
     let share_price = get_price_per_full_share(
         &stake_vault,
         &ctx.accounts.we_token_mint)?;
