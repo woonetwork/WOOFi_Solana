@@ -1,6 +1,7 @@
 pub mod claim_fee;
 pub mod create_config;
 pub mod create_pool;
+pub mod create_swap;
 pub mod create_wooracle;
 pub mod deposit_withdraw;
 pub mod incase_token_got_stuck;
@@ -14,6 +15,7 @@ pub mod set_only_owner_authority;
 pub use claim_fee::*;
 pub use create_config::*;
 pub use create_pool::*;
+pub use create_swap::*;
 pub use create_wooracle::*;
 pub use deposit_withdraw::*;
 pub use incase_token_got_stuck::*;
