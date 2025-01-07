@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 use crate::constants::*;
 
 #[derive(Accounts)]
-pub struct CreateSwap<'info> {
+pub struct CreateWooAmmPool<'info> {
     pub wooconfig: Box<Account<'info, WooConfig>>,
 
     #[account(mut)]
@@ -13,16 +13,16 @@ pub struct CreateSwap<'info> {
     #[account(
         init,
         payer = authority,
-        space = 8 + WooSwap::INIT_SPACE,
+        space = 8 + WooAmmPool::INIT_SPACE,
         constraint = wooconfig.authority == authority.key(),
         seeds = [
-          WOOSWAP_SEED.as_bytes(),
+          WOOAMMPOOL_SEED.as_bytes(),
           wooconfig.key().as_ref(),
           woopool_a.token_mint.as_ref(),
           woopool_b.token_mint.as_ref(),
         ],
         bump)]
-    pub wooswap: Box<Account<'info, WooSwap>>,
+    pub wooammpool: Box<Account<'info, WooAmmPool>>,
 
     #[account(
         has_one = wooconfig,
@@ -57,20 +57,20 @@ pub struct CreateSwap<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreateSwap>) -> Result<()> {
+pub fn handler(ctx: Context<CreateWooAmmPool>) -> Result<()> {
     let wooconfig = ctx.accounts.wooconfig.key();
     let authority = ctx.accounts.authority.key();
 
-    let wooswap = &mut ctx.accounts.wooswap;
+    let wooammpool = &mut ctx.accounts.wooammpool;
 
     let wooracle_a = &ctx.accounts.wooracle_a;
     let woopool_a = &ctx.accounts.woopool_a;
     let wooracle_b = &ctx.accounts.wooracle_b;
     let woopool_b = &ctx.accounts.woopool_b;
 
-    let bump = ctx.bumps.wooswap;
+    let bump = ctx.bumps.wooammpool;
 
-    wooswap.initialize(
+    wooammpool.initialize(
         bump,
         wooconfig,
         authority,

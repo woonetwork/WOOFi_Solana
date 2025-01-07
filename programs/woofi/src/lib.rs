@@ -124,8 +124,8 @@ pub mod woofi {
         instructions::create_pool::handler(ctx)
     }
 
-    pub fn create_swap(ctx: Context<CreateSwap>) -> Result<()> {
-        instructions::create_swap::handler(ctx)
+    pub fn create_woo_amm_pool(ctx: Context<CreateWooAmmPool>) -> Result<()> {
+        instructions::create_wooammpool::handler(ctx)
     }
 
     pub fn set_pool_admin(
