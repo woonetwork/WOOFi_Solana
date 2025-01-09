@@ -35,6 +35,8 @@ pub enum ErrorCode {
     OutOfInstantWithdrawCap,
     #[msg("Cannot borrow 0 amount")]
     BorrowZero,
+    #[msg("Cannot repay 0 amount")]
+    RepayZero,
 }
 
 impl From<TryFromIntError> for ErrorCode {

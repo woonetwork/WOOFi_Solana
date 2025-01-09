@@ -28,6 +28,13 @@ pub struct WithdrawEvent {
 }
 
 #[event]
+pub struct RepayEvent {
+    pub token_mint: Pubkey,
+    pub authority: Pubkey,
+    pub repay_amount: u128,
+}
+
+#[event]
 pub struct ClaimFeeEvent {
     pub quote_token_mint: Pubkey,
     pub authority: Pubkey,

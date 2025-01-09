@@ -67,7 +67,7 @@ pub struct Deposit<'info> {
     pub we_token_program: Program<'info, Token>,
 }
 
-pub fn hanlder(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
+pub fn deposit_handler(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
     require!(deposit_amount != 0, ErrorCode::StakeZero);
 
     let user_deposit_account = &ctx.accounts.user_deposit_account;

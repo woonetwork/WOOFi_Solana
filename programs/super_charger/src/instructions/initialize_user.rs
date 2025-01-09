@@ -24,7 +24,7 @@ pub struct InitializeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<InitializeUser>) -> Result<()> {
+pub fn initialize_user_handler(ctx: Context<InitializeUser>) -> Result<()> {
     let user_state = &mut ctx.accounts.user_state;
     let super_charger = &mut ctx.accounts.super_charger;
 

@@ -2384,6 +2384,7 @@ dependencies = [
  "solana-program",
  "spl-memo",
  "spl-token",
+ "woofi",
 ]
 
 [[package]]

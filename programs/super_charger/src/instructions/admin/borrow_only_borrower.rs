@@ -35,7 +35,8 @@ pub struct BorrowOnlyBorrower<'info> {
     pub stake_vault: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut,
-        address = lending_manager.woopool_token_vault
+        address = lending_manager.woopool_token_vault,
+        constraint = woopool_token_vault.mint == stake_vault.mint
     )]
     pub woopool_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
 

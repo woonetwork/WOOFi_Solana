@@ -6,6 +6,7 @@ pub const ADMIN_AUTH_MAX_LEN: usize = 5;
 pub const FEE_AUTH_MAX_LEN: usize = 5;
 pub const GUARDIAN_AUTH_MAX_LEN: usize = 5;
 pub const PAUSE_AUTH_MAX_LEN: usize = 5;
+pub const LENDING_MANAGER_LEN: usize = 5;
 
 #[account]
 #[derive(InitSpace)]
@@ -28,6 +29,9 @@ pub struct WooConfig {
 
     #[max_len(PAUSE_AUTH_MAX_LEN)]
     pub pause_authority: Vec<Pubkey>,
+
+    #[max_len(LENDING_MANAGER_LEN)]
+    pub lending_manager_authority: Vec<Pubkey>,
 
     pub new_authority: Pubkey,
 }
@@ -85,6 +89,16 @@ impl WooConfig {
             ErrorCode::TooManyAuthorities
         );
         self.pause_authority = pause_authority;
+
+        Ok(())
+    }
+
+    pub fn set_lending_manager_authority(&mut self, lending_managers: Vec<Pubkey>) -> Result<()> {
+        require!(
+            lending_managers.len() <= LENDING_MANAGER_LEN,
+            ErrorCode::TooManyAuthorities
+        );
+        self.lending_manager_authority = lending_managers;
 
         Ok(())
     }

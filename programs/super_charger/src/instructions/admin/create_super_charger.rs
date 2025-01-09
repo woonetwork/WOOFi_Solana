@@ -96,7 +96,7 @@ pub struct CreateSuperCharger<'info> {
     pub woopool_token_vault: AccountInfo<'info>,
 }
 
-pub fn handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
+pub fn create_super_charger_handler(ctx: Context<CreateSuperCharger>) -> Result<()> {
     let super_charger_config = ctx.accounts.super_charger_config.key();
     let authority = ctx.accounts.authority.key();
     let stake_token_mint = ctx.accounts.stake_token_mint.key();

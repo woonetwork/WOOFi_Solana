@@ -34,7 +34,7 @@ pub struct GetStateResult {
     pub feasible_out: bool,
 }
 
-pub fn handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
+pub fn get_price_handler(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
     let oracle = &ctx.accounts.oracle;
     let price_update = &mut ctx.accounts.price_update;
     let quote_price_update = &mut ctx.accounts.quote_price_update;

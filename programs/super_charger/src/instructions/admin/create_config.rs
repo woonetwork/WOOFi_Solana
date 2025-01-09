@@ -21,7 +21,7 @@ pub struct CreateConfig<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreateConfig>) -> Result<()> {
+pub fn create_config_handler(ctx: Context<CreateConfig>) -> Result<()> {
     ctx.accounts.super_charger_config.authority = ctx.accounts.authority.key();
     ctx.accounts.super_charger_config.paused = false;
 

@@ -67,7 +67,7 @@ pub struct InstantWithdraw<'info> {
     pub we_token_program: Program<'info, Token>,
 }
 
-pub fn hanlder(ctx: Context<InstantWithdraw>, withdraw_amount: u64) -> Result<()> {
+pub fn instant_withdraw_hanlder(ctx: Context<InstantWithdraw>, withdraw_amount: u64) -> Result<()> {
     require!(withdraw_amount != 0, ErrorCode::UnstakeZero);
 
     let super_charger = &mut ctx.accounts.super_charger;

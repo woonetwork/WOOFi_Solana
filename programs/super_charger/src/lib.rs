@@ -30,12 +30,12 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-mod constants;
-mod errors;
-mod events;
-mod instructions;
-mod state;
-mod util;
+pub mod constants;
+pub mod errors;
+pub mod events;
+pub mod instructions;
+pub mod state;
+pub mod util;
 
 use anchor_lang::prelude::*;
 
@@ -44,15 +44,15 @@ use crate::{instructions::*, state::*};
 declare_id!("Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B");
 
 #[program]
-pub mod rebate_manager {
+pub mod super_charger {
     use super::*;
 
     pub fn create_config(ctx: Context<CreateConfig>) -> Result<()> {
-        instructions::create_config::handler(ctx)
+        instructions::create_config::create_config_handler(ctx)
     }
 
     pub fn create_super_charger(ctx: Context<CreateSuperCharger>) -> Result<()> {
-        instructions::create_super_charger::handler(ctx)
+        instructions::create_super_charger::create_super_charger_handler(ctx)
     }
 
     pub fn set_super_charger_admin(
@@ -84,18 +84,18 @@ pub mod rebate_manager {
     }
 
     pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
-        instructions::initialize_user::handler(ctx)
+        instructions::initialize_user::initialize_user_handler(ctx)
     }
 
     pub fn deposit(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()> {
-        instructions::deposit::hanlder(ctx, deposit_amount)
+        instructions::deposit::deposit_handler(ctx, deposit_amount)
     }
 
     pub fn instant_withdraw(
         ctx: Context<InstantWithdraw>,
         withdraw_amount: u64
     ) -> Result<()> {
-        instructions::instant_withdraw::hanlder(ctx, withdraw_amount)
+        instructions::instant_withdraw::instant_withdraw_hanlder(ctx, withdraw_amount)
     }
 
     pub fn borrow(

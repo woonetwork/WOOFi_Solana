@@ -55,3 +55,10 @@ pub struct BorrowerRoleUpdatedEvent {
     pub authority: Pubkey,
     pub borrower_roles: Vec<Pubkey>,
 }
+
+#[event]
+pub struct LendingManagerRepayEvent {
+    pub authority: Pubkey,
+    pub token_mint: Pubkey,
+    pub perf_fee: u64,
+}
