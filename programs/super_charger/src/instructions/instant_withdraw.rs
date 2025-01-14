@@ -111,8 +111,11 @@ pub fn instant_withdraw_hanlder(ctx: Context<InstantWithdraw>, withdraw_amount: 
                                                 .checked_add(withdraw_amount)
                                                 .ok_or(ErrorCode::MathOverflow)?;
 
-    // TODO Prince:
-    // update user_state.cost_share_price
+    // TODO Prince: calc fees
+    //         uint256 reserveShares = _sharesUp(amount, reserveVault.getPricePerFullShare());
+    //         reserveVault.withdraw(reserveShares);
+    // uint256 fee = accessManager.isZeroFeeVault(msg.sender) ? 0 : (amount * instantWithdrawFeeRate) / 10000;
+
     user_state.update_stake_now()?;
 
     transfer_from_vault(

@@ -93,6 +93,7 @@ pub struct CreateSuperCharger<'info> {
 
     // TODO Prince: represents token vault of woopool
     //              see whether there's better way to init this
+    /// CHECK: represents token vault of woopool
     pub woopool_token_vault: AccountInfo<'info>,
 }
 
