@@ -3,7 +3,7 @@ import * as borsh from "borsh";
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
-import { getLogs } from "@solana-developers/helpers";
+import { airdropIfRequired, getLogs } from "@solana-developers/helpers";
 import { assert } from "chai";
 import { createAssociatedTokenAccount, transferToken } from "./utils/token";
 import { PoolUtils } from "./utils/pool";
@@ -41,10 +41,10 @@ describe("woofi_swap", () => {
 
   let signers: anchor.web3.Keypair[] = [fromWallet];
   let ataSigner: anchor.web3.Keypair[] = [];
-  if (getCluster() == 'localnet') {
-    signers.push(keypair);
-    ataSigner.push(keypair);
-  }
+  // if (getCluster() == 'localnet') {
+  //   signers.push(keypair);
+  //   ataSigner.push(keypair);
+  // }
   let payerSolTokenAccount: anchor.web3.PublicKey;
   let payerUsdcTokenAccount: anchor.web3.PublicKey;
 
@@ -232,7 +232,13 @@ describe("woofi_swap", () => {
 
       let payerPubkey = provider.wallet.publicKey;
       if (getCluster() == 'localnet') {
-        payerPubkey = keypair.publicKey;
+        // payerPubkey = keypair.publicKey;
+        await airdropIfRequired(
+          provider.connection,
+          payerPubkey,
+          1 * LAMPORTS_PER_SOL,
+          0.5 * LAMPORTS_PER_SOL,
+        );
       }
 
       payerSolTokenAccount = await createAssociatedTokenAccount(
