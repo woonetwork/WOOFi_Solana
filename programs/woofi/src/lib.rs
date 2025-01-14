@@ -124,6 +124,10 @@ pub mod woofi {
         instructions::create_pool::handler(ctx)
     }
 
+    pub fn create_woo_amm_pool(ctx: Context<CreateWooAmmPool>) -> Result<()> {
+        instructions::create_wooammpool::handler(ctx)
+    }
+
     pub fn set_pool_admin(
         ctx: Context<SetOnlyAdminConfig>,
         admin_authority: Vec<Pubkey>,

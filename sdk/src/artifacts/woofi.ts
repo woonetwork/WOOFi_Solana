@@ -431,6 +431,52 @@ export type Woofi = {
       "args": []
     },
     {
+      "name": "createWooAmmPool",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "wooammpool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "setPoolAdmin",
       "accounts": [
         {
@@ -958,7 +1004,7 @@ export type Woofi = {
           "isSigner": true
         },
         {
-          "name": "tokenOwnerAccount",
+          "name": "toTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -1194,6 +1240,91 @@ export type Woofi = {
     }
   ],
   "accounts": [
+    {
+      "name": "wooAmmPool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "wooconfig",
+            "type": "publicKey"
+          },
+          {
+            "name": "wooammpoolBump",
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "wooracleA",
+            "type": "publicKey"
+          },
+          {
+            "name": "woopoolA",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedAccountA",
+            "type": "publicKey"
+          },
+          {
+            "name": "priceUpdateA",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenMintA",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenVaultA",
+            "type": "publicKey"
+          },
+          {
+            "name": "wooracleB",
+            "type": "publicKey"
+          },
+          {
+            "name": "woopoolB",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedAccountB",
+            "type": "publicKey"
+          },
+          {
+            "name": "priceUpdateB",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenMintB",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenVaultB",
+            "type": "publicKey"
+          },
+          {
+            "name": "quoteTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "quoteFeedAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "quotePriceUpdate",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
     {
       "name": "wooConfig",
       "type": {
@@ -2250,6 +2381,52 @@ export const IDL: Woofi = {
       "args": []
     },
     {
+      "name": "createWooAmmPool",
+      "accounts": [
+        {
+          "name": "wooconfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "wooammpool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolA",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "wooracleB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "woopoolB",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "setPoolAdmin",
       "accounts": [
         {
@@ -2777,7 +2954,7 @@ export const IDL: Woofi = {
           "isSigner": true
         },
         {
-          "name": "tokenOwnerAccount",
+          "name": "toTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -3013,6 +3190,91 @@ export const IDL: Woofi = {
     }
   ],
   "accounts": [
+    {
+      "name": "wooAmmPool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "wooconfig",
+            "type": "publicKey"
+          },
+          {
+            "name": "wooammpoolBump",
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "wooracleA",
+            "type": "publicKey"
+          },
+          {
+            "name": "woopoolA",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedAccountA",
+            "type": "publicKey"
+          },
+          {
+            "name": "priceUpdateA",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenMintA",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenVaultA",
+            "type": "publicKey"
+          },
+          {
+            "name": "wooracleB",
+            "type": "publicKey"
+          },
+          {
+            "name": "woopoolB",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedAccountB",
+            "type": "publicKey"
+          },
+          {
+            "name": "priceUpdateB",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenMintB",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenVaultB",
+            "type": "publicKey"
+          },
+          {
+            "name": "quoteTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "quoteFeedAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "quotePriceUpdate",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
     {
       "name": "wooConfig",
       "type": {
