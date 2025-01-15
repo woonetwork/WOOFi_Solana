@@ -41,7 +41,7 @@ use anchor_lang::prelude::*;
 
 use crate::{instructions::*, state::*};
 
-declare_id!("Boi3FPi38PXGJigfiuBB5f5xjDRUuL7P3ahsG9M3n89B");
+declare_id!("3uPLMRfgeAbiMzY2iuBkRgZKdYnBrNfqwvfNz1aBY6dX");
 
 #[program]
 pub mod super_charger {

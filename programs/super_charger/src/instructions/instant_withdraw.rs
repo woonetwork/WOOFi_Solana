@@ -1,6 +1,6 @@
 use crate::constants::SUPER_CHARGER_STAKE_VAULT_SEED;
 use crate::util::{burn_we_token, get_price_per_full_share, shares, transfer_from_vault};
-use crate::{lending_manager, LendingManager, SuperCharger};
+use crate::{LendingManager, SuperCharger};
 use crate::{errors::ErrorCode, UserState};
 use anchor_lang::prelude::*;
 use anchor_lang::ToAccountInfo;
