@@ -114,6 +114,7 @@ pub fn repay(
     Ok(total_amount)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn woofi_repay<'info>(
     woofi_program: AccountInfo<'info>,
     wooconfig: AccountInfo<'info>,

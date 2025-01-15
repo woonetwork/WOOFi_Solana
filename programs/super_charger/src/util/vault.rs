@@ -8,7 +8,7 @@ use crate::constants::ONE_E18_U128;
 // total_balance = principal + interest
 pub fn balance(stake_vault: &TokenAccount) -> u64 {
     // lending_manager)
-    return stake_vault.amount;
+    stake_vault.amount
     // + lending_manager.borrow_amount
 }
 
