@@ -9,6 +9,7 @@ import { Woofi } from "../../target/types/woofi";
 import { getPythPrice } from "./pyth";
 import { quotePriceUpdate, quoteTokenMint, SupportedToken } from "./test-consts";
 import { getCluster } from "../global";
+import { sendAndConfirm } from "./web3";
 
 const sleep = async (ms: number) => {
   return new Promise(r => setTimeout(r, ms));
@@ -142,10 +143,9 @@ export class PoolUtils {
               wooconfig,
               authority: this.provider.wallet.publicKey,
             })
-            .rpc(this.confirmOptionsRetryTres);
+            .transaction();
 
-          const logs = await getLogs(this.provider.connection, tx);
-          console.log(logs);
+          await sendAndConfirm(this.provider, tx);
       }
     }
 
@@ -192,10 +192,9 @@ export class PoolUtils {
               quoteFeedAccount,
               quotePriceUpdate
             })
-            .rpc(this.confirmOptionsRetryTres);
+            .transaction();
 
-          const logs = await getLogs(this.provider.connection, tx);
-          console.log(logs);
+          await sendAndConfirm(this.provider, tx);
       }
     }
 
@@ -208,7 +207,7 @@ export class PoolUtils {
 
     await this.getLatestBlockHash();
 
-    await this.program
+    const tx = await this.program
       .methods
       .setWooRange(pythPrice.rangeMin, pythPrice.rangeMax)
       .accounts({
@@ -216,7 +215,9 @@ export class PoolUtils {
         wooracle: wooracle,
         authority: this.provider.wallet.publicKey,
       })
-      .rpc(this.confirmOptionsRetryTres);
+      .transaction();
+
+    await sendAndConfirm(this.provider, tx);
 
     return oracleItemData;
   }
@@ -252,7 +253,7 @@ export class PoolUtils {
 
         await this.getLatestBlockHash();
 
-        await this.program
+        const tx = await this.program
         .methods
         .createPool()
         .accounts({
@@ -266,8 +267,10 @@ export class PoolUtils {
           tokenProgram: token.TOKEN_PROGRAM_ID, 
           systemProgram: web3.SystemProgram.programId,
         })
-        .signers([tokenVaultKeypair])
-        .rpc(this.confirmOptionsRetryTres);   
+        .transaction();
+
+        await sendAndConfirm(this.provider, tx, [tokenVaultKeypair]);
+
         console.log('end create pool.');
       }
     }
@@ -275,26 +278,28 @@ export class PoolUtils {
     await this.getLatestBlockHash();
 
     // init set Pool Max Notional Swap
-    await this.program
+    const tx_setPoolMaxNotionalSwap = await this.program
     .methods
     .setPoolMaxNotionalSwap(new BN(100*LAMPORTS_PER_SOL))
     .accounts({
       wooconfig,
       woopool: woopool,
       authority: this.provider.wallet.publicKey
-    }).rpc(this.confirmOptionsRetryTres);
+    }).transaction();
 
-    await this.getLatestBlockHash();
+    await sendAndConfirm(this.provider, tx_setPoolMaxNotionalSwap);
 
     // init set Pool Max Notional Swap
-    await this.program
+    const tx_setPoolMaxGamma = await this.program
     .methods
     .setPoolMaxGamma(this.tenpow28) // same as ARB on arbitrum
     .accounts({
       wooconfig,
       woopool: woopool,
       authority: this.provider.wallet.publicKey
-    }).rpc(this.confirmOptionsRetryTres);
+    }).transaction();
+
+    await sendAndConfirm(this.provider, tx_setPoolMaxGamma);
     
     if (woopoolData == null) {
       woopoolData = await this.program.account.wooPool.fetch(woopool);
