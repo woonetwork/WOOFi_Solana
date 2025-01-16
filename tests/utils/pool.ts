@@ -7,9 +7,10 @@ import * as web3 from "@solana/web3.js";
 import { getLogs } from "@solana-developers/helpers";
 import { Woofi } from "../../target/types/woofi";
 import { getPythPrice } from "./pyth";
-import { quotePriceUpdate, quoteTokenMint, SupportedToken } from "./test-consts";
+import { quotePriceUpdate, quoteTokenMint, solPriceUpdate, solTokenMint, SupportedToken, usdcPriceUpdate, usdcTokenMint } from "./test-consts";
 import { getCluster } from "../global";
 import { sendAndConfirm } from "./web3";
+import { assert } from "chai";
 
 const sleep = async (ms: number) => {
   return new Promise(r => setTimeout(r, ms));
@@ -398,6 +399,113 @@ export class PoolUtils {
     console.log('woopoolAdminAuthority:', wooconfigData.woopoolAdminAuthority)
     console.log('guardianAuthority:', wooconfigData.guardianAuthority)
     console.log('pauseAuthority:', wooconfigData.pauseAuthority)
+  }
+
+  public swap = async(
+    payerUser: web3.Keypair,
+    payerWSOLTokenAccount: web3.PublicKey,
+    payerUSDCTokenAccount: web3.PublicKey
+  ) => {
+      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
+
+      const wsolTokenAccount = payerWSOLTokenAccount;
+      const usdcTokenAccount = payerUSDCTokenAccount;
+      console.log("payer PublicKey:" + payerUser.publicKey);
+      console.log('solWalletTokenAccount:' + wsolTokenAccount);
+      console.log('usdcWalletTokenAccount:' + usdcTokenAccount);    
+
+      const initBalance = await this.provider.connection.getBalance(payerUser.publicKey);
+      console.log("fromWallet Balance:" + initBalance);
+      const tokenBalance = await this.provider.connection.getTokenAccountBalance(wsolTokenAccount);
+      console.log("fromTokenAccount amount:" + tokenBalance.value.amount);
+      console.log("fromTokenAccount decimals:" + tokenBalance.value.decimals);
+
+      const fromPoolParams = await this.generatePoolParams(solTokenMint, usdcTokenMint, this.solFeedAccount, solPriceUpdate);
+      const toPoolParams = await this.generatePoolParams(usdcTokenMint, usdcTokenMint, this.usdcFeedAccount, usdcPriceUpdate);
+      const quotePoolParams = await this.generatePoolParams(usdcTokenMint, usdcTokenMint, this.usdcFeedAccount, usdcPriceUpdate);
+      const [fromPrice, fromFeasible] = await this.getOraclePriceResult(fromPoolParams.wooconfig, fromPoolParams.wooracle, solPriceUpdate, usdcPriceUpdate);
+      console.log(`price - ${fromPrice}`);
+      console.log(`feasible - ${fromFeasible}`);
+
+      const [toPrice, toFeasible] = await this.getOraclePriceResult(toPoolParams.wooconfig, toPoolParams.wooracle, usdcPriceUpdate, usdcPriceUpdate);
+      console.log(`price - ${toPrice}`);
+      console.log(`feasible - ${toFeasible}`);
+
+
+      const tx = await this.program
+                  .methods
+                  .tryQuery(new BN(fromAmount))
+                  .accounts({
+                    wooconfig: fromPoolParams.wooconfig,
+                    wooracleFrom: fromPoolParams.wooracle,
+                    woopoolFrom: fromPoolParams.woopool,
+                    priceUpdateFrom: solPriceUpdate,
+                    wooracleTo: toPoolParams.wooracle,
+                    woopoolTo: toPoolParams.woopool,
+                    priceUpdateTo: usdcPriceUpdate,
+                    quotePriceUpdate: usdcPriceUpdate,
+                  }).transaction();
+
+      let sig = await sendAndConfirm(this.provider, tx);
+
+      let t = await this.provider.connection.getTransaction(sig, {
+        commitment: "confirmed",
+      })
+
+      const [key, data, buffer] = this.getReturnLog(t);
+      const reader = new borsh.BinaryReader(buffer);
+      const toAmount = reader.readU128().toNumber();
+      const swapFee = reader.readU128().toNumber();
+      console.log('toAmount:' + toAmount);
+      console.log('swapFee:' + swapFee);
+
+      const toVaultBalanceBefore = await this.provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
+      console.log("toVault balance amount before:" + toVaultBalanceBefore.value.amount);
+      console.log("toVault balance decimals before:" + toVaultBalanceBefore.value.decimals);
+
+      let toPoolDataBefore = await this.program.account.wooPool.fetch(toPoolParams.woopool);
+      console.log("toPool unclaimed fee before swap:" + toPoolDataBefore.unclaimedFee);
+
+      const tx2 = await this.program
+        .methods
+        .swap(new BN(fromAmount), new BN(0))
+        .accounts({
+          wooconfig: fromPoolParams.wooconfig,
+          tokenProgram: token.TOKEN_PROGRAM_ID,
+          payer: payerUser.publicKey,  // is the user want to do swap
+          wooracleFrom: fromPoolParams.wooracle,
+          woopoolFrom: fromPoolParams.woopool,
+          tokenOwnerAccountFrom: wsolTokenAccount,
+          tokenVaultFrom: fromPoolParams.tokenVault,
+          priceUpdateFrom: solPriceUpdate,
+          wooracleTo: toPoolParams.wooracle,
+          woopoolTo: toPoolParams.woopool,
+          tokenOwnerAccountTo: usdcTokenAccount,
+          tokenVaultTo: toPoolParams.tokenVault,
+          priceUpdateTo: usdcPriceUpdate,
+          woopoolQuote: quotePoolParams.woopool,
+          quotePriceUpdate: usdcPriceUpdate,
+          quoteTokenVault: quotePoolParams.tokenVault,
+          rebateTo: payerUser.publicKey,
+        })
+        .signers([payerUser])
+        .transaction();
+      await sendAndConfirm(this.provider, tx2, [payerUser]);
+
+      const toVaultBalanceAfter = await this.provider.connection.getTokenAccountBalance(toPoolParams.tokenVault);
+      console.log("toVault balance amount after:" + toVaultBalanceAfter.value.amount);
+      console.log("toVault balance decimals after:" + toVaultBalanceAfter.value.decimals);
+        
+      let toPoolDataAfter = await this.program.account.wooPool.fetch(toPoolParams.woopool);
+      console.log("toPool unclaimed fee after swap:" + toPoolDataAfter.unclaimedFee);
+
+      const swapToAccountBalance = await this.provider.connection.getTokenAccountBalance(usdcTokenAccount);
+      console.log("swapToAccount balance amount:" + swapToAccountBalance.value.amount);
+      console.log("swapToAccount balance decimals:" + swapToAccountBalance.value.decimals);
+
+      assert.equal(parseInt(toVaultBalanceAfter.value.amount), parseInt(toVaultBalanceBefore.value.amount) - toAmount);
+      assert.equal(parseInt(swapToAccountBalance.value.amount), toAmount);
+      assert.equal(toPoolDataAfter.unclaimedFee.toNumber(), toPoolDataBefore.unclaimedFee.toNumber() + swapFee);
   }
 
 }

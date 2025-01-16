@@ -1,8 +1,13 @@
 import * as anchor from "@coral-xyz/anchor";
+import * as borsh from "borsh";
+import { BN, Program } from "@coral-xyz/anchor";
+import * as token from "@solana/spl-token";
 import { assert } from "chai";
 import { SuperChargerUtils } from "./utils/super-charger-utils";
 import { PoolUtils } from "./utils/pool";
 import { solPriceUpdate, solTokenMint, SupportedToken, usdcPriceUpdate, usdcTokenMint } from "./utils/test-consts";
+import { sendAndConfirm } from "./utils/web3";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 describe("super_charger", () => {
   const provider = anchor.AnchorProvider.env();
@@ -19,6 +24,8 @@ describe("super_charger", () => {
 
   var usdcPool;
   var payerUser;
+  var payerWSOLTokenAccount;
+  var payerUSDCTokenAccount;
 
   const superChargerUtils = new SuperChargerUtils();
   superChargerUtils.initEnv();
@@ -89,6 +96,9 @@ describe("super_charger", () => {
         usdcTokenAccount
       } = await superChargerUtils.increaseWSOL(payerUser);
 
+      payerWSOLTokenAccount = wsolTokenAccount;
+      payerUSDCTokenAccount = usdcTokenAccount;
+
       const balance = await provider.connection.getTokenAccountBalance(wsolTokenAccount);
 
       console.log("balance:" + balance.value.amount);
@@ -97,15 +107,16 @@ describe("super_charger", () => {
     it("initialize user", async () => {
       const userState = await superChargerUtils.initializeUser(payerUser);
 
-      console.log('user_id:{}', userState.user_id);
+      console.log('user_id:{}', userState.userId);
       console.log('user:{}', userState.user);
-      console.log('super_charger:{}', userState.super_charger);
-      console.log('cost_share_price:{}', userState.cost_share_price);
+      console.log('super_charger:{}', userState.superCharger);
+      console.log('cost_share_price:{}', userState.costSharePrice);
 
       assert.ok(
         userState.user.equals(payerUser.publicKey)
       );
     });
+
 
   });
 

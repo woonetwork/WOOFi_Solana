@@ -37,7 +37,9 @@ export class SuperChargerUtils {
 
     this.program = anchor.workspace.SuperCharger as Program<SuperCharger>;
 
-    this.stakeTokenMint = usdcTokenMint;
+    // this.stakeTokenMint = usdcTokenMint;
+    // TODO Prince: for test simplicity, change base to sol for test
+    this.stakeTokenMint = solTokenMint;
   };
 
   public getLatestBlockHash = async () => {
