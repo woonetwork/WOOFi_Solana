@@ -37,8 +37,8 @@ export class SuperChargerUtils {
 
     this.program = anchor.workspace.SuperCharger as Program<SuperCharger>;
 
-    // this.stakeTokenMint = usdcTokenMint;
     // TODO Prince: for test simplicity, change base to sol for test
+    // this.stakeTokenMint = usdcTokenMint;
     this.stakeTokenMint = solTokenMint;
   };
 
@@ -296,7 +296,7 @@ export class SuperChargerUtils {
     }
   }
 
-  public deposit = async (user: web3.Keypair, userDepositAccount: web3.PublicKey) => {
+  public deposit = async (depositAmount: BN, user: web3.Keypair, userDepositAccount: web3.PublicKey) => {
     const {
       superChargerConfig,
       superCharger,
@@ -321,8 +321,6 @@ export class SuperChargerUtils {
     );
     console.log('userWeAccount:{}', userWeAccount);
 
-    let depositAmount = 0.05 * web3.LAMPORTS_PER_SOL;
-
     const tx = await this.program
                 .methods
                 .deposit(new BN(depositAmount))
@@ -345,6 +343,61 @@ export class SuperChargerUtils {
       userWeAccount,
       stakeVault,
       lendingManager,
+    }
+  }
+
+  public setWoopoolTokenVault = async(woopoolTokenVault: web3.PublicKey) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
+    
+    const tx = await this.program
+                .methods
+                .setLendingManagerWoopool(woopoolTokenVault)
+                .accounts({
+                  authority: this.provider.wallet.publicKey,
+                  superChargerConfig,
+                  lendingManager,
+                }).transaction();
+    await sendAndConfirm(this.provider, tx);
+  }
+
+  public borrow = async (borrowAmount: BN) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
+    
+    const lendingManagerData = await this.program.account.lendingManager.fetch(lendingManager);
+    const woopoolTokenVault = lendingManagerData.woopoolTokenVault;
+
+    const tx = await this.program
+                .methods
+                .borrow(borrowAmount)
+                .accounts({
+                  authority: this.provider.wallet.publicKey,
+                  superChargerConfig,
+                  superCharger,
+                  lendingManager,
+                  stakeVault,
+                  woopoolTokenVault,
+                  tokenProgram: token.TOKEN_PROGRAM_ID
+                }).transaction();
+    await sendAndConfirm(this.provider, tx);
+
+    return {
+      lendingManager,
+      stakeVault,
+      woopoolTokenVault
     }
   }
 }
