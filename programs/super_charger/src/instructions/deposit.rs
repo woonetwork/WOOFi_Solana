@@ -93,7 +93,8 @@ pub fn deposit_handler(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()>
                                             .ok_or(ErrorCode::MathOverflow)?;
     super_charger.instant_withdraw_cap = super_charger.instant_withdraw_cap
                                             .checked_add(
-                                                deposit_amount.checked_div(10).unwrap()
+                                                deposit_amount.checked_div(10)
+                                                .ok_or(ErrorCode::MathOverflow)?
                                             )
                                             .ok_or(ErrorCode::MathOverflow)?;
     // TODO Prince:

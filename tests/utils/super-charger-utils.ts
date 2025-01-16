@@ -287,11 +287,64 @@ export class SuperChargerUtils {
       token.createSyncNativeInstruction(wsolTokenAccount)
     );
 
+    await this.getLatestBlockHash();
     await this.provider.sendAndConfirm(transferTranscation, [receiver], { commitment: "confirmed" });
 
     return {
       wsolTokenAccount,
       usdcTokenAccount,
+    }
+  }
+
+  public deposit = async (user: web3.Keypair, userDepositAccount: web3.PublicKey) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
+    
+    const [userState] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('superchargeruserstate'), superCharger.toBuffer(), user.publicKey.toBuffer()],
+      this.program.programId
+    );
+
+    console.log('userState:{}', userState);
+    const userWeAccount = await createAssociatedTokenAccount(
+      this.provider,
+      weTokenMint,
+      user.publicKey,
+      user.publicKey,
+      [user]
+    );
+    console.log('userWeAccount:{}', userWeAccount);
+
+    let depositAmount = 0.05 * web3.LAMPORTS_PER_SOL;
+
+    const tx = await this.program
+                .methods
+                .deposit(new BN(depositAmount))
+                .accounts({
+                  user: user.publicKey,
+                  userState,
+                  superCharger,
+                  lendingManager,
+                  stakeVault,
+                  userDepositAccount,
+                  stakeTokenMint: this.stakeTokenMint,
+                  tokenProgram: token.TOKEN_PROGRAM_ID,
+                  weTokenMint,
+                  userWeAccount,
+                  weTokenProgram: token.TOKEN_PROGRAM_ID
+                }).transaction();
+    await sendAndConfirm(this.provider, tx, [user]);
+
+    return {
+      userWeAccount,
+      stakeVault,
+      lendingManager,
     }
   }
 }

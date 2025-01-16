@@ -79,6 +79,10 @@ pub fn mint_we_token<'info>(
     authority_signer_seeds: &[&[u8]],
     mint_amount: u64,
 ) -> Result<()> {
+    if mint_amount == 0 {
+        return Ok(())
+    }
+
     anchor_spl::token::mint_to(
         CpiContext::new_with_signer(
             token_program,
@@ -90,9 +94,7 @@ pub fn mint_we_token<'info>(
             &[authority_signer_seeds],
         ),
         mint_amount,
-    )?;
-
-    Ok(())
+    )
 }
 
 pub fn burn_we_token<'info>(
@@ -102,6 +104,10 @@ pub fn burn_we_token<'info>(
     token_program: AccountInfo<'info>,
     burn_amount: u64,
 ) -> Result<()> {
+    if burn_amount == 0 {
+        return Ok(())
+    }
+
     anchor_spl::token::burn(
         CpiContext::new(
             token_program,
@@ -112,9 +118,7 @@ pub fn burn_we_token<'info>(
             },
         ),
         burn_amount,
-    )?;
-
-    Ok(())
+    )
 }
 
 pub fn burn_with_signer<'info>(
@@ -125,6 +129,10 @@ pub fn burn_with_signer<'info>(
     burn_amount: u64,
     authority_signer_seeds: &[&[&[u8]]],
 ) -> Result<()> {
+    if burn_amount == 0 {
+        return Ok(())
+    }
+
     anchor_spl::token::burn(
         CpiContext::new_with_signer(
             token_program,
@@ -136,7 +144,5 @@ pub fn burn_with_signer<'info>(
             authority_signer_seeds,
         ),
         burn_amount,
-    )?;
-
-    Ok(())
+    )
 }

@@ -2,7 +2,7 @@ use anchor_lang::prelude::Result;
 
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
-use crate::constants::ONE_E18_U128;
+use crate::{constants::ONE_E18_U128, errors::ErrorCode};
 
 // we_token => WOOFi Earn Token
 // total_balance = principal + interest
@@ -23,9 +23,9 @@ pub fn calculate_share_price(total_balance: u64, total_we_token_amount: u64) -> 
         Ok(0)
     } else {
         let price = (total_balance as u128).checked_mul(ONE_E18_U128)
-                                           .unwrap()
+                                           .ok_or(ErrorCode::MathOverflow)?
                                            .checked_div(total_we_token_amount as u128)
-                                           .unwrap();
+                                           .ok_or(ErrorCode::MathOverflow)?;
         // price's unit is 1E18
         Ok(price)
     }
@@ -33,9 +33,13 @@ pub fn calculate_share_price(total_balance: u64, total_we_token_amount: u64) -> 
 
 // shares = deposit_amount / share_price
 pub fn shares(amount: u64, share_price: u128) -> Result<u64> {
-    let shares = (amount as u128).checked_mul(ONE_E18_U128)
-                                 .unwrap()
-                                 .checked_div(share_price)
-                                 .unwrap();
-    Ok(shares as u64)
+    if share_price == 0 {
+        Ok(0)
+    } else {
+        let shares = (amount as u128).checked_mul(ONE_E18_U128)
+                                    .ok_or(ErrorCode::MathOverflow)?
+                                    .checked_div(share_price)
+                                    .ok_or(ErrorCode::MathOverflow)?;
+        Ok(shares as u64)
+    }
 }

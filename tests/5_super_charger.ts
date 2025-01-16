@@ -87,7 +87,7 @@ describe("super_charger", () => {
 
   });
 
-  describe("#initialize_user()", async () => {
+  describe("#user_operation()", async () => {
     payerUser = anchor.web3.Keypair.generate();
 
     it("send sol to user", async () => {
@@ -99,9 +99,8 @@ describe("super_charger", () => {
       payerWSOLTokenAccount = wsolTokenAccount;
       payerUSDCTokenAccount = usdcTokenAccount;
 
-      const balance = await provider.connection.getTokenAccountBalance(wsolTokenAccount);
-
-      console.log("balance:" + balance.value.amount);
+      const wsolTokenAccountBalance = await provider.connection.getTokenAccountBalance(wsolTokenAccount);
+      console.log("wsolTokenAccountBalance:" + wsolTokenAccountBalance.value.amount);
     });
 
     it("initialize user", async () => {
@@ -117,7 +116,27 @@ describe("super_charger", () => {
       );
     });
 
+    it("deposit", async () => {
+      const {
+        userWeAccount,
+        stakeVault,
+        lendingManager
+      } = await superChargerUtils.deposit(payerUser, payerWSOLTokenAccount);
 
+      const wsolTokenAccountBalance = await provider.connection.getTokenAccountBalance(payerWSOLTokenAccount);
+      console.log("wsolTokenAccountBalance:" + wsolTokenAccountBalance.value.amount);
+
+      const userWeAccountBalance = await provider.connection.getTokenAccountBalance(userWeAccount);
+      console.log("userWeAccountBalance:" + userWeAccountBalance.value.amount);
+
+      const stakeVaultBalance = await provider.connection.getTokenAccountBalance(stakeVault);
+      console.log("stakeVaultBalance:" + stakeVaultBalance.value.amount);
+
+      const lendingManagerData = await superChargerProgram.account.lendingManager.fetch(lendingManager);
+      console.log('lendingManager borrowedPrinciple:' + lendingManagerData.borrowedPrincipal);
+      console.log('lendingManager borrowedInterest:' + lendingManagerData.borrowedInterest);
+
+    });
   });
 
 });
