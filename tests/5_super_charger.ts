@@ -18,6 +18,7 @@ describe("super_charger", () => {
   const quoteFeedAccount = usdcFeedAccount;
 
   var usdcPool;
+  var payerUser;
 
   const superChargerUtils = new SuperChargerUtils();
   superChargerUtils.initEnv();
@@ -75,7 +76,35 @@ describe("super_charger", () => {
       assert.ok(
         superCharger.authority.equals(provider.wallet.publicKey)
       );
+    });
 
+  });
+
+  describe("#initialize_user()", async () => {
+    payerUser = anchor.web3.Keypair.generate();
+
+    it("send sol to user", async () => {
+      const {
+        wsolTokenAccount,
+        usdcTokenAccount
+      } = await superChargerUtils.increaseWSOL(payerUser);
+
+      const balance = await provider.connection.getTokenAccountBalance(wsolTokenAccount);
+
+      console.log("balance:" + balance.value.amount);
+    });
+
+    it("initialize user", async () => {
+      const userState = await superChargerUtils.initializeUser(payerUser);
+
+      console.log('user_id:{}', userState.user_id);
+      console.log('user:{}', userState.user);
+      console.log('super_charger:{}', userState.super_charger);
+      console.log('cost_share_price:{}', userState.cost_share_price);
+
+      assert.ok(
+        userState.user.equals(payerUser.publicKey)
+      );
     });
 
   });

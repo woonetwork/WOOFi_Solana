@@ -1,12 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
 import { BN, Program } from "@coral-xyz/anchor";
 import * as token from "@solana/spl-token";
-import { ConfirmOptions } from "@solana/web3.js";
+import { ConfirmOptions, SystemProgram } from "@solana/web3.js";
 import * as web3 from "@solana/web3.js";
-import { usdcTokenMint } from "./test-consts";
+import { solTokenMint, usdcTokenMint } from "./test-consts";
 import { getCluster } from "../global";
 import { SuperCharger } from "../../target/types/super_charger";
 import { sendAndConfirm } from "./web3";
+import { airdropIfRequired } from "@solana-developers/helpers";
+import { createAssociatedTokenAccount } from "./token";
 
 const sleep = async (ms: number) => {
   return new Promise(r => setTimeout(r, ms));
@@ -101,7 +103,7 @@ export class SuperChargerUtils {
     return superChargerConfigData;
   }
 
-  public createSuperCharger = async (woopoolTokenVault: anchor.web3.PublicKey) => {
+  public generateSuperChargerPDAs = async () => {
     const [superChargerConfig] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from('superchargerconfig')],
       this.program.programId
@@ -131,6 +133,26 @@ export class SuperChargerUtils {
       [Buffer.from('superchargerwetokenvault'), superCharger.toBuffer(), this.stakeTokenMint.toBuffer()],
       this.program.programId
     );
+
+    return {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    }
+  }
+
+  public createSuperCharger = async (woopoolTokenVault: anchor.web3.PublicKey) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
 
     let superChargerData = null;
     try {
@@ -168,5 +190,106 @@ export class SuperChargerUtils {
     }
 
     return superChargerData;
+  }
+
+  public initializeUser = async (payer: web3.Signer) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
+    
+    const [userState] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from('superchargeruserstate'), superCharger.toBuffer(), payer.publicKey.toBuffer()],
+      this.program.programId
+    );
+
+    let userStateData = null;
+    try {
+      userStateData = await this.program.account.userState.fetch(userState);
+    } catch (e) {
+      const error = e as Error;
+      if (error.message.indexOf("Account does not exist") >= 0) {
+          await this.getLatestBlockHash();
+
+          const tx = await this.program
+            .methods
+            .initializeUser()
+            .accounts({
+              payer: payer.publicKey,
+              userState,
+              superCharger,
+              systemProgram: web3.SystemProgram.programId,
+            })
+            .transaction();
+            
+            await sendAndConfirm(this.provider, tx, [payer]);
+      }
+    }
+
+    if (userStateData == null) {
+      userStateData = await this.program.account.userState.fetch(userState);
+    }
+
+    return userStateData;
+  }
+
+  public increaseWSOL = async (receiver: web3.Keypair) => {
+    let fromAmount = 0.1 * web3.LAMPORTS_PER_SOL;
+
+    let payerPubkey = this.provider.wallet.publicKey;
+    if (getCluster() == 'localnet') {
+      // payerPubkey = keypair.publicKey;
+      await airdropIfRequired(
+        this.provider.connection,
+        payerPubkey,
+        1 * web3.LAMPORTS_PER_SOL,
+        0.5 * web3.LAMPORTS_PER_SOL,
+      );
+    }
+
+    const wsolTokenAccount = await createAssociatedTokenAccount(
+      this.provider,
+      solTokenMint,
+      receiver.publicKey,
+      payerPubkey
+    );
+    const usdcTokenAccount = await createAssociatedTokenAccount(
+      this.provider,
+      usdcTokenMint,
+      receiver.publicKey,
+      payerPubkey
+    );
+    console.log("receiver PublicKey:" + receiver.publicKey);
+    console.log('wsolTokenAccount:' + wsolTokenAccount);
+    console.log('usdcTokenAccount:' + usdcTokenAccount);    
+
+    // increase from pool liquidity
+    const transferTranscation = new web3.Transaction().add(
+      // transfer SOL to from wallet
+      SystemProgram.transfer({
+        fromPubkey: payerPubkey,
+        toPubkey: receiver.publicKey,
+        lamports: fromAmount,
+      }),
+      // trasnfer SOL to WSOL into ata account
+      SystemProgram.transfer({
+        fromPubkey: receiver.publicKey,
+        toPubkey: wsolTokenAccount,
+        lamports: fromAmount * 0.8,
+      }),
+      // sync wrapped SOL balance
+      token.createSyncNativeInstruction(wsolTokenAccount)
+    );
+
+    await this.provider.sendAndConfirm(transferTranscation, [receiver], { commitment: "confirmed" });
+
+    return {
+      wsolTokenAccount,
+      usdcTokenAccount,
+    }
   }
 }
