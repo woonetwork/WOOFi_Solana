@@ -32,64 +32,64 @@ describe("super_charger", () => {
   superChargerUtils.initEnv();
   const superChargerProgram = superChargerUtils.program;
 
-  // describe("#create_woofi()", async () => {
-  //   it("create woofi config", async () => {
-  //     const wooconfig = await woofiUtils.createConfig();
+  describe("#create_woofi()", async () => {
+    it("create woofi config", async () => {
+      const wooconfig = await woofiUtils.createConfig();
 
-  //     assert.ok(
-  //       wooconfig.authority.equals(provider.wallet.publicKey)
-  //     );
-  //   });
+      assert.ok(
+        wooconfig.authority.equals(provider.wallet.publicKey)
+      );
+    });
 
-  //   it("creates usdc pool", async () => {
-  //     let usdcOracle = await woofiUtils.createWooracle(SupportedToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-  //     assert.ok(
-  //       usdcOracle.authority.equals(provider.wallet.publicKey)
-  //     );
+    it("creates usdc pool", async () => {
+      let usdcOracle = await woofiUtils.createWooracle(SupportedToken.USDC, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      assert.ok(
+        usdcOracle.authority.equals(provider.wallet.publicKey)
+      );
 
-  //     usdcPool = await woofiUtils.createPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
-  //     assert.ok(
-  //       usdcPool.authority.equals(provider.wallet.publicKey)
-  //     );
-  //   });
+      usdcPool = await woofiUtils.createPool(usdcTokenMint, usdcTokenMint, usdcFeedAccount, usdcPriceUpdate);
+      assert.ok(
+        usdcPool.authority.equals(provider.wallet.publicKey)
+      );
+    });
 
-  //   it("creates sol pool", async () => {
-  //     let solOracle = await woofiUtils.createWooracle(SupportedToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
-  //     assert.ok(
-  //       solOracle.authority.equals(provider.wallet.publicKey)
-  //     );
+    it("creates sol pool", async () => {
+      let solOracle = await woofiUtils.createWooracle(SupportedToken.SOL, solTokenMint, solFeedAccount, solPriceUpdate);
+      assert.ok(
+        solOracle.authority.equals(provider.wallet.publicKey)
+      );
 
-  //     solPool = await woofiUtils.createPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
-  //     assert.ok(
-  //       solPool.authority.equals(provider.wallet.publicKey)
-  //     );
-  //   });
+      solPool = await woofiUtils.createPool(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      assert.ok(
+        solPool.authority.equals(provider.wallet.publicKey)
+      );
+    });
 
-  // });
+  });
 
-  // describe("#create_super_charger()", async () => {
-  //   it("create super charger config", async () => {
-  //     const superChargerConfig = await superChargerUtils.createConfig();
+  describe("#create_super_charger()", async () => {
+    it("create super charger config", async () => {
+      const superChargerConfig = await superChargerUtils.createConfig();
 
-  //     assert.ok(
-  //       superChargerConfig.authority.equals(provider.wallet.publicKey)
-  //     );
-  //   });
+      assert.ok(
+        superChargerConfig.authority.equals(provider.wallet.publicKey)
+      );
+    });
 
-  //   it("create super charger", async () => {
-  //     console.log('usdcPool.tokenVault:{}', usdcPool.tokenVault);
-  //     console.log('solPool.tokenVault:{}', solPool.tokenVault);
+    it("create super charger", async () => {
+      console.log('usdcPool.tokenVault:{}', usdcPool.tokenVault);
+      console.log('solPool.tokenVault:{}', solPool.tokenVault);
 
-  //     // TODO Prince: for test simplicity, change base to sol for test
-  //     // const superCharger = await superChargerUtils.createSuperCharger(usdcPool.tokenVault);
-  //     const superCharger = await superChargerUtils.createSuperCharger(solPool.tokenVault);
+      // TODO Prince: for test simplicity, change base to sol for test
+      // const superCharger = await superChargerUtils.createSuperCharger(usdcPool.tokenVault);
+      const superCharger = await superChargerUtils.createSuperCharger(solPool.tokenVault);
 
-  //     assert.ok(
-  //       superCharger.authority.equals(provider.wallet.publicKey)
-  //     );
-  //   });
+      assert.ok(
+        superCharger.authority.equals(provider.wallet.publicKey)
+      );
+    });
 
-  // });
+  });
 
   describe("#user_operation()", async () => {
     payerUser = anchor.web3.Keypair.generate();
@@ -171,7 +171,46 @@ describe("super_charger", () => {
 
       const woopoolTokenVaultBalance = await provider.connection.getTokenAccountBalance(woopoolTokenVault);
       console.log("woopoolTokenVaultBalance:" + woopoolTokenVaultBalance.value.amount);
+    })
 
+    it ("setLendingManagerAuthority", async() => {
+      const {
+        superChargerConfig,
+        superCharger,
+        lendingManager,
+        stakeVault,
+        weTokenMint,
+        weTokenVault
+      } = await superChargerUtils.generateSuperChargerPDAs();
+
+      await woofiUtils.setLendingManagerAuthority([lendingManager]);
+    })
+
+    it ("repay", async() => {
+      // TODO Prince: for test simplicity, change base to sol for test
+      // if use USDC, should use usdcPoolParams
+      const solPoolParams = await woofiUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
+      let repayAmount = new BN(0.08 * LAMPORTS_PER_SOL);
+      const {
+        lendingManager,
+        stakeVault,
+      } = await superChargerUtils.repay(
+        repayAmount,
+        solPoolParams.wooconfig,
+        solPoolParams.woopool,
+        solPoolParams.tokenVault,
+        woofiProgram.programId
+      );
+
+      const stakeVaultBalance = await provider.connection.getTokenAccountBalance(stakeVault);
+      console.log("stakeVaultBalance:" + stakeVaultBalance.value.amount);
+
+      const lendingManagerData = await superChargerProgram.account.lendingManager.fetch(lendingManager);
+      console.log('lendingManager borrowedPrinciple:' + lendingManagerData.borrowedPrincipal);
+      console.log('lendingManager borrowedInterest:' + lendingManagerData.borrowedInterest);
+
+      const woopoolTokenVaultBalance = await provider.connection.getTokenAccountBalance(solPoolParams.tokenVault);
+      console.log("woopoolTokenVaultBalance:" + woopoolTokenVaultBalance.value.amount);
     })
   });
 

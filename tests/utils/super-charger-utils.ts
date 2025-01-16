@@ -400,4 +400,46 @@ export class SuperChargerUtils {
       woopoolTokenVault
     }
   }
+
+  public repay = async (
+    repayAmount: BN,
+    wooconfig: web3.PublicKey,
+    woopool: web3.PublicKey,
+    woopoolTokenVault: web3.PublicKey,
+    woofiProgram: web3.PublicKey,
+  ) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
+    
+    const lendingManagerData = await this.program.account.lendingManager.fetch(lendingManager);
+
+    const tx = await this.program
+                .methods
+                .repay(repayAmount, lendingManagerData.borrowedInterest)
+                .accounts({
+                  authority: this.provider.wallet.publicKey,
+                  superChargerConfig,
+                  superCharger,
+                  lendingManager,
+                  stakeVault,
+                  wooconfig,
+                  woopool,
+                  woopoolTokenVault,
+                  tokenProgram: token.TOKEN_PROGRAM_ID,
+                  woofiProgram
+                }).transaction();
+    await sendAndConfirm(this.provider, tx);
+
+    return {
+      lendingManager,
+      stakeVault
+    }
+  }
+
 }

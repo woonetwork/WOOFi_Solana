@@ -401,6 +401,23 @@ export class PoolUtils {
     console.log('pauseAuthority:', wooconfigData.pauseAuthority)
   }
 
+  public setLendingManagerAuthority = async(lendingManagerAdmins: web3.PublicKey[]) => {
+    const [wooconfig] = await anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('wooconfig')],
+        this.program.programId
+      );
+    
+    console.log('Set lending manager admin authority to:', lendingManagerAdmins);
+    const tx = await this.program
+        .methods
+        .setLendingManager(lendingManagerAdmins)
+        .accounts({
+            wooconfig,
+            authority: this.provider.wallet.publicKey,
+        }).transaction();
+    await sendAndConfirm(this.provider, tx);
+  }
+
   public swap = async(
     payerUser: web3.Keypair,
     payerWSOLTokenAccount: web3.PublicKey,

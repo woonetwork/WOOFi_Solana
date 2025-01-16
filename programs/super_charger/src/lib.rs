@@ -105,4 +105,12 @@ pub mod super_charger {
         instructions::borrow_only_borrower_handler(ctx, borrow_amount)
     }
 
+    pub fn repay(
+        ctx: Context<RepayOnlyAdmin>,
+        principle_amount: u64,
+        interest_amount: u64
+    ) -> Result<u64> {
+        instructions::repay_only_admin::repay(ctx, principle_amount, interest_amount)
+    }
+
 }
