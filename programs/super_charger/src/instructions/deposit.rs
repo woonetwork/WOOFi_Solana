@@ -111,7 +111,8 @@ pub fn deposit_handler(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()>
 
     lending_manager.accure_interest()?;
     let share_price = get_price_per_full_share(
-        stake_vault,
+        &stake_vault,
+        &lending_manager,
         &ctx.accounts.we_token_mint)?;
     let mint_amount = shares(deposit_amount, share_price)?;
 
