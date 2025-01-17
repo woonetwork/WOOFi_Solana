@@ -190,7 +190,7 @@ describe("super_charger", () => {
       // TODO Prince: for test simplicity, change base to sol for test
       // if use USDC, should use usdcPoolParams
       const solPoolParams = await woofiUtils.generatePoolParams(solTokenMint, usdcTokenMint, solFeedAccount, solPriceUpdate);
-      let repayAmount = new BN(0.08 * LAMPORTS_PER_SOL);
+      let repayAmount = new BN(0.04 * LAMPORTS_PER_SOL);
       const {
         lendingManager,
         stakeVault,
