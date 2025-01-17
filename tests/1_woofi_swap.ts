@@ -228,7 +228,7 @@ describe("woofi_swap", () => {
 
   describe("#swap_between_sol_and_usdc", async ()=> {
     it("increase_wallet_pool_liquidity", async ()=> {
-      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
+      let fromAmount = 0.002 * LAMPORTS_PER_SOL;
 
       let payerPubkey = provider.wallet.publicKey;
       if (getCluster() == 'localnet') {
@@ -301,7 +301,7 @@ describe("woofi_swap", () => {
     });
 
     it ("swap_exceed_cap_bal", async() => {
-      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
+      let fromAmount = 0.002 * LAMPORTS_PER_SOL;
 
       const solTokenAccount = payerSolTokenAccount;
       const usdcTokenAccount = payerUsdcTokenAccount;
