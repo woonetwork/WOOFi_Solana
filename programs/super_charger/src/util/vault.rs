@@ -6,6 +6,7 @@ use crate::{constants::ONE_E18_U128, errors::ErrorCode};
 
 // we_token => WOOFi Earn Token
 // total_balance = principal + interest
+// TODO Prince: available() + reserveBalance() + lendingBalance();
 pub fn balance(stake_vault: &TokenAccount) -> u64 {
     // lending_manager)
     stake_vault.amount
@@ -20,7 +21,7 @@ pub fn get_price_per_full_share(stake_vault: &TokenAccount, we_token_mint: &Mint
 
 pub fn calculate_share_price(total_balance: u64, total_we_token_amount: u64) -> Result<u128> {
     if total_we_token_amount == 0 {
-        Ok(0)
+        Ok(ONE_E18_U128)
     } else {
         let price = (total_balance as u128).checked_mul(ONE_E18_U128)
                                            .ok_or(ErrorCode::MathOverflow)?
@@ -33,13 +34,9 @@ pub fn calculate_share_price(total_balance: u64, total_we_token_amount: u64) -> 
 
 // shares = deposit_amount / share_price
 pub fn shares(amount: u64, share_price: u128) -> Result<u64> {
-    if share_price == 0 {
-        Ok(0)
-    } else {
-        let shares = (amount as u128).checked_mul(ONE_E18_U128)
-                                    .ok_or(ErrorCode::MathOverflow)?
-                                    .checked_div(share_price)
-                                    .ok_or(ErrorCode::MathOverflow)?;
-        Ok(shares as u64)
-    }
+    let shares = (amount as u128).checked_mul(ONE_E18_U128)
+                                .ok_or(ErrorCode::MathOverflow)?
+                                .checked_div(share_price)
+                                .ok_or(ErrorCode::MathOverflow)?;
+    Ok(shares as u64)
 }
