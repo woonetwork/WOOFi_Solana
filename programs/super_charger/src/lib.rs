@@ -83,6 +83,20 @@ pub mod super_charger {
         instructions::set_lending_manager_woopool_handler(ctx, woopool_token_vault)
     }
 
+    pub fn set_lending_manager_interest_rate(
+        ctx: Context<SetOnlyAdminLendingManager>,
+        interest_rate: u64
+    ) -> Result<()> {
+        instructions::set_lending_manager_interest_rate_handler(ctx, interest_rate)
+    }
+
+    pub fn set_lending_manager_perf_rate(
+        ctx: Context<SetOnlyAdminLendingManager>,
+        perf_rate: u64
+    ) -> Result<()> {
+        instructions::set_lending_manager_perf_rate_handler(ctx, perf_rate)
+    }
+
     pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
         instructions::initialize_user::initialize_user_handler(ctx)
     }

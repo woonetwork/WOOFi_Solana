@@ -367,6 +367,48 @@ export class SuperChargerUtils {
     await sendAndConfirm(this.provider, tx);
   }
 
+  public setLendingManagerInterestRate = async(interestRate: BN) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
+    
+    const tx = await this.program
+                .methods
+                .setLendingManagerInterestRate(interestRate)
+                .accounts({
+                  authority: this.provider.wallet.publicKey,
+                  superChargerConfig,
+                  lendingManager,
+                }).transaction();
+    await sendAndConfirm(this.provider, tx);
+  }
+
+  public setLendingManagerPerfRate = async(perfRate: BN) => {
+    const {
+      superChargerConfig,
+      superCharger,
+      lendingManager,
+      stakeVault,
+      weTokenMint,
+      weTokenVault
+    } = await this.generateSuperChargerPDAs();
+    
+    const tx = await this.program
+                .methods
+                .setLendingManagerPerfRate(perfRate)
+                .accounts({
+                  authority: this.provider.wallet.publicKey,
+                  superChargerConfig,
+                  lendingManager,
+                }).transaction();
+    await sendAndConfirm(this.provider, tx);
+  }
+
   public borrow = async (borrowAmount: BN) => {
     const {
       superChargerConfig,

@@ -49,8 +49,8 @@ pub struct LendingManager {
     pub borrowed_interest: u64,
 
     pub perf_rate: u64, // 1 in 10000th. 1000 = 10%
-
     pub interest_rate: u64, // 1 in 10000th. 1 = 0.01% (1 bp), 10 = 0.1% (10 bps)
+
     pub last_accured_ts: i64, // Timestamp of last accured interests
 
     pub stake_token_mint: Pubkey,  // stake_token_mint
@@ -107,6 +107,24 @@ impl LendingManager {
 
     pub fn set_woopool_token_vault(&mut self, woopool_token_vault: Pubkey) -> Result<()> {
         self.woopool_token_vault = woopool_token_vault;
+        Ok(())
+    }
+
+    pub fn set_perf_rate(&mut self, perf_rate: u64) -> Result<()> {
+        if perf_rate > 10000 {
+            return Err(ErrorCode::OutOfRateBound.into());
+        }
+
+        self.perf_rate = perf_rate;
+        Ok(())
+    }
+
+    pub fn set_interest_rate(&mut self, interest_rate: u64) -> Result<()> {
+        if interest_rate > 10000 {
+            return Err(ErrorCode::OutOfRateBound.into());
+        }
+
+        self.interest_rate = interest_rate;
         Ok(())
     }
 

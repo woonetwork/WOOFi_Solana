@@ -33,6 +33,8 @@ pub enum ErrorCode {
     NoMoreInstantWithdrawQuota,
     #[msg("Out of instant withdraw cap")]
     OutOfInstantWithdrawCap,
+    #[msg("Out of rate bound, max is 10000")]
+    OutOfRateBound,
     #[msg("Cannot borrow 0 amount")]
     BorrowZero,
     #[msg("Cannot repay 0 amount")]

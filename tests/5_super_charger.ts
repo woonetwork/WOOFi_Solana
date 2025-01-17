@@ -120,6 +120,10 @@ describe("super_charger", () => {
       );
     });
 
+    it ("set interest rate", async() => {
+      await superChargerUtils.setLendingManagerInterestRate(new BN(1000))
+    })
+
     it("deposit", async () => {
       let depositAmount = new BN(0.05 * LAMPORTS_PER_SOL);
 
