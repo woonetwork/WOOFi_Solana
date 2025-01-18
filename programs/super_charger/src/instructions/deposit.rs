@@ -1,4 +1,4 @@
-use crate::constants::SUPER_CHARGER_STAKE_VAULT_SEED;
+use crate::constants::{ONE_E18_U128, SUPER_CHARGER_STAKE_VAULT_SEED};
 use crate::util::{get_price_per_full_share, mint_we_token, shares, transfer_from_user};
 use crate::{LendingManager, SuperCharger};
 use crate::{errors::ErrorCode, UserState};
@@ -97,10 +97,6 @@ pub fn deposit_handler(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()>
                                                 .ok_or(ErrorCode::MathOverflow)?
                                             )
                                             .ok_or(ErrorCode::MathOverflow)?;
-    // TODO Prince:
-    // update user_state.cost_share_price
-    user_state.update_stake_now()?;
-
     transfer_from_user(
         deposit_amount,
         &ctx.accounts.user_deposit_account.to_account_info(),
@@ -115,6 +111,24 @@ pub fn deposit_handler(ctx: Context<Deposit>, deposit_amount: u64) -> Result<()>
         &lending_manager,
         &ctx.accounts.we_token_mint)?;
     let mint_amount = shares(deposit_amount, share_price)?;
+
+    let shares_before = ctx.accounts.user_we_account.amount as u128;
+    let cost_before = user_state.cost_share_price;
+
+    // (shares_before * cost_before + deposit_amount as u128 * ONE_E18_U128) / (shares_before + mint_amount as u128);
+    user_state.cost_share_price = shares_before.checked_mul(cost_before)
+                                    .ok_or(ErrorCode::MathOverflow)?
+                                    .checked_add(
+                                        (deposit_amount as u128).checked_mul(ONE_E18_U128)
+                                        .ok_or(ErrorCode::MathOverflow)?
+                                    )
+                                    .ok_or(ErrorCode::MathOverflow)?
+                                    .checked_div(
+                                        shares_before.checked_add(mint_amount as u128)
+                                        .ok_or(ErrorCode::MathOverflow)?
+                                    )
+                                    .ok_or(ErrorCode::MathOverflow)?;
+    user_state.update_stake_now()?;
 
     // TODO QC & Prince:
     // Mint lp token to super charger or mint to user?

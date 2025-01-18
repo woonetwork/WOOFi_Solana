@@ -1,13 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
-import * as borsh from "borsh";
-import { BN, Program } from "@coral-xyz/anchor";
-import * as token from "@solana/spl-token";
+import { BN } from "@coral-xyz/anchor";
 import { assert } from "chai";
 import { SuperChargerUtils } from "./utils/super-charger-utils";
 import { PoolUtils } from "./utils/pool";
 import { solPriceUpdate, solTokenMint, SupportedToken, usdcPriceUpdate, usdcTokenMint } from "./utils/test-consts";
-import { sendAndConfirm } from "./utils/web3";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { SuperChargerCalcs } from "./utils/super-charger-calcs";
 
 describe("super_charger", () => {
   const provider = anchor.AnchorProvider.env();
@@ -31,6 +29,8 @@ describe("super_charger", () => {
   const superChargerUtils = new SuperChargerUtils();
   superChargerUtils.initEnv();
   const superChargerProgram = superChargerUtils.program;
+
+  const superChargerCalcs = new SuperChargerCalcs();
 
   describe("#create_woofi()", async () => {
     it("create woofi config", async () => {
@@ -77,8 +77,8 @@ describe("super_charger", () => {
     });
 
     it("create super charger", async () => {
-      console.log('usdcPool.tokenVault:{}', usdcPool.tokenVault);
-      console.log('solPool.tokenVault:{}', solPool.tokenVault);
+      console.log('usdcPool.tokenVault:' + usdcPool.tokenVault);
+      console.log('solPool.tokenVault:' + solPool.tokenVault);
 
       // TODO Prince: for test simplicity, change base to sol for test
       // const superCharger = await superChargerUtils.createSuperCharger(usdcPool.tokenVault);
@@ -93,6 +93,37 @@ describe("super_charger", () => {
 
   describe("#user_operation()", async () => {
     payerUser = anchor.web3.Keypair.generate();
+
+    it ("get price per full share", async () => {
+      const {
+        superChargerConfig,
+        superCharger,
+        lendingManager,
+        stakeVault,
+        weTokenMint,
+        weTokenVault
+      } = await superChargerUtils.generateSuperChargerPDAs();
+
+      const stakeVaultBalance = await provider.connection.getTokenAccountBalance(stakeVault);
+      console.log("stakeVaultBalance:" + stakeVaultBalance.value.amount);
+
+      const weTokenSupply = await provider.connection.getTokenSupply(weTokenMint);
+      console.log("weTokenSupply:" + weTokenSupply.value.amount);
+
+      const lendingManagerData = await superChargerProgram.account.lendingManager.fetch(lendingManager);
+      console.log('lendingManager borrowedPrinciple:' + lendingManagerData.borrowedPrincipal);
+      console.log('lendingManager borrowedInterest:' + lendingManagerData.borrowedInterest);
+
+      let price = superChargerCalcs.get_price_per_full_share(
+        new BN(stakeVaultBalance.value.amount),
+        new BN(stakeVaultBalance.value.decimals),
+        lendingManagerData,
+        new BN(weTokenSupply.value.amount),
+        new BN(weTokenSupply.value.decimals)
+      );
+      
+      console.log('price per full share:' + price);  
+    });
 
     it("send sol to user", async () => {
       const {
@@ -128,6 +159,7 @@ describe("super_charger", () => {
       let depositAmount = new BN(0.05 * LAMPORTS_PER_SOL);
 
       const {
+        userState,
         userWeAccount,
         stakeVault,
         lendingManager
@@ -143,6 +175,11 @@ describe("super_charger", () => {
 
       const stakeVaultBalance = await provider.connection.getTokenAccountBalance(stakeVault);
       console.log("stakeVaultBalance:" + stakeVaultBalance.value.amount);
+
+      const userStateData = await superChargerProgram.account.userState.fetch(userState);
+      console.log('userState.userId:' + userStateData.userId);
+      console.log('userState.costSharePrice:' + userStateData.costSharePrice);
+      console.log('userState.lastStakeTs:' + userStateData.lastStakeTs);
 
       const lendingManagerData = await superChargerProgram.account.lendingManager.fetch(lendingManager);
       console.log('lendingManager borrowedPrinciple:' + lendingManagerData.borrowedPrincipal);

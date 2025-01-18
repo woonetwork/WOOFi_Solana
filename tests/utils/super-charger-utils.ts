@@ -340,6 +340,7 @@ export class SuperChargerUtils {
     await sendAndConfirm(this.provider, tx, [user]);
 
     return {
+      userState,
       userWeAccount,
       stakeVault,
       lendingManager,

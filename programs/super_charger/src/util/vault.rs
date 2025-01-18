@@ -34,6 +34,9 @@ pub fn get_price_per_full_share(
 }
 
 // share_price = total_balance / total_we_token_amount
+// TODO Prince: check whether we need handle decimals
+// currently we token and usdc's decimal is the same, 9
+// share_price = (total_balance / total_we_token_amount) * (we_token_decimals / base_decimals)
 pub fn calculate_share_price(total_balance: u64, total_we_token_amount: u64) -> Result<u128> {
     if total_we_token_amount == 0 {
         Ok(ONE_E18_U128)
