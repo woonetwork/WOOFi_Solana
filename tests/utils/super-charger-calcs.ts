@@ -82,7 +82,7 @@ export class SuperChargerCalcs {
     stakeTokenDecimal: BN,
     weTokenDecimal: BN
   ): BN => {
-    if (total_we_token_amount == new BN(0)) {
+    if (total_we_token_amount.eq(new BN(0))) {
         return this.tenpow18;
     } else {
         return total_balance.mul(this.tenpow18)

@@ -98,8 +98,8 @@ pub fn instant_withdraw_hanlder(ctx: Context<InstantWithdraw>, withdraw_amount: 
 
     lending_manager.accure_interest()?;
     let share_price = get_price_per_full_share(
-        &stake_vault,
-        &lending_manager,
+        stake_vault,
+        lending_manager,
         &ctx.accounts.we_token_mint)?;
     let we_token_amount = shares(withdraw_amount, share_price)?;
 

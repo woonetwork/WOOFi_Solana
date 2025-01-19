@@ -41,12 +41,23 @@ describe("woofi_swap", () => {
 
   let signers: anchor.web3.Keypair[] = [fromWallet];
   let ataSigner: anchor.web3.Keypair[] = [];
-  // if (getCluster() == 'localnet') {
-  //   signers.push(keypair);
-  //   ataSigner.push(keypair);
-  // }
+//   if (getCluster() == 'localnet') {
+//     signers.push(keypair);
+//     ataSigner.push(keypair);
+//   }
   let payerSolTokenAccount: anchor.web3.PublicKey;
   let payerUsdcTokenAccount: anchor.web3.PublicKey;
+
+//   describe('#create_config()', async () => {
+//     it("creates config", async () => {
+//       it("create woofi config", async () => {
+//         const wooconfig = await poolUtils.createConfig();
+//         assert.ok(
+//             wooconfig.authority.equals(provider.wallet.publicKey)
+//         );
+//       });
+//     })
+//   });
 
   describe("#create_usdc_pool()", async () => {
     it("creates usdc pool", async () => {
@@ -135,8 +146,9 @@ describe("woofi_swap", () => {
 
         await poolUtils.getLatestBlockHash();
 
-        // Deposit 0.2 USDC
-        const depositAmount = new BN(200000);
+        // Deposit 0.4 USDC
+        // 0.001 SOL * 270 = 0.27 USDC
+        const depositAmount = new BN(400000);
         const tx = await program
                     .methods
                     .deposit(depositAmount)
@@ -159,8 +171,8 @@ describe("woofi_swap", () => {
         const beforeUSDCPoolBalance = await provider.connection.getTokenAccountBalance(params.tokenVault);
         console.log("beforeUSDCPoolBalance amount:" + beforeUSDCPoolBalance.value.amount);
         
-        // Deposit 0.2 USDC
-        const depositAmount = new BN(200000);
+        // Deposit 0.4 USDC
+        const depositAmount = new BN(400000);
         const tx = await program
                     .methods
                     .deposit(depositAmount)
@@ -228,7 +240,7 @@ describe("woofi_swap", () => {
 
   describe("#swap_between_sol_and_usdc", async ()=> {
     it("increase_wallet_pool_liquidity", async ()=> {
-      let fromAmount = 0.002 * LAMPORTS_PER_SOL;
+      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
 
       let payerPubkey = provider.wallet.publicKey;
       if (getCluster() == 'localnet') {
@@ -301,7 +313,7 @@ describe("woofi_swap", () => {
     });
 
     it ("swap_exceed_cap_bal", async() => {
-      let fromAmount = 0.002 * LAMPORTS_PER_SOL;
+      let fromAmount = 0.001 * LAMPORTS_PER_SOL;
 
       const solTokenAccount = payerSolTokenAccount;
       const usdcTokenAccount = payerUsdcTokenAccount;
