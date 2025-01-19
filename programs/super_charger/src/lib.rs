@@ -97,6 +97,13 @@ pub mod super_charger {
         instructions::set_lending_manager_perf_rate_handler(ctx, perf_rate)
     }
 
+    pub fn set_super_charger_instant_withdraw_fee_rate(
+        ctx: Context<SetOnlyAdminSuperCharger>,
+        instant_withdraw_fee_rate: u64
+    ) -> Result<()> {
+        instructions::set_instant_withdraw_fee_rate_handler(ctx, instant_withdraw_fee_rate)
+    }
+
     pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {
         instructions::initialize_user::initialize_user_handler(ctx)
     }

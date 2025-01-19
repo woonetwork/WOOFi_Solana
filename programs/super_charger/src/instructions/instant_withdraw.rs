@@ -119,15 +119,19 @@ pub fn instant_withdraw_hanlder(ctx: Context<InstantWithdraw>, withdraw_amount: 
                                                 .checked_add(withdraw_amount)
                                                 .ok_or(ErrorCode::MathOverflow)?;
 
-    // TODO Prince: calc fees
-    //         uint256 reserveShares = _sharesUp(amount, reserveVault.getPricePerFullShare());
-    //         reserveVault.withdraw(reserveShares);
-    // uint256 fee = accessManager.isZeroFeeVault(msg.sender) ? 0 : (amount * instantWithdrawFeeRate) / 10000;
+    // TODO Prince: fee will remain in vault for now. need to check how to log total fees
+    let fee = withdraw_amount.checked_mul(super_charger.instant_withdraw_fee_rate)
+        .ok_or(ErrorCode::MulDivOverflow)?
+        .checked_div(10000) // 1 in 10000th
+        .ok_or(ErrorCode::MulDivOverflow)?;
+
+    let to_user_amount = withdraw_amount.checked_sub(fee)
+        .ok_or(ErrorCode::MathOverflow)?;
 
     user_state.update_stake_now()?;
 
     transfer_from_vault(
-        withdraw_amount, 
+        to_user_amount,
         &[super_charger.seeds().as_slice()],
         &ctx.accounts.user_deposit_account.to_account_info(),
         &stake_vault.to_account_info(), 

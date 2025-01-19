@@ -31,7 +31,8 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-use crate::constants::SUPER_CHARGER_SEED;
+use crate::{constants::SUPER_CHARGER_SEED, errors::ErrorCode};
+
 use anchor_lang::prelude::*;
 
 #[account]
@@ -48,6 +49,7 @@ pub struct SuperCharger {
     pub total_staked_amount: u64,
     pub instant_withdraw_cap: u64,
     pub instant_withdraw_amount: u64,
+    pub instant_withdraw_fee_rate: u64, // 1 in 10000th. 1 = 0.01% (1 bp), 10 = 0.1% (10 bps)
 
     pub stake_token_mint: Pubkey,  // stake_token_mint
     pub stake_token_decimals: u8,
@@ -102,7 +104,18 @@ impl SuperCharger {
         self.total_staked_amount = 0;
         self.instant_withdraw_cap = 0;
         self.instant_withdraw_amount = 0;
+        // default: 30 -> 0.3%
+        self.instant_withdraw_fee_rate = 30;
 
+        Ok(())
+    }
+
+    pub fn set_instant_withdraw_fee_rate(&mut self, fee_rate: u64) -> Result<()> {
+        if fee_rate > 10000 {
+            return Err(ErrorCode::OutOfRateBound.into());
+        }
+
+        self.instant_withdraw_fee_rate = fee_rate;
         Ok(())
     }
 }
