@@ -1,4 +1,5 @@
-use crate::{constants::SUPER_CHARGER_USER_STATE_SEED, errors::ErrorCode, SuperCharger, UserState};
+use crate::{constants::SUPER_CHARGER_USER_STATE_SEED, 
+    errors::ErrorCode, SuperCharger, SuperChargerConfig, UserState};
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -18,7 +19,14 @@ pub struct InitializeUser<'info> {
         bump)]
     pub user_state: Account<'info, UserState>,
 
-    #[account(mut)]
+    #[account(
+        constraint = !super_charger_config.paused
+    )]
+    pub super_charger_config: Account<'info, SuperChargerConfig>,
+
+    #[account(mut,
+        has_one = super_charger_config
+    )]
     pub super_charger: Account<'info, SuperCharger>,
 
     pub system_program: Program<'info, System>,

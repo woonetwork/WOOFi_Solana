@@ -1,6 +1,6 @@
 use crate::constants::SUPER_CHARGER_STAKE_VAULT_SEED;
 use crate::util::{burn_we_token, get_price_per_full_share, shares, transfer_from_vault};
-use crate::{LendingManager, SuperCharger};
+use crate::{LendingManager, SuperCharger, SuperChargerConfig};
 use crate::{errors::ErrorCode, UserState};
 use anchor_lang::prelude::*;
 use anchor_lang::ToAccountInfo;
@@ -17,7 +17,13 @@ pub struct InstantWithdraw<'info> {
     )]
     pub user_state: Account<'info, UserState>,
 
+    #[account(
+        constraint = !super_charger_config.paused
+    )]
+    pub super_charger_config: Account<'info, SuperChargerConfig>,
+
     #[account(mut,
+        has_one = super_charger_config,
         has_one = stake_vault,
         has_one = lending_manager,
         has_one = stake_token_mint,
@@ -108,6 +114,7 @@ pub fn instant_withdraw_hanlder(ctx: Context<InstantWithdraw>, withdraw_amount: 
                                             .checked_sub(withdraw_amount)
                                             .ok_or(ErrorCode::MathOverflow)?;
 
+    // TODO Prince: set instant_withdraw_amount to 0 when weekly settle
     super_charger.instant_withdraw_amount = super_charger.instant_withdraw_amount
                                                 .checked_add(withdraw_amount)
                                                 .ok_or(ErrorCode::MathOverflow)?;

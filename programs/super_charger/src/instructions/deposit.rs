@@ -1,6 +1,6 @@
 use crate::constants::{ONE_E18_U128, SUPER_CHARGER_STAKE_VAULT_SEED};
 use crate::util::{get_price_per_full_share, mint_we_token, shares, transfer_from_user};
-use crate::{LendingManager, SuperCharger};
+use crate::{LendingManager, SuperCharger, SuperChargerConfig};
 use crate::{errors::ErrorCode, UserState};
 use anchor_lang::prelude::*;
 use anchor_lang::ToAccountInfo;
@@ -17,7 +17,13 @@ pub struct Deposit<'info> {
     )]
     pub user_state: Account<'info, UserState>,
 
+    #[account(
+        constraint = !super_charger_config.paused
+    )]
+    pub super_charger_config: Account<'info, SuperChargerConfig>,
+
     #[account(mut,
+        has_one = super_charger_config,
         has_one = stake_vault,
         has_one = lending_manager,
         has_one = stake_token_mint,

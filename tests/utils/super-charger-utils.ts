@@ -223,6 +223,7 @@ export class SuperChargerUtils {
             .accounts({
               payer: payer.publicKey,
               userState,
+              superChargerConfig,
               superCharger,
               systemProgram: web3.SystemProgram.programId,
             })
@@ -327,6 +328,7 @@ export class SuperChargerUtils {
                 .accounts({
                   user: user.publicKey,
                   userState,
+                  superChargerConfig,
                   superCharger,
                   lendingManager,
                   stakeVault,
