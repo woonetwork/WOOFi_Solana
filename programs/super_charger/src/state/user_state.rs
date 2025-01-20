@@ -46,9 +46,6 @@ pub struct UserState {
 
     pub cost_share_price: u128,
 
-    pub pending_withdrawal_unstake_scaled: u128,
-    pub pending_withdrawal_unstake_ts: u64,
-
     pub last_stake_ts: i64,
 }
 
@@ -72,8 +69,6 @@ impl UserState {
         self.user_id = user_id;
         self.user = user;
         self.cost_share_price = 0;
-        self.pending_withdrawal_unstake_scaled = 0;
-        self.pending_withdrawal_unstake_ts = 0;
         self.last_stake_ts = 0;
 
         Ok(())

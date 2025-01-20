@@ -2,7 +2,7 @@ use anchor_lang::prelude::Result;
 
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
-use crate::{constants::ONE_E18_U128, errors::ErrorCode, LendingManager};
+use crate::{constants::ONE_E18_U128, errors::ErrorCode, LendingManager, SuperCharger};
 
 // debt = borrowedPrincipal + borrowedInterest
 pub fn debt(lending_manager: &LendingManager) -> Result<u64> {
@@ -57,4 +57,16 @@ pub fn shares(amount: u64, share_price: u128) -> Result<u64> {
                                 .checked_div(share_price)
                                 .ok_or(ErrorCode::MathOverflow)?;
     Ok(shares as u64)
+}
+
+pub fn max_borrowable_amount(super_charger: &SuperCharger, stake_vault: &TokenAccount) -> Result<u64> {
+    let instant_withdraw_balance = super_charger.instant_withdraw_cap
+        .checked_sub(super_charger.instant_withdraw_amount)
+        .ok_or(ErrorCode::MathOverflow)?;
+
+    if stake_vault.amount > instant_withdraw_balance {
+        Ok(stake_vault.amount - instant_withdraw_balance)
+    } else {
+        Ok(0)
+    }
 }

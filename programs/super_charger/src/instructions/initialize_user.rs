@@ -40,8 +40,6 @@ pub fn initialize_user_handler(ctx: Context<InitializeUser>) -> Result<()> {
     user_state.user = ctx.accounts.payer.key();
     user_state.super_charger = super_charger.key();
     user_state.cost_share_price = 0;
-    user_state.pending_withdrawal_unstake_scaled = 0;
-    user_state.pending_withdrawal_unstake_ts = 0;
     user_state.last_stake_ts = 0;
 
     let user_id = super_charger.num_users;

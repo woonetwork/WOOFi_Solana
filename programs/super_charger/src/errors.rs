@@ -37,6 +37,8 @@ pub enum ErrorCode {
     OutOfRateBound,
     #[msg("Cannot borrow 0 amount")]
     BorrowZero,
+    #[msg("Not enough amount for borrow")]
+    NotEnoughAmountForBorrow,
     #[msg("Cannot repay 0 amount")]
     RepayZero,
 }

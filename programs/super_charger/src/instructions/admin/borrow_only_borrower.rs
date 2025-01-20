@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{token::Token, token_interface::TokenAccount};
 
 use crate::{
-    errors::ErrorCode, util::transfer_from_vault, LendingManager, SuperCharger, SuperChargerConfig
+    errors::ErrorCode, util::{max_borrowable_amount, transfer_from_vault}, LendingManager, SuperCharger, SuperChargerConfig
 };
 
 
@@ -63,8 +63,9 @@ pub fn borrow_only_borrower_handler(
     // transfer from super_charger to woopool
 
     // TODO Prince:
-    // require(!isSettling, "IN SETTLING");
-    // require(amount <= maxBorrowableAmount(), "INSUFF_AMOUNT_FOR_BORROW");
+    // require(!isSettling, "IN SETTLING");   when weekly settle
+    let max_borrowable_amount = max_borrowable_amount(super_charger, stake_vault)?;
+    require!(borrow_amount < max_borrowable_amount, ErrorCode::NotEnoughAmountForBorrow);
 
     transfer_from_vault(
         borrow_amount, 
