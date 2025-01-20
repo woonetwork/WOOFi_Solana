@@ -92,12 +92,13 @@ pub fn repay(
                                                         .checked_sub(principal_amount)
                                                         .ok_or(ErrorCode::MathOverflow)?;
 
-    // TODO Prince: perf fee need send to lending manager
-    //              if using this implementation, perf fee will be also in stake vault.
+    // TODO Prince:
+    // total_amount = principle_amount + interest_amount + perf_fee
+    // total_amount will transfer from woofi to super_charger's vault
+    // Need to consider how to handle perf_fee here
 
     // ask woofi to do the repay
     // transfer from woopool to stake vault
-
     woofi_repay(
         ctx.accounts.woofi_program.to_account_info(), 
         ctx.accounts.wooconfig.to_account_info(),
@@ -109,8 +110,6 @@ pub fn repay(
         lending_manager.seeds().as_slice(),
         total_amount)?;
 
-    // TODO Prince: not total_amount here
-    //              should be principal + interest
     Ok(total_amount)
 }
 
