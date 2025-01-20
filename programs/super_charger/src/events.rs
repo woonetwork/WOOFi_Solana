@@ -28,13 +28,6 @@ pub struct WithdrawEvent {
 }
 
 #[event]
-pub struct RepayEvent {
-    pub token_mint: Pubkey,
-    pub authority: Pubkey,
-    pub repay_amount: u128,
-}
-
-#[event]
 pub struct ClaimFeeEvent {
     pub quote_token_mint: Pubkey,
     pub authority: Pubkey,
@@ -43,36 +36,29 @@ pub struct ClaimFeeEvent {
 }
 
 #[event]
-pub struct WooPoolAdminUpdatedEvent {
-    pub wooconfig: Pubkey,
+pub struct SuperChargerAdminUpdatedEvent {
+    pub super_charger_config: Pubkey,
     pub authority: Pubkey,
     pub admins: Vec<Pubkey>,
 }
 
 #[event]
-pub struct FeeAdminUpdatedEvent {
-    pub wooconfig: Pubkey,
-    pub authority: Pubkey,
-    pub fee_admins: Vec<Pubkey>,
-}
-
-#[event]
 pub struct PauseRoleUpdatedEvent {
-    pub wooconfig: Pubkey,
+    pub super_charger_config: Pubkey,
     pub authority: Pubkey,
     pub pause_roles: Vec<Pubkey>,
 }
 
 #[event]
-pub struct SwapEvent {
-    pub sender: Pubkey,
-    pub from_token_mint: Pubkey,
-    pub to_token_mint: Pubkey,
-    pub from_amount: u128,
-    pub to_amount: u128,
-    pub from_account: Pubkey,
-    pub to_account: Pubkey,
-    pub rebate_to: Pubkey,
-    pub swap_vol: u128,
-    pub swap_fee: u128,
+pub struct BorrowerRoleUpdatedEvent {
+    pub super_charger_config: Pubkey,
+    pub authority: Pubkey,
+    pub borrower_roles: Vec<Pubkey>,
+}
+
+#[event]
+pub struct LendingManagerRepayEvent {
+    pub authority: Pubkey,
+    pub token_mint: Pubkey,
+    pub perf_fee: u64,
 }

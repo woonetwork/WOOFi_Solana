@@ -60,7 +60,7 @@ pub struct QueryResult {
     pub swap_fee: u128,
 }
 
-pub fn handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult> {
+pub fn try_query_handler(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult> {
     let price_update_from = &mut ctx.accounts.price_update_from;
     let price_update_to = &mut ctx.accounts.price_update_to;
     let quote_price_update = &mut ctx.accounts.quote_price_update;

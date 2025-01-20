@@ -30,51 +30,73 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-mod constants;
-mod errors;
-mod instructions;
-mod state;
-mod util;
 
+use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
 
-use crate::{instructions::*, state::*};
+pub const ADMIN_AUTH_MAX_LEN: usize = 5;
+pub const PAUSE_AUTH_MAX_LEN: usize = 5;
+pub const BORROWER_AUTH_MAX_LEN: usize = 5;
 
-declare_id!("EESDHt2dBt79iMEBG6D7wBbmpJHndNkQJVktmLX22gq7");
+#[account]
+#[derive(InitSpace)]
+pub struct SuperChargerConfig {
+    pub authority: Pubkey,
 
-#[program]
-pub mod rebate_manager {
-    use super::*;
+    pub paused: bool,
 
-    pub fn create_rebate_info(ctx: Context<CreateRebateInfo>) -> Result<()> {
-        instructions::create_rebate_info::handler(ctx)
+    #[max_len(ADMIN_AUTH_MAX_LEN)]
+    pub admin_authority: Vec<Pubkey>,
+
+    #[max_len(PAUSE_AUTH_MAX_LEN)]
+    pub pause_authority: Vec<Pubkey>,
+
+    #[max_len(BORROWER_AUTH_MAX_LEN)]
+    pub borrower_authority: Vec<Pubkey>,
+
+    pub new_authority: Pubkey,
+}
+
+impl SuperChargerConfig {
+    pub fn set_paused(&mut self, paused: bool) -> Result<()> {
+        self.paused = paused;
+
+        Ok(())
     }
 
-    pub fn create_rebate_manager(ctx: Context<CreateRebateManager>) -> Result<()> {
-        instructions::create_rebate_manager::handler(ctx)
+    pub fn set_admin_authority(&mut self, admin_authority: Vec<Pubkey>) -> Result<()> {
+        require!(
+            admin_authority.len() <= ADMIN_AUTH_MAX_LEN,
+            ErrorCode::TooManyAuthorities
+        );
+        self.admin_authority = admin_authority;
+
+        Ok(())
     }
 
-    pub fn set_admin(ctx: Context<SetAdmin>, admins: Vec<Pubkey>) -> Result<()> {
-        instructions::set_admin_handler(ctx, admins)
+    pub fn set_pause_authority(&mut self, pause_authority: Vec<Pubkey>) -> Result<()> {
+        require!(
+            pause_authority.len() <= PAUSE_AUTH_MAX_LEN,
+            ErrorCode::TooManyAuthorities
+        );
+        self.pause_authority = pause_authority;
+
+        Ok(())
     }
 
-    pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>) -> Result<()> {
-        instructions::claim_rebate_fee::handler(ctx)
+    pub fn set_borrower_authority(&mut self, borrower_authority: Vec<Pubkey>) -> Result<()> {
+        require!(
+            borrower_authority.len() <= BORROWER_AUTH_MAX_LEN,
+            ErrorCode::TooManyAuthorities
+        );
+        self.borrower_authority = borrower_authority;
+
+        Ok(())
     }
 
-    pub fn deposit_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
-        instructions::deposit(ctx, amount)
-    }
+    pub fn set_new_authority(&mut self, new_authority: Pubkey) -> Result<()> {
+        self.new_authority = new_authority;
 
-    pub fn withdraw_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
-        instructions::withdraw(ctx, amount)
-    }
-
-    pub fn add_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
-        instructions::add_rebate(ctx, amount)
-    }
-
-    pub fn sub_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
-        instructions::sub_rebate(ctx, amount)
+        Ok(())
     }
 }

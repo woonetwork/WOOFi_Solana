@@ -82,7 +82,7 @@ pub struct CreateWooracle<'info> {
     quote_price_update: Account<'info, PriceUpdateV2>,
 }
 
-pub fn handler(ctx: Context<CreateWooracle>, maximum_age: u64) -> Result<()> {
+pub fn create_wooracle_handler(ctx: Context<CreateWooracle>, maximum_age: u64) -> Result<()> {
     ctx.accounts.wooracle.wooconfig = ctx.accounts.wooconfig.key();
     ctx.accounts.wooracle.authority = ctx.accounts.admin.key();
     ctx.accounts.wooracle.token_mint = ctx.accounts.token_mint.key();

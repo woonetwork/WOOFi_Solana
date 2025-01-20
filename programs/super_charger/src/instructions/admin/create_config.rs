@@ -11,19 +11,19 @@ pub struct CreateConfig<'info> {
     #[account(
         init,
         payer = authority,
-        space = 8 + WooConfig::INIT_SPACE,
+        space = 8 + SuperChargerConfig::INIT_SPACE,
         seeds = [
-          WOOCONFIG_SEED.as_bytes(),
+            SUPER_CHARGER_CONFIG_SEED.as_bytes(),
         ],
         bump)]
-    pub wooconfig: Box<Account<'info, WooConfig>>,
+    pub super_charger_config: Box<Account<'info, SuperChargerConfig>>,
 
     pub system_program: Program<'info, System>,
 }
 
 pub fn create_config_handler(ctx: Context<CreateConfig>) -> Result<()> {
-    ctx.accounts.wooconfig.authority = ctx.accounts.authority.key();
-    ctx.accounts.wooconfig.paused = false;
+    ctx.accounts.super_charger_config.authority = ctx.accounts.authority.key();
+    ctx.accounts.super_charger_config.paused = false;
 
     Ok(())
 }

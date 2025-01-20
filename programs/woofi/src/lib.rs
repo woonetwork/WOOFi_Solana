@@ -30,29 +30,29 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-mod constants;
-mod errors;
-mod events;
-mod instructions;
-mod state;
-mod util;
+pub mod constants;
+pub mod errors;
+pub mod events;
+pub mod instructions;
+pub mod state;
+pub mod util;
 
 use anchor_lang::prelude::*;
 
 use crate::{constants::*, instructions::*, state::*};
 
-declare_id!("HJkRi7zrKsRLXUGhFhehRsoajwqLFuG2ahnup3YLFDrH");
+declare_id!("4KjJp2NBSKyCXaDUwn1siMdT5Kurcw5wPuNrAAzw3neH");
 
 #[program]
 pub mod woofi {
     use super::*;
 
     pub fn create_config(ctx: Context<CreateConfig>) -> Result<()> {
-        instructions::create_config::handler(ctx)
+        instructions::create_config::create_config_handler(ctx)
     }
 
     pub fn create_wooracle(ctx: Context<CreateWooracle>, maximum_age: u64) -> Result<()> {
-        instructions::create_wooracle::handler(ctx, maximum_age)
+        instructions::create_wooracle::create_wooracle_handler(ctx, maximum_age)
     }
 
     pub fn set_oracle_maximum_age(
@@ -107,6 +107,13 @@ pub mod woofi {
         instructions::set_guardian_handler(ctx, guardian_authority)
     }
 
+    pub fn set_lending_manager(
+        ctx: Context<SetOnlyOwnerConfig>,
+        lending_managers: Vec<Pubkey>,
+    ) -> Result<()> {
+        instructions::set_lending_manager_handler(ctx, lending_managers)
+    }
+
     pub fn set_woo_state(
         ctx: Context<SetWooStateOnlyAdmin>,
         price: u128,
@@ -117,11 +124,11 @@ pub mod woofi {
     }
 
     pub fn get_price(ctx: Context<GetPrice>) -> Result<GetPriceResult> {
-        instructions::get_price::handler(ctx)
+        instructions::get_price::get_price_handler(ctx)
     }
 
     pub fn create_pool(ctx: Context<CreatePool>) -> Result<()> {
-        instructions::create_pool::handler(ctx)
+        instructions::create_pool::create_pool_handler(ctx)
     }
 
     pub fn create_woo_amm_pool(ctx: Context<CreateWooAmmPool>) -> Result<()> {
@@ -181,7 +188,7 @@ pub mod woofi {
     }
 
     pub fn try_query(ctx: Context<TryQuery>, from_amount: u128) -> Result<QueryResult> {
-        instructions::try_query::handler(ctx, from_amount)
+        instructions::try_query::try_query_handler(ctx, from_amount)
     }
 
     pub fn query(
@@ -189,11 +196,11 @@ pub mod woofi {
         from_amount: u128,
         min_to_amount: u128,
     ) -> Result<QueryResult> {
-        instructions::query::handler(ctx, from_amount, min_to_amount)
+        instructions::query::query_handler(ctx, from_amount, min_to_amount)
     }
 
     pub fn swap(ctx: Context<Swap>, from_amount: u128, min_to_amount: u128) -> Result<()> {
-        instructions::swap::handler(ctx, from_amount, min_to_amount)
+        instructions::swap::swap_handler(ctx, from_amount, min_to_amount)
     }
 
     pub fn deposit(ctx: Context<Deposit>, amount: u128) -> Result<()> {
@@ -230,5 +237,9 @@ pub mod woofi {
 
     pub fn claim_woopool_authority(ctx: Context<ClaimAuthorityWoopool>) -> Result<()> {
         instructions::claim_woopool_authority_handler(ctx)
+    }
+
+    pub fn repay(ctx: Context<Repay>, repay_amount: u128) -> Result<()> {
+        instructions::repay(ctx, repay_amount)
     }
 }

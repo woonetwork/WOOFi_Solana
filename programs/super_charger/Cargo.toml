@@ -1,12 +1,12 @@
 [package]
-name = "rebate_manager"
+name = "super_charger"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "rebate_manager"
+name = "super_charger"
 
 [features]
 no-entrypoint = []
@@ -22,3 +22,4 @@ spl-token = { workspace = true }
 spl-memo = { workspace = true }
 solana-program = { workspace = true }
 pyth-solana-receiver-sdk = { workspace = true }
+woofi = { path = "../woofi", features = ["cpi", "no-entrypoint"]}

@@ -48,7 +48,7 @@ pub struct CreatePool<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreatePool>) -> Result<()> {
+pub fn create_pool_handler(ctx: Context<CreatePool>) -> Result<()> {
     let wooconfig = ctx.accounts.wooconfig.key();
     let authority = ctx.accounts.authority.key();
     let token_mint = ctx.accounts.token_mint.key();

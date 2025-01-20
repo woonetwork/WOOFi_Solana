@@ -30,51 +30,52 @@
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-mod constants;
-mod errors;
-mod instructions;
-mod state;
-mod util;
 
+use crate::constants::SUPER_CHARGER_USER_STATE_SEED;
 use anchor_lang::prelude::*;
 
-use crate::{instructions::*, state::*};
+#[account]
+#[derive(InitSpace)]
+pub struct UserState {
+    pub bump: u64,
 
-declare_id!("EESDHt2dBt79iMEBG6D7wBbmpJHndNkQJVktmLX22gq7");
+    pub super_charger: Pubkey,
 
-#[program]
-pub mod rebate_manager {
-    use super::*;
+    pub user_id: u64,
+    pub user: Pubkey,
 
-    pub fn create_rebate_info(ctx: Context<CreateRebateInfo>) -> Result<()> {
-        instructions::create_rebate_info::handler(ctx)
+    pub cost_share_price: u128,
+
+    pub last_stake_ts: i64,
+}
+
+impl UserState {
+    pub fn seeds(&self) -> [&[u8]; 3] {
+        [
+            SUPER_CHARGER_USER_STATE_SEED.as_bytes(),
+            self.super_charger.as_ref(),
+            self.user.as_ref(),
+        ]
     }
 
-    pub fn create_rebate_manager(ctx: Context<CreateRebateManager>) -> Result<()> {
-        instructions::create_rebate_manager::handler(ctx)
+    #[allow(clippy::too_many_arguments)]
+    pub fn initialize(
+        &mut self,
+        super_charger: Pubkey,
+        user_id: u64,
+        user: Pubkey,
+    ) -> Result<()> {
+        self.super_charger = super_charger;
+        self.user_id = user_id;
+        self.user = user;
+        self.cost_share_price = 0;
+        self.last_stake_ts = 0;
+
+        Ok(())
     }
 
-    pub fn set_admin(ctx: Context<SetAdmin>, admins: Vec<Pubkey>) -> Result<()> {
-        instructions::set_admin_handler(ctx, admins)
-    }
-
-    pub fn claim_rebate_fee(ctx: Context<ClaimRebateFee>) -> Result<()> {
-        instructions::claim_rebate_fee::handler(ctx)
-    }
-
-    pub fn deposit_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
-        instructions::deposit(ctx, amount)
-    }
-
-    pub fn withdraw_rebate_fee(ctx: Context<DepositWithdraw>, amount: u128) -> Result<()> {
-        instructions::withdraw(ctx, amount)
-    }
-
-    pub fn add_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
-        instructions::add_rebate(ctx, amount)
-    }
-
-    pub fn sub_rebate(ctx: Context<AddSubRebate>, amount: u128) -> Result<()> {
-        instructions::sub_rebate(ctx, amount)
+    pub fn update_stake_now(&mut self) -> Result<()> {
+        self.last_stake_ts = Clock::get()?.unix_timestamp;
+        Ok(())
     }
 }

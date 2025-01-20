@@ -29,3 +29,12 @@ pub fn set_guardian_handler(
         .wooconfig
         .set_guardian_authority(guardian_authority.clone())
 }
+
+pub fn set_lending_manager_handler(
+    ctx: Context<SetOnlyOwnerConfig>,
+    lending_managers: Vec<Pubkey>,
+) -> Result<()> {
+    ctx.accounts
+        .wooconfig
+        .set_lending_manager_authority(lending_managers.clone())
+}
